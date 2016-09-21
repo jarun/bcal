@@ -25,20 +25,20 @@ char *units[] = {
 void printval(double val, char *unit)
 {
 	if (trunc(val) == val)
-		printf("%32llu %s\n", (ull)val, unit);
+		printf("%40llu %s\n", (ull)val, unit);
 	else
-		printf("%32f %s\n", val, unit);
+		printf("%40.10f %s\n", val, unit);
 }
 
 ull convertbyte(char *buf)
 {
 	/* Convert and print in bytes */
 	ull bytes = strtoull(buf, NULL, 0);
-	printf("%32llu B\n\n", bytes);
+	printf("%40llu B\n\n", bytes);
 
-	printf("          IEC standard          \n          ------------\n");
+	printf("                 IEC standard\n                 ------------\n\n");
 	/* Convert and print in IEC standard units */
-	double val = bytes / (double)(1 << 10);
+	double val = bytes / (double)1024;
 	printval(val, "KiB");
 
 	val = bytes / (double)(1 << 20);
@@ -51,7 +51,7 @@ ull convertbyte(char *buf)
 	printval(val, "TiB");
 
 	/* Convert and print in SI standard values */
-	printf("\n          SI standard          \n          -----------\n");
+	printf("\n                 SI standard\n                 -----------\n\n");
 	val = bytes / (double)1000;
 	printval(val, "kB");
 
@@ -62,6 +62,150 @@ ull convertbyte(char *buf)
 	printval(val, "GB");
 
 	val = bytes / (double)1000000000000;
+	printval(val, "TB");
+
+	return bytes;
+}
+
+ull convertkib(char *buf)
+{
+	double kib = strtod(buf, NULL);
+
+	/* Convert and print in bytes */
+	ull bytes = (ull)(kib * 1024);
+	printf("%40llu B\n\n", bytes);
+
+	printf("                 IEC standard\n                 ------------\n\n");
+	printval(kib, "KiB");
+
+	double val = kib / 1024;
+	printval(val, "MiB");
+
+	val = kib / (1 << 20);
+	printval(val, "GiB");
+
+	val = kib / (1 << 30);
+	printval(val, "TiB");
+
+	printf("\n                 SI standard\n                 -----------\n\n");
+	val = kib * 1024 / 1000;
+	printval(val, "kB");
+
+	val = kib * 1024 / 1000000;
+	printval(val, "MB");
+
+	val = kib * 1024 / 1000000000;
+	printval(val, "GB");
+
+	val = kib * 1024 / 1000000000000;
+	printval(val, "TB");
+
+	return bytes;
+}
+
+ull convertmib(char *buf)
+{
+	double mib = strtod(buf, NULL);
+
+	/* Convert and print in bytes */
+	ull bytes = (ull)(mib * (1 << 20));
+	printf("%40llu B\n\n", bytes);
+
+	printf("                 IEC standard\n                 ------------\n\n");
+	double val = mib * 1024;
+	printval(val, "KiB");
+
+	printval(mib, "MiB");
+
+	val = mib / 1024;
+	printval(val, "GiB");
+
+	val = mib / (1 << 20);
+	printval(val, "TiB");
+
+	printf("\n                 SI standard\n                 -----------\n\n");
+	val = mib * (1 << 20)/ 1000;
+	printval(val, "kB");
+
+	val = mib * (1 << 20) / 1000000;
+	printval(val, "MB");
+
+	val = mib * (1 << 20) / 1000000000;
+	printval(val, "GB");
+
+	val = mib * (1 << 20) / 1000000000000;
+	printval(val, "TB");
+
+	return bytes;
+}
+
+ull convertgib(char *buf)
+{
+	double gib = strtod(buf, NULL);
+
+	/* Convert and print in bytes */
+	ull bytes = (ull)(gib * (1 << 30));
+	printf("%40llu B\n\n", bytes);
+
+	printf("                 IEC standard\n                 ------------\n\n");
+	double val = gib * (1 << 20);
+	printval(val, "KiB");
+
+	val = gib * 1024;
+	printval(val, "MiB");
+
+	printval(gib, "GiB");
+
+	val = gib / 1024;
+	printval(val, "TiB");
+
+	printf("\n                 SI standard\n                 -----------\n\n");
+	val = gib * (1 << 30)/ 1000;
+	printval(val, "kB");
+
+	val = gib * (1 << 30) / 1000000;
+	printval(val, "MB");
+
+	val = gib * (1 << 30) / 1000000000;
+	printval(val, "GB");
+
+	val = gib * (1 << 30) / 1000000000000;
+	printval(val, "TB");
+
+	return bytes;
+}
+
+ull converttib(char *buf)
+{
+	double tib = strtod(buf, NULL);
+
+	/* Convert and print in bytes */
+	ull bytes = (ull)(tib * ((ull)1 << 40));
+	printf("%40llu B\n\n", bytes);
+
+	printf("                 IEC standard\n                 ------------\n\n");
+	double val = tib * (1 << 30);
+	printval(val, "KiB");
+
+	val = tib * (1 << 20);
+	printval(val, "MiB");
+
+	val = tib * 1024;
+	printval(val, "GiB");
+
+	printval(tib, "TiB");
+
+	printf("\n                 SI standard\n                 -----------\n\n");
+	val = tib * ((ull)1 << 40)/ 1000;
+	printval(val, "kB");
+
+	val = tib * ((ull)1 << 40) / 1000000;
+	printval(val, "MB");
+
+	val = tib * ((ull)1 << 40) / 1000000000;
+	printval(val, "GB");
+
+	val = tib * ((ull)1 << 40) / 1000000000000;
 	printval(val, "TB");
 
 	return bytes;
@@ -124,12 +268,16 @@ int main(int argc, char **argv)
 			bytes = convertbyte(argv[optind]);
 			break;
 		case 1:
+			bytes = convertkib(argv[optind]);
 			break;
 		case 2:
+			bytes = convertmib(argv[optind]);
 			break;
 		case 3:
+			bytes = convertgib(argv[optind]);
 			break;
 		case 4:
+			bytes = converttib(argv[optind]);
 			break;
 		case 5:
 			break;
@@ -144,7 +292,8 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("\nADDRESS: %llu, 0x%llx\n", bytes, bytes);
+		printf("\n\nADDRESS: %llu, 0x%llx\n", bytes, bytes);
+		printf("LBA: %llu, 0x%llx OFFSET: %llu, 0x%llx\n", bytes >> 9, bytes >> 9, bytes % 512, bytes % 512);
 	}
 
 	return 0;
