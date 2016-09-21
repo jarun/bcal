@@ -211,6 +211,42 @@ ull converttib(char *buf)
 	return bytes;
 }
 
+ull convertkb(char *buf)
+{
+	double kb = strtod(buf, NULL);
+
+	/* Convert and print in bytes */
+	ull bytes = (ull)(kb * 1000);
+	printf("%40llu B\n\n", bytes);
+
+	printf("            IEC standard (base 2)\n\n");
+	double val = kb * 1000 / 1024;
+	printval(val, "KiB");
+
+	val = kb * 1000 / (1 << 20);
+	printval(val, "MiB");
+
+	val = kb * 1000 / (1 << 30);
+	printval(val, "GiB");
+
+	val = kb * 1000 / ((ull)1 << 40);
+	printval(val, "TiB");
+
+	printf("\n            SI standard (base 10)\n\n");
+	printval(kb, "kB");
+
+	val = kb / 1000;
+	printval(val, "MB");
+
+	val = kb / 1000000;
+	printval(val, "GB");
+
+	val = kb / 1000000000;
+	printval(val, "TB");
+
+	return bytes;
+}
+
 char *strtolower(char *buf)
 {
 	char *p = buf;
@@ -280,6 +316,7 @@ int main(int argc, char **argv)
 			bytes = converttib(argv[optind]);
 			break;
 		case 5:
+			bytes = convertkb(argv[optind]);
 			break;
 		case 6:
 			break;
@@ -292,8 +329,8 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("\n\nADDRESS: %llu, 0x%llx\n", bytes, bytes);
-		printf("LBA: %llu, 0x%llx OFFSET: %llu, 0x%llx\n", bytes >> 9, bytes >> 9, bytes % 512, bytes % 512);
+		printf("\n\naddress: %llu, 0x%llx\n", bytes, bytes);
+		printf("LBA:offset: %llu:%llu, 0x%llx:0x%llx\n", bytes >> 9, bytes % 512, bytes >> 9, bytes % 512);
 	}
 
 	return 0;
