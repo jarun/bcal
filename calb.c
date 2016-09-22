@@ -360,8 +360,6 @@ void printbin(ull val)
 		return;
 	}
 
-	printf("0b");
-
 	while (val && count >= 0) {
 		binstr[count--] = "01"[val & 1];
 		val >>= 1;
@@ -369,7 +367,7 @@ void printbin(ull val)
 
 	count++;
 
-	printf("%s", binstr + count);
+	printf("0b%s", binstr + count);
 }
 
 char *strtolower(char *buf)
@@ -398,7 +396,7 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
-				printf("-ve values not accepted for conversion\n");
+				fprintf(stderr, "-ve values not accepted for conversion\n");
 				return 1;
 			}
 
