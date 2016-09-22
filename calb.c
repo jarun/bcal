@@ -350,6 +350,28 @@ ull converttb(char *buf)
 	return bytes;
 }
 
+void printbin(ull val)
+{
+	int count = 63;
+	char binstr[65] = {0};
+
+	if (!val) {
+		printf("0b0");
+		return;
+	}
+
+	printf("0b");
+
+	while (val && count >= 0) {
+		binstr[count--] = "01"[val & 1];
+		val >>= 1;
+	}
+
+	count++;
+
+	printf("%s", binstr + count);
+}
+
 char *strtolower(char *buf)
 {
 	char *p = buf;
@@ -380,15 +402,18 @@ int main(int argc, char **argv)
 				return 1;
 			}
 
-			printf("CONVERSION\n");
-			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b') {
-				printf("binary");
-			} else {
-				ull val = strtoull(optarg, NULL, 0);
-				printf("\tbin: 0b\n");
-				printf("\tdec: %llu\n", val);
-				printf("\thex: 0x%llx\n", val);
-			}
+			printf("\nCONVERSION\n");
+			ull val;
+
+			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
+				val = strtoull(optarg + 2, NULL, 2);
+			else
+				val = strtoull(optarg, NULL, 0);
+
+			printf("\tbin: ");
+			printbin(val);
+			printf("\n\tdec: %llu\n", val);
+			printf("\thex: 0x%llx\n", val);
 			break;
 		case 'h':
 			usage();
