@@ -7,6 +7,7 @@
 
 #define TRUE 1
 #define FALSE !TRUE
+#define SECTOR_SIZE 512
 
 typedef unsigned long long ull;
 
@@ -362,6 +363,7 @@ char *strtolower(char *buf)
 int main(int argc, char **argv)
 {
 	int opt = 0;
+	ulong sectorsize = SECTOR_SIZE;
 
 	opterr = 0;
 
@@ -370,6 +372,8 @@ int main(int argc, char **argv)
 		case 'c':
 			break;
 		case 's':
+			sectorsize = strtoul(optarg, NULL, 0);
+			printf("sectorsize: 0x%lx\n", sectorsize);
 			break;
 		default:
 			if (isprint (optopt))
@@ -386,7 +390,7 @@ int main(int argc, char **argv)
 	if (argc - optind == 2) {
 		int ret = 0;
 		int count = sizeof(units)/sizeof(*units);
-		ull bytes = 0;
+		ull bytes = 0, lba = 0, offset = 0;
 
 		while (count-- > 0) {
 			ret = strcmp(units[count], strtolower(argv[optind + 1]));
@@ -434,9 +438,12 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("\n\naddress: %llu, 0x%llx\n", bytes, bytes);
-		printf("LBA:offset: %llu:%llu, 0x%llx:0x%llx\n",
-			bytes >> 9, bytes % 512, bytes >> 9, bytes % 512);
+		printf("\n\naddress (dec): %llu\naddress (hex): 0x%llx\n\n", bytes, bytes);
+
+		lba = bytes / sectorsize;
+		offset = bytes % sectorsize;
+		printf("LBA:offset (dec): %llu:%llu\nLBA:offset (hex): 0x%llx:0x%llx\n",
+			lba, offset, lba, offset);
 	}
 
 	return 0;
