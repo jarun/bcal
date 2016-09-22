@@ -36,7 +36,7 @@ ull convertbyte(char *buf)
 	ull bytes = strtoull(buf, NULL, 0);
 	printf("%40llu B\n\n", bytes);
 
-	printf("                 IEC standard\n                 ------------\n\n");
+	printf("            IEC standard (base 2)\n\n");
 	/* Convert and print in IEC standard units */
 	double val = bytes / (double)1024;
 	printval(val, "KiB");
@@ -51,7 +51,7 @@ ull convertbyte(char *buf)
 	printval(val, "TiB");
 
 	/* Convert and print in SI standard values */
-	printf("\n                 SI standard\n                 -----------\n\n");
+	printf("\n            SI standard (base 10)\n\n");
 	val = bytes / (double)1000;
 	printval(val, "kB");
 
@@ -75,7 +75,7 @@ ull convertkib(char *buf)
 	ull bytes = (ull)(kib * 1024);
 	printf("%40llu B\n\n", bytes);
 
-	printf("                 IEC standard\n                 ------------\n\n");
+	printf("            IEC standard (base 2)\n\n");
 	printval(kib, "KiB");
 
 	double val = kib / 1024;
@@ -87,7 +87,7 @@ ull convertkib(char *buf)
 	val = kib / (1 << 30);
 	printval(val, "TiB");
 
-	printf("\n                 SI standard\n                 -----------\n\n");
+	printf("\n            SI standard (base 10)\n\n");
 	val = kib * 1024 / 1000;
 	printval(val, "kB");
 
@@ -111,7 +111,7 @@ ull convertmib(char *buf)
 	ull bytes = (ull)(mib * (1 << 20));
 	printf("%40llu B\n\n", bytes);
 
-	printf("                 IEC standard\n                 ------------\n\n");
+	printf("            IEC standard (base 2)\n\n");
 	double val = mib * 1024;
 	printval(val, "KiB");
 
@@ -123,7 +123,7 @@ ull convertmib(char *buf)
 	val = mib / (1 << 20);
 	printval(val, "TiB");
 
-	printf("\n                 SI standard\n                 -----------\n\n");
+	printf("\n            SI standard (base 10)\n\n");
 	val = mib * (1 << 20)/ 1000;
 	printval(val, "kB");
 
@@ -147,7 +147,7 @@ ull convertgib(char *buf)
 	ull bytes = (ull)(gib * (1 << 30));
 	printf("%40llu B\n\n", bytes);
 
-	printf("                 IEC standard\n                 ------------\n\n");
+	printf("            IEC standard (base 2)\n\n");
 	double val = gib * (1 << 20);
 	printval(val, "KiB");
 
@@ -159,7 +159,7 @@ ull convertgib(char *buf)
 	val = gib / 1024;
 	printval(val, "TiB");
 
-	printf("\n                 SI standard\n                 -----------\n\n");
+	printf("\n            SI standard (base 10)\n\n");
 	val = gib * (1 << 30)/ 1000;
 	printval(val, "kB");
 
@@ -183,7 +183,7 @@ ull converttib(char *buf)
 	ull bytes = (ull)(tib * ((ull)1 << 40));
 	printf("%40llu B\n\n", bytes);
 
-	printf("                 IEC standard\n                 ------------\n\n");
+	printf("            IEC standard (base 2)\n\n");
 	double val = tib * (1 << 30);
 	printval(val, "KiB");
 
@@ -195,7 +195,7 @@ ull converttib(char *buf)
 
 	printval(tib, "TiB");
 
-	printf("\n                 SI standard\n                 -----------\n\n");
+	printf("\n            SI standard (base 10)\n\n");
 	val = tib * ((ull)1 << 40)/ 1000;
 	printval(val, "kB");
 
@@ -330,7 +330,8 @@ int main(int argc, char **argv)
 		}
 
 		printf("\n\naddress: %llu, 0x%llx\n", bytes, bytes);
-		printf("LBA:offset: %llu:%llu, 0x%llx:0x%llx\n", bytes >> 9, bytes % 512, bytes >> 9, bytes % 512);
+		printf("LBA:offset: %llu:%llu, 0x%llx:0x%llx\n",
+			bytes >> 9, bytes % 512, bytes >> 9, bytes % 512);
 	}
 
 	return 0;
