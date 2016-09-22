@@ -360,10 +360,15 @@ char *strtolower(char *buf)
 	return buf;
 }
 
+void usage()
+{
+	printf("calb usage\n");
+}
+
 int main(int argc, char **argv)
 {
 	int opt = 0;
-	ulong sectorsize = SECTOR_SIZE;
+	long sectorsize = SECTOR_SIZE;
 
 	opterr = 0;
 
@@ -371,13 +376,19 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case 'c':
 			break;
+		case 'h':
+			usage();
+			return 0;
 		case 's':
-			sectorsize = strtoul(optarg, NULL, 0);
-			printf("sectorsize: 0x%lx\n", sectorsize);
+			sectorsize = strtol(optarg, NULL, 0);
+			if (sectorsize <= 0) {
+				fprintf(stderr, "sector size must be +ve\n");
+				return 1;
+			}
 			break;
 		default:
 			if (isprint (optopt))
-				fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+				fprintf(stderr, "Unknown option `-%c'\n", optopt);
 			else
 				fprintf(stderr, "Unknown option\n");
 
@@ -385,7 +396,12 @@ int main(int argc, char **argv)
 		}
 	}
 
-	printf("Non-option args: %d\n", argc - optind);
+	if (argc - optind == 1) {
+		usage();
+		return 1;
+	}
+
+	printf("\n");
 
 	if (argc - optind == 2) {
 		int ret = 0;
@@ -402,8 +418,6 @@ int main(int argc, char **argv)
 			fprintf(stderr, "No matching unit\n");
 			return 1;
 		}
-
-		printf("count: %x unit: %s\n", count, units[count]);
 
 		switch (count) {
 		case 0:
@@ -440,6 +454,7 @@ int main(int argc, char **argv)
 
 		printf("\n\naddress (dec): %llu\naddress (hex): 0x%llx\n\n", bytes, bytes);
 
+		printf("sector size: 0x%lx\n\n", sectorsize);
 		lba = bytes / sectorsize;
 		offset = bytes % sectorsize;
 		printf("LBA:offset (dec): %llu:%llu\nLBA:offset (hex): 0x%llx:0x%llx\n",
