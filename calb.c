@@ -372,9 +372,23 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt (argc, argv, "cs:")) != -1) {
+	while ((opt = getopt (argc, argv, "hc:s:")) != -1) {
 		switch (opt) {
 		case 'c':
+			if (*optarg == '-') {
+				printf("-ve values not accepted for conversion\n");
+				return 1;
+			}
+
+			printf("CONVERSION\n");
+			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b') {
+				printf("binary");
+			} else {
+				ull val = strtoull(optarg, NULL, 0);
+				printf("\tbin: 0b\n");
+				printf("\tdec: %llu\n", val);
+				printf("\thex: 0x%llx\n", val);
+			}
 			break;
 		case 'h':
 			usage();
@@ -387,11 +401,7 @@ int main(int argc, char **argv)
 			}
 			break;
 		default:
-			if (isprint (optopt))
-				fprintf(stderr, "Unknown option `-%c'\n", optopt);
-			else
-				fprintf(stderr, "Unknown option\n");
-
+			usage();
 			return 1;
 		}
 	}
@@ -418,6 +428,8 @@ int main(int argc, char **argv)
 			fprintf(stderr, "No matching unit\n");
 			return 1;
 		}
+
+		printf("UNITS\n");
 
 		switch (count) {
 		case 0:
@@ -452,12 +464,12 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("\n\naddress (dec): %llu\naddress (hex): 0x%llx\n\n", bytes, bytes);
+		printf("\n\nADDRESS\n\tdec: %llu\n\thex: 0x%llx\n\n", bytes, bytes);
 
-		printf("sector size: 0x%lx\n\n", sectorsize);
 		lba = bytes / sectorsize;
 		offset = bytes % sectorsize;
-		printf("LBA:offset (dec): %llu:%llu\nLBA:offset (hex): 0x%llx:0x%llx\n",
+		printf("LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+		printf("\n\tdec: %llu:%llu\n\thex: 0x%llx:0x%llx\n",
 			lba, offset, lba, offset);
 	}
 
