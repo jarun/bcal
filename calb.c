@@ -26,20 +26,20 @@ char *units[] = {
 void printval(double val, char *unit)
 {
 	if (trunc(val) == val)
-		printf("%40llu %s\n", (ull)val, unit);
+		fprintf(stdout, "%40llu %s\n", (ull)val, unit);
 	else
-		printf("%40.10f %s\n", val, unit);
+		fprintf(stdout, "%40.10f %s\n", val, unit);
 }
 
 ull convertbyte(char *buf)
 {
 	/* Convert and print in bytes */
 	ull bytes = strtoull(buf, NULL, 0);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
 	/* Convert and print in IEC standard units */
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = bytes / (double)1024;
 	printval(val, "KiB");
 
@@ -54,7 +54,7 @@ ull convertbyte(char *buf)
 
 	/* Convert and print in SI standard values */
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = bytes / (double)1000;
 	printval(val, "kB");
 
@@ -75,9 +75,9 @@ ull convertkib(char *buf)
 	double kib = strtod(buf, NULL);
 
 	ull bytes = (ull)(kib * 1024);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	printval(kib, "KiB");
 
 	double val = kib / 1024;
@@ -89,7 +89,7 @@ ull convertkib(char *buf)
 	val = kib / (1 << 30);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = kib * 1024 / 1000;
 	printval(val, "kB");
 
@@ -110,9 +110,9 @@ ull convertmib(char *buf)
 	double mib = strtod(buf, NULL);
 
 	ull bytes = (ull)(mib * (1 << 20));
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = mib * 1024;
 	printval(val, "KiB");
 
@@ -124,7 +124,7 @@ ull convertmib(char *buf)
 	val = mib / (1 << 20);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = mib * (1 << 20)/ 1000;
 	printval(val, "kB");
 
@@ -145,9 +145,9 @@ ull convertgib(char *buf)
 	double gib = strtod(buf, NULL);
 
 	ull bytes = (ull)(gib * (1 << 30));
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = gib * (1 << 20);
 	printval(val, "KiB");
 
@@ -159,7 +159,7 @@ ull convertgib(char *buf)
 	val = gib / 1024;
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = gib * (1 << 30)/ 1000;
 	printval(val, "kB");
 
@@ -180,9 +180,9 @@ ull converttib(char *buf)
 	double tib = strtod(buf, NULL);
 
 	ull bytes = (ull)(tib * ((ull)1 << 40));
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = tib * (1 << 30);
 	printval(val, "KiB");
 
@@ -194,7 +194,7 @@ ull converttib(char *buf)
 
 	printval(tib, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = tib * ((ull)1 << 40)/ 1000;
 	printval(val, "kB");
 
@@ -215,9 +215,9 @@ ull convertkb(char *buf)
 	double kb = strtod(buf, NULL);
 
 	ull bytes = (ull)(kb * 1000);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = kb * 1000 / 1024;
 	printval(val, "KiB");
 
@@ -230,7 +230,7 @@ ull convertkb(char *buf)
 	val = kb * 1000 / ((ull)1 << 40);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	printval(kb, "kB");
 
 	val = kb / 1000;
@@ -250,9 +250,9 @@ ull convertmb(char *buf)
 	double mb = strtod(buf, NULL);
 
 	ull bytes = (ull)(mb * 1000000);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = mb * 1000000 / 1024;
 	printval(val, "KiB");
 
@@ -265,7 +265,7 @@ ull convertmb(char *buf)
 	val = mb * 1000000 / ((ull)1 << 40);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = mb * 1000;
 	printval(val, "kB");
 
@@ -285,9 +285,9 @@ ull convertgb(char *buf)
 	double gb = strtod(buf, NULL);
 
 	ull bytes = (ull)(gb * 1000000000);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = gb * 1000000000 / 1024;
 	printval(val, "KiB");
 
@@ -300,7 +300,7 @@ ull convertgb(char *buf)
 	val = gb * 1000000000 / ((ull)1 << 40);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = gb * 1000000;
 	printval(val, "kB");
 
@@ -320,9 +320,9 @@ ull converttb(char *buf)
 	double tb = strtod(buf, NULL);
 
 	ull bytes = (ull)(tb * 1000000000000);
-	printf("%40llu B\n\n", bytes);
+	fprintf(stdout, "%40llu B\n\n", bytes);
 
-	printf("            IEC standard (base 2)\n\n");
+	fprintf(stdout, "            IEC standard (base 2)\n\n");
 	double val = tb * 1000000000000 / 1024;
 	printval(val, "KiB");
 
@@ -335,7 +335,7 @@ ull converttb(char *buf)
 	val = tb * 1000000000000 / ((ull)1 << 40);
 	printval(val, "TiB");
 
-	printf("\n            SI standard (base 10)\n\n");
+	fprintf(stdout, "\n            SI standard (base 10)\n\n");
 	val = tb * 1000000000;
 	printval(val, "kB");
 
@@ -356,7 +356,7 @@ void printbin(ull val)
 	char binstr[65] = {0};
 
 	if (!val) {
-		printf("0b0");
+		fprintf(stdout, "0b0");
 		return;
 	}
 
@@ -367,7 +367,7 @@ void printbin(ull val)
 
 	count++;
 
-	printf("0b%s", binstr + count);
+	fprintf(stdout, "0b%s", binstr + count);
 }
 
 char *strtolower(char *buf)
@@ -382,7 +382,7 @@ char *strtolower(char *buf)
 
 void usage()
 {
-	printf("calb usage\n");
+	fprintf(stdout, "calb usage\n");
 }
 
 int main(int argc, char **argv)
@@ -400,7 +400,7 @@ int main(int argc, char **argv)
 				return 1;
 			}
 
-			printf("\nCONVERSION\n");
+			fprintf(stdout, "\nCONVERSION\n");
 			ull val;
 
 			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
@@ -408,10 +408,10 @@ int main(int argc, char **argv)
 			else
 				val = strtoull(optarg, NULL, 0);
 
-			printf("\tbin: ");
+			fprintf(stdout, "\tbin: ");
 			printbin(val);
-			printf("\n\tdec: %llu\n", val);
-			printf("\thex: 0x%llx\n", val);
+			fprintf(stdout, "\n\tdec: %llu\n", val);
+			fprintf(stdout, "\thex: 0x%llx\n", val);
 			break;
 		case 'h':
 			usage();
@@ -434,7 +434,7 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	printf("\n");
+	fprintf(stdout, "\n");
 
 	if (argc - optind == 2) {
 		int ret = 0;
@@ -452,7 +452,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("UNITS\n");
+		fprintf(stdout, "UNITS\n");
 
 		switch (count) {
 		case 0:
@@ -487,12 +487,12 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		printf("\n\nADDRESS\n\tdec: %llu\n\thex: 0x%llx\n\n", bytes, bytes);
+		fprintf(stdout, "\n\nADDRESS\n\tdec: %llu\n\thex: 0x%llx\n\n", bytes, bytes);
 
 		lba = bytes / sectorsize;
 		offset = bytes % sectorsize;
-		printf("LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
-		printf("\n\tdec: %llu:%llu\n\thex: 0x%llx:0x%llx\n",
+		fprintf(stdout, "LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+		fprintf(stdout, "\n\tdec: %llu:%llu\n\thex: 0x%llx:0x%llx\n",
 			lba, offset, lba, offset);
 	}
 
