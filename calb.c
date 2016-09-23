@@ -7,8 +7,12 @@
 
 #define TRUE 1
 #define FALSE !TRUE
-#define SECTOR_SIZE 512
 
+#define SECTOR_SIZE 512
+#define MAX_HEAD 16
+#define MAX_SECTOR 63
+
+typedef unsigned char bool;
 typedef unsigned long long ull;
 
 char *VERSION = "0.1";
@@ -372,6 +376,68 @@ char *strtolower(char *buf)
 	return buf;
 }
 
+bool is_chs_format(char *address)
+{
+	if (!address || !*address)
+		return 0;
+
+	char *ptr = address;
+
+	while (*ptr)
+		if (*ptr++ == '-')
+			return TRUE;
+
+	return FALSE;
+}
+
+bool chs2lba(char *chs, ull *lba)
+{
+	int token_no = 0;
+	char *ptr, *token;
+	long chsparam[5] = {-1, -1, -1, MAX_HEAD, MAX_SECTOR};
+
+	ptr = token = chs;
+
+	while (*ptr && token_no < 5) {
+		if (*ptr == '-') {
+			*ptr = '\0';
+			chsparam[token_no++] = strtol(token, NULL, 0);
+			*ptr++ = '-';
+			token = ptr;
+
+			if (*ptr == '\0' && token_no < 5)
+				chsparam[token_no++] = strtol(token, NULL, 0);
+
+			continue;
+		}
+
+		ptr++;
+
+		if (*ptr == '\0' && token_no < 5)
+			chsparam[token_no++] = strtol(token, NULL, 0);
+	}
+
+	/* Fail is C/H/S is omitted */
+	if (token_no < 3)
+		return FALSE;
+
+	if (chsparam[1] > chsparam[3] || chsparam[2] > chsparam[4])
+		return FALSE;
+
+	*lba = chsparam[3] * chsparam[4] * chsparam[0]; /* MH * MS * C */
+	*lba += chsparam[4] * chsparam[1]; /* MS * H */
+
+	if (!*lba && !chsparam[2])
+		return FALSE;
+
+	*lba += chsparam[2] - 1; /* S - 1 */
+
+	fprintf(stdout, "C %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
+		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
+
+	return TRUE;
+}
+
 void usage()
 {
 	fprintf(stdout, "usage: calb [-c N] [-s bytes] [-h]\n\
@@ -380,11 +446,24 @@ Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
   N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
-                   should be space-separated, case is ignored\n\n\
+                   should be space-separated, case is ignored\n\
+                   N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex formats\n\
                    N must be non-negative\n\
                    use prefix '0b' for binary, '0x' for hex\n\
+  -f FORMAT        convert CHS to LBA or LBA to CHS\n\
+                   CHS or LBA is determined from the string format\n\
+                   LBA format:\n\
+                       decimal or '0x' prefixed hex value\n\
+                   CHS format (hyphen separated):\n\
+                       C-H-S-MAX_HEAD-MAX_SECTOR\n\
+		       default MAX_HEAD: 0x10\n\
+		       default MAX_SECTOR: 0x3f\n\
+		       omitted values are considered 0\n\
+		       FORMAT '-50--0x12-' denotes:\n\
+		         C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
+		       decimal or '0x' prefixed hex values accepted\n\
   -s               sector size in decimal or hex bytes [default 0x200]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
@@ -400,7 +479,7 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt (argc, argv, "hc:s:")) != -1) {
+	while ((opt = getopt (argc, argv, "c:f:hs:")) != -1) {
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
@@ -420,6 +499,23 @@ int main(int argc, char **argv)
 			printbin(val);
 			fprintf(stdout, "\n\tdec: %llu\n", val);
 			fprintf(stdout, "\thex: 0x%llx\n\n", val);
+			break;
+		case 'f':
+			{
+				ull lba = 0;
+				int ret;
+
+				if (is_chs_format(optarg)) {
+					ret = chs2lba(optarg, &lba);
+					if (ret)
+						fprintf(stdout, "CHS to LBA: (dec) %llu, (hex) 0x%llx\n",
+							lba, lba);
+					else
+						fprintf(stderr, "Invalid input\n");
+				}
+				else{}
+					//lba2chs(optarg);
+			}
 			break;
 		case 's':
 			sectorsize = strtol(optarg, NULL, 0);
