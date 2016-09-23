@@ -13,11 +13,17 @@
 #define MAX_SECTOR 63
 
 typedef unsigned char bool;
+typedef unsigned long ulong;
 typedef unsigned long long ull;
 
 char *VERSION = "0.1";
 char *units[] = { "b", "kib", "mib", "gib", "tib",
                        "kb", "mb", "gb", "tb", };
+typedef struct {
+	ulong c;
+	ulong h;
+	ulong s;
+} t_chs;
 
 void printval(double val, char *unit)
 {
@@ -376,25 +382,11 @@ char *strtolower(char *buf)
 	return buf;
 }
 
-bool is_chs_format(char *address)
-{
-	if (!address || !*address)
-		return 0;
-
-	char *ptr = address;
-
-	while (*ptr)
-		if (*ptr++ == '-')
-			return TRUE;
-
-	return FALSE;
-}
-
 bool chs2lba(char *chs, ull *lba)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	long chsparam[5] = {-1, -1, -1, MAX_HEAD, MAX_SECTOR};
+	long chsparam[5] = {0, 0, 0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = chs;
 
@@ -417,12 +409,20 @@ bool chs2lba(char *chs, ull *lba)
 			chsparam[token_no++] = strtol(token, NULL, 0);
 	}
 
-	/* Fail is C/H/S is omitted */
+	/* Fail if CHS is omitted */
 	if (token_no < 3)
 		return FALSE;
 
-	if (chsparam[1] > chsparam[3] || chsparam[2] > chsparam[4])
+	if (chsparam[1] > chsparam[3]) {
+		fprintf(stderr, "H > MAX_HEAD\n");
 		return FALSE;
+	}
+
+	if (chsparam[2] > chsparam[4]) {
+		fprintf(stderr, "S > MAX_SECTOR\n");
+		return FALSE;
+	}
+
 
 	*lba = chsparam[3] * chsparam[4] * chsparam[0]; /* MH * MS * C */
 	*lba += chsparam[4] * chsparam[1]; /* MS * H */
@@ -434,6 +434,60 @@ bool chs2lba(char *chs, ull *lba)
 
 	fprintf(stdout, "C %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
 		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
+
+	return TRUE;
+}
+
+bool lba2chs(char *lba, t_chs *p_chs)
+{
+	int token_no = 0;
+	char *ptr, *token;
+	ull chsparam[3] = {0, MAX_HEAD, MAX_SECTOR};
+
+	ptr = token = lba;
+
+	while (*ptr && token_no < 3) {
+		if (*ptr == '-') {
+			*ptr = '\0';
+			chsparam[token_no++] = strtoull(token, NULL, 0);
+			*ptr++ = '-';
+			token = ptr;
+
+			if (*ptr == '\0' && token_no < 3)
+				chsparam[token_no++] = strtoull(token, NULL, 0);
+
+			continue;
+		}
+
+		ptr++;
+
+		if (*ptr == '\0' && token_no < 3)
+			chsparam[token_no++] = strtoull(token, NULL, 0);
+	}
+
+	/* Fail if LBA is omitted */
+	if (!token_no)
+		return FALSE;
+
+	if (!chsparam[1] || !chsparam[2])
+		return FALSE;
+
+	p_chs->c = (ulong)(chsparam[0] / (chsparam[2] * chsparam[1])); /* L / (MS * MH) */
+
+	p_chs->h = (ulong)((chsparam[0] / chsparam[2]) % chsparam[1]); /* (L / MS) % MH */
+	if (p_chs->h > MAX_HEAD) {
+		fprintf(stderr, "H > MAX_HEAD\n");
+		return FALSE;
+	}
+
+	p_chs->s = (ulong)((chsparam[0] % chsparam[2]) + 1);
+	if (p_chs->s > MAX_SECTOR) {
+		fprintf(stderr, "S > MAX_SECTOR\n");
+		return FALSE;
+	}
+
+	fprintf(stdout, "LBA %llu MAX_HEAD %llu MAX_SECTOR %llu\n",
+		chsparam[0], chsparam[1], chsparam[2]);
 
 	return TRUE;
 }
@@ -453,17 +507,20 @@ optional arguments:\n\
                    N must be non-negative\n\
                    use prefix '0b' for binary, '0x' for hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
-                   CHS or LBA is determined from the string format\n\
+                   formats are hyphen-separated\n\
                    LBA format:\n\
-                       decimal or '0x' prefixed hex value\n\
-                   CHS format (hyphen separated):\n\
-                       C-H-S-MAX_HEAD-MAX_SECTOR\n\
-		       default MAX_HEAD: 0x10\n\
-		       default MAX_SECTOR: 0x3f\n\
-		       omitted values are considered 0\n\
-		       FORMAT '-50--0x12-' denotes:\n\
-		         C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
-		       decimal or '0x' prefixed hex values accepted\n\
+                       starts with 'l':\n\
+                       lLBA-MAX_HEAD-MAX_SECTOR\n\
+                   CHS format:\n\
+                       starts with 'c':\n\
+                       cC-H-S-MAX_HEAD-MAX_SECTOR\n\
+                   omitted values are considered 0\n\
+                   FORMAT 'c-50--0x12-' denotes:\n\
+                     C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
+                   FORMAT 'l50-0x12' denotes:\n\
+                     LBA = 50, MH = 0x12, MS = 0\n\
+                   decimal or '0x' prefixed hex values accepted\n\
+                   default MAX_HEAD: 0x10, default MAX_SECTOR: 0x3f\n\
   -s               sector size in decimal or hex bytes [default 0x200]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
@@ -502,19 +559,26 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			{
-				ull lba = 0;
 				int ret;
 
-				if (is_chs_format(optarg)) {
-					ret = chs2lba(optarg, &lba);
+				if (tolower(*optarg) == 'c') {
+					ull lba = 0;
+					ret = chs2lba(optarg + 1, &lba);
 					if (ret)
-						fprintf(stdout, "CHS to LBA: (dec) %llu, (hex) 0x%llx\n",
+						fprintf(stdout, "LBA: (dec) %llu, (hex) 0x%llx\n",
 							lba, lba);
 					else
 						fprintf(stderr, "Invalid input\n");
-				}
-				else{}
-					//lba2chs(optarg);
+				} else if (tolower(*optarg) == 'l') {
+					t_chs chs = {0};
+					ret = lba2chs(optarg + 1, &chs);
+					if (ret)
+						fprintf(stdout, "CHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n",
+							chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
+					else
+						fprintf(stderr, "Invalid input\n");
+				} else
+					fprintf(stderr, "Invalid input\n");
 			}
 			break;
 		case 's':
