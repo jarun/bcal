@@ -11,17 +11,9 @@
 
 typedef unsigned long long ull;
 
-char *units[] = {
-	"b",
-	"kib",
-	"mib",
-	"gib",
-	"tib",
-	"kb",
-	"mb",
-	"gb",
-	"tb",
-};
+char *VERSION = "0.1";
+char *units[] = { "b", "kib", "mib", "gib", "tib",
+                       "kb", "mb", "gb", "tb", };
 
 void printval(double val, char *unit)
 {
@@ -382,7 +374,23 @@ char *strtolower(char *buf)
 
 void usage()
 {
-	fprintf(stdout, "calb usage\n");
+	fprintf(stdout, "usage: calb [-c N] [-s bytes] [-h]\n\
+            [N unit]\n\n\
+Perform storage conversions and calculations.\n\n\
+positional arguments:\n\
+  N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
+                   see https://wiki.ubuntu.com/UnitsPolicy\n\
+                   should be space-separated, case is ignored\n\n\
+optional arguments:\n\
+  -c N             show N in binary, decimal and hex formats\n\
+                   N must be non-negative\n\
+                   use prefix '0b' for binary, '0x' for hex\n\
+  -s               sector size in decimal or hex bytes [default 0x200]\n\
+  -h               show this help and exit\n\n\
+Version %s\n\
+Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\
+License: GPLv3\n\
+Webpage: https://github.com/jarun/calb\n", VERSION);
 }
 
 int main(int argc, char **argv)
@@ -400,7 +408,7 @@ int main(int argc, char **argv)
 				return 1;
 			}
 
-			fprintf(stdout, "\nCONVERSION\n");
+			fprintf(stdout, "CONVERSION\n");
 			ull val;
 
 			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
@@ -411,11 +419,8 @@ int main(int argc, char **argv)
 			fprintf(stdout, "\tbin: ");
 			printbin(val);
 			fprintf(stdout, "\n\tdec: %llu\n", val);
-			fprintf(stdout, "\thex: 0x%llx\n", val);
+			fprintf(stdout, "\thex: 0x%llx\n\n", val);
 			break;
-		case 'h':
-			usage();
-			return 0;
 		case 's':
 			sectorsize = strtol(optarg, NULL, 0);
 			if (sectorsize <= 0) {
@@ -423,18 +428,19 @@ int main(int argc, char **argv)
 				return 1;
 			}
 			break;
+		case 'h':
+			usage();
+			return 0;
 		default:
 			usage();
 			return 1;
 		}
 	}
 
-	if (argc - optind == 1) {
+	if (argc - optind == 1 || (argc == 1 && optind == 1)) {
 		usage();
 		return 1;
 	}
-
-	fprintf(stdout, "\n");
 
 	if (argc - optind == 2) {
 		int ret = 0;
