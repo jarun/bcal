@@ -1,9 +1,6 @@
 #include <ctype.h>
-#include <math.h>
 #include <quadmath.h>
-#include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -17,10 +14,6 @@
 #define FLOAT_BUF_LEN 128
 #define FLOAT_WIDTH 40
 
-typedef unsigned char bool;
-typedef unsigned long ulong;
-typedef unsigned long long ull;
-
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
 typedef __float128 maxfloat_t;
@@ -33,8 +26,12 @@ char *VERSION = "0.1";
 char *units[] = { "b", "kib", "mib", "gib", "tib",
                        "kb", "mb", "gb", "tb", };
 
-char int_buf[UINT_BUF_LEN];
+char uint_buf[UINT_BUF_LEN];
 char float_buf[FLOAT_BUF_LEN];
+
+typedef unsigned char bool;
+typedef unsigned long ulong;
+typedef unsigned long long ull;
 
 typedef struct {
 	ulong c;
@@ -93,9 +90,19 @@ char *getstr_f128(maxfloat_t val, char *buf)
 void printval(maxfloat_t val, char *unit)
 {
 	if (val - (maxuint_t)val == 0)
-		fprintf(stdout, "%40s %s\n", getstr_u128((maxuint_t)val, int_buf), unit);
+		fprintf(stdout, "%40s %s\n", getstr_u128((maxuint_t)val, uint_buf), unit);
 	else
 		fprintf(stdout, "%s %s\n", getstr_f128(val, float_buf), unit);
+}
+
+void printhex_u128(maxuint_t n)
+{
+	ull high = (ull)(n >> (sizeof(maxuint_t) << 2));
+
+	if (high)
+		fprintf(stdout, "0x%llx%llx", high, (ull)n);
+	else
+		fprintf(stdout, "0x%llx", (ull)n);
 }
 
 char *strtolower(char *buf)
@@ -112,7 +119,7 @@ maxuint_t convertbyte(char *buf)
 {
 	/* Convert and print in bytes */
 	maxuint_t bytes = strtoull(buf, NULL, 0);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	/* Convert and print in IEC standard units */
 
@@ -152,7 +159,7 @@ maxuint_t convertkib(char *buf)
 	maxfloat_t kib = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	printval(kib, "KiB");
@@ -187,7 +194,7 @@ maxuint_t convertmib(char *buf)
 	maxfloat_t mib = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = mib * 1024;
@@ -222,7 +229,7 @@ maxuint_t convertgib(char *buf)
 	maxfloat_t gib = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = gib * (1 << 20);
@@ -257,7 +264,7 @@ maxuint_t converttib(char *buf)
 	maxfloat_t tib = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = tib * (1 << 30);
@@ -292,7 +299,7 @@ maxuint_t convertkb(char *buf)
 	maxfloat_t kb = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = kb * 1000 / 1024;
@@ -327,7 +334,7 @@ maxuint_t convertmb(char *buf)
 	maxfloat_t mb = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = mb * 1000000 / 1024;
@@ -362,7 +369,7 @@ maxuint_t convertgb(char *buf)
 	maxfloat_t gb = strtod(buf, NULL);
 
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = gb * 1000000000 / 1024;
@@ -397,7 +404,7 @@ maxuint_t converttb(char *buf)
 	maxfloat_t tb = strtod(buf, NULL);
 
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
-	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	maxfloat_t val = tb * 1000000000000 / 1024;
@@ -477,7 +484,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 
 	*lba += chsparam[2] - 1; /* S - 1 */
 
-	fprintf(stdout, "C %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
+	fprintf(stdout, "CHS2LBA\n\tC %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
 		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
 
 	return TRUE;
@@ -531,10 +538,10 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	fprintf(stdout, "LBA %s MAX_HEAD %s MAX_SECTOR %s\n",
-		getstr_u128(chsparam[0], int_buf),
-		getstr_u128(chsparam[1], int_buf),
-		getstr_u128(chsparam[2], int_buf));
+	fprintf(stdout, "LBA2CHS\n\tLBA %s MAX_HEAD %s MAX_SECTOR %s\n",
+		getstr_u128(chsparam[0], uint_buf),
+		getstr_u128(chsparam[1], uint_buf),
+		getstr_u128(chsparam[2], uint_buf));
 
 	return TRUE;
 }
@@ -591,7 +598,7 @@ int main(int argc, char **argv)
 				return 1;
 			}
 
-			fprintf(stdout, "CONVERSION\n");
+			fprintf(stdout, "BASE CONVERSION\n");
 			maxuint_t val;
 
 			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
@@ -601,9 +608,9 @@ int main(int argc, char **argv)
 
 			fprintf(stdout, "\tbin: ");
 			printbin(val);
-			fprintf(stdout, "\n\tdec: %s\n", getstr_u128(val, int_buf));
-			fprintf(stdout, "\thex: 0x%llx%llx\n\n",
-					(ull)(val >> (sizeof(maxuint_t) << 2)), (ull)val);
+			fprintf(stdout, "\n\tdec: %s\n\thex: ", getstr_u128(val, uint_buf));
+			printhex_u128(val);
+			fprintf(stdout, "\n\n");
 			break;
 		case 'f':
 			{
@@ -612,18 +619,18 @@ int main(int argc, char **argv)
 				if (tolower(*optarg) == 'c') {
 					maxuint_t lba = 0;
 					ret = chs2lba(optarg + 1, &lba);
-					if (ret)
-						fprintf(stdout, "LBA: (dec) %s, (hex) 0x%llx%llx\n",
-							getstr_u128(lba, int_buf),
-							(ull)(lba >> (sizeof(maxuint_t) << 2)),
-							(ull)(lba));
-					else
+					if (ret) {
+						fprintf(stdout, "\tLBA: (dec) %s, (hex): ",
+							getstr_u128(lba, uint_buf));
+						printhex_u128(lba);
+						fprintf(stdout, "\n\n");
+					} else
 						fprintf(stderr, "Invalid input\n");
 				} else if (tolower(*optarg) == 'l') {
 					t_chs chs = {0};
 					ret = lba2chs(optarg + 1, &chs);
 					if (ret)
-						fprintf(stdout, "CHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n",
+						fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
 							chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
 					else
 						fprintf(stderr, "Invalid input\n");
@@ -668,7 +675,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		fprintf(stdout, "UNITS\n");
+		fprintf(stdout, "UNIT CONVERSION\n");
 
 		switch (count) {
 		case 0:
@@ -703,22 +710,21 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		fprintf(stdout, "\n\nADDRESS\n\tdec: %s\n\thex: 0x%llx%llx\n\n",
-							getstr_u128(bytes, int_buf),
-							(ull)(bytes >> (sizeof(maxuint_t) << 2)),
-							(ull)(bytes));
+		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
+		printhex_u128(bytes);
 
 		/* Calculate LBA and offset */
 		lba = bytes / sectorsize;
 		offset = bytes % sectorsize;
 
-		fprintf(stdout, "LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
 		/* We use a global buffer, so print decimal lba first, then offset */
-		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, int_buf));
-		fprintf(stdout, "%s\n\thex: 0x%llx%llx:0x%llx%llx\n",
-			getstr_u128(offset, int_buf),
-			(ull)(lba >> (sizeof(maxuint_t) << 2)), (ull)(lba),
-			(ull)(offset >> (sizeof(maxuint_t) << 2)), (ull)(offset));
+		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
+		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
+		printhex_u128(lba);
+		fprintf(stdout, ":");
+		printhex_u128(offset);
+		fprintf(stdout, "\n");
 	}
 
 	return 0;
