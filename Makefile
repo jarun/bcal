@@ -15,7 +15,9 @@ clean:
 distclean: clean
 	rm -f *~
 
-# just for checkinstall
-install: lsstack
+install: calb
 	install -d ${DESTDIR}/usr/bin/
 	install -g staff -o root ${<} ${DESTDIR}/usr/bin/
+
+uninstall: calb
+	rm -f ${DESTDIR}/usr/bin/calb
