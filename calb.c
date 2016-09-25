@@ -8,9 +8,9 @@
 #define TRUE 1
 #define FALSE !TRUE
 
-#define SECTOR_SIZE 512
-#define MAX_HEAD 16
-#define MAX_SECTOR 63
+#define SECTOR_SIZE 512 /* 0x200 */
+#define MAX_HEAD 16 /* 0x10 */
+#define MAX_SECTOR 63 /* 0x3f */
 
 typedef unsigned char bool;
 typedef unsigned long ulong;
@@ -480,7 +480,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	p_chs->s = (ulong)((chsparam[0] % chsparam[2]) + 1);
+	p_chs->s = (ulong)((chsparam[0] % chsparam[2]) + 1); /* (L % MS) + 1 */
 	if (p_chs->s > MAX_SECTOR) {
 		fprintf(stderr, "S > MAX_SECTOR\n");
 		return FALSE;
