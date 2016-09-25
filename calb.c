@@ -1,5 +1,7 @@
 #include <ctype.h>
 #include <math.h>
+#include <quadmath.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,78 +13,151 @@
 #define SECTOR_SIZE 512 /* 0x200 */
 #define MAX_HEAD 16 /* 0x10 */
 #define MAX_SECTOR 63 /* 0x3f */
+#define UINT_BUF_LEN 40 /* log10(1 << 128) + '\0' */
+#define FLOAT_BUF_LEN 128
+#define FLOAT_WIDTH 40
 
 typedef unsigned char bool;
 typedef unsigned long ulong;
 typedef unsigned long long ull;
 
+#ifdef __SIZEOF_INT128__
+typedef __uint128_t maxuint_t;
+typedef __float128 maxfloat_t;
+#else
+typedef __uint64_t maxuint_t;
+typedef double maxfloat_t;
+#endif
+
 char *VERSION = "0.1";
 char *units[] = { "b", "kib", "mib", "gib", "tib",
                        "kb", "mb", "gb", "tb", };
+
+char int_buf[UINT_BUF_LEN];
+char float_buf[FLOAT_BUF_LEN];
+
 typedef struct {
 	ulong c;
 	ulong h;
 	ulong s;
 } t_chs;
 
-void printval(double val, char *unit)
+void printbin(maxuint_t n)
 {
-	if (trunc(val) == val)
-		fprintf(stdout, "%40llu %s\n", (ull)val, unit);
-	else
-		fprintf(stdout, "%40.10f %s\n", val, unit);
+	int count = 127;
+	char binstr[129] = {0};
+
+	if (!n) {
+		fprintf(stdout, "0b0");
+		return;
+	}
+
+	while (n && count >= 0) {
+		binstr[count--] = "01"[n & 1];
+		n >>= 1;
+	}
+
+	count++;
+
+	fprintf(stdout, "0b%s", binstr + count);
 }
 
-ull convertbyte(char *buf)
+char *getstr_u128(maxuint_t n, char *buf) {
+	if (n == 0) {
+		buf[0] = '0';
+		buf[1] = '\0';
+		return buf;
+	}
+
+	memset(buf, 0, UINT_BUF_LEN);
+	char *loc = buf + UINT_BUF_LEN - 1; /* start at the end */
+
+	while (n != 0) {
+		if (loc == buf)
+			return NULL; /* should not happen */
+
+		*--loc = "0123456789"[n % 10]; /* save the last digit */
+		n /= 10; /* drop the last digit */
+	}
+
+	return loc;
+}
+
+char *getstr_f128(maxfloat_t val, char *buf)
+{
+	int n = quadmath_snprintf(buf, FLOAT_BUF_LEN, "%#*.10Qe", FLOAT_WIDTH, val);
+	buf[n] = '\0';
+	return buf;
+}
+
+void printval(maxfloat_t val, char *unit)
+{
+	if (val - (maxuint_t)val == 0)
+		fprintf(stdout, "%40s %s\n", getstr_u128((maxuint_t)val, int_buf), unit);
+	else
+		fprintf(stdout, "%s %s\n", getstr_f128(val, float_buf), unit);
+}
+
+char *strtolower(char *buf)
+{
+	char *p = buf;
+
+	for (; *p; ++p)
+		*p = tolower(*p);
+
+	return buf;
+}
+
+maxuint_t convertbyte(char *buf)
 {
 	/* Convert and print in bytes */
-	ull bytes = strtoull(buf, NULL, 0);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = strtoull(buf, NULL, 0);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
 	/* Convert and print in IEC standard units */
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = bytes / (double)1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = bytes / (maxfloat_t)1024;
 	printval(val, "KiB");
 
-	val = bytes / (double)(1 << 20);
+	val = bytes / (maxfloat_t)(1 << 20);
 	printval(val, "MiB");
 
-	val = bytes / (double)(1 << 30);
+	val = bytes / (maxfloat_t)(1 << 30);
 	printval(val, "GiB");
 
-	val = bytes / (double)((ull)1 << 40);
+	val = bytes / (maxfloat_t)((maxuint_t)1 << 40);
 	printval(val, "TiB");
 
 	/* Convert and print in SI standard values */
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
-	val = bytes / (double)1000;
+	val = bytes / (maxfloat_t)1000;
 	printval(val, "kB");
 
-	val = bytes / (double)1000000;
+	val = bytes / (maxfloat_t)1000000;
 	printval(val, "MB");
 
-	val = bytes / (double)1000000000;
+	val = bytes / (maxfloat_t)1000000000;
 	printval(val, "GB");
 
-	val = bytes / (double)1000000000000;
+	val = bytes / (maxfloat_t)1000000000000;
 	printval(val, "TB");
 
 	return bytes;
 }
 
-ull convertkib(char *buf)
+maxuint_t convertkib(char *buf)
 {
-	double kib = strtod(buf, NULL);
+	maxfloat_t kib = strtod(buf, NULL);
 
-	ull bytes = (ull)(kib * 1024);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(kib * 1024);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	printval(kib, "KiB");
 
-	double val = kib / 1024;
+	maxfloat_t val = kib / 1024;
 	printval(val, "MiB");
 
 	val = kib / (1 << 20);
@@ -107,15 +182,15 @@ ull convertkib(char *buf)
 	return bytes;
 }
 
-ull convertmib(char *buf)
+maxuint_t convertmib(char *buf)
 {
-	double mib = strtod(buf, NULL);
+	maxfloat_t mib = strtod(buf, NULL);
 
-	ull bytes = (ull)(mib * (1 << 20));
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = mib * 1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = mib * 1024;
 	printval(val, "KiB");
 
 	printval(mib, "MiB");
@@ -142,15 +217,15 @@ ull convertmib(char *buf)
 	return bytes;
 }
 
-ull convertgib(char *buf)
+maxuint_t convertgib(char *buf)
 {
-	double gib = strtod(buf, NULL);
+	maxfloat_t gib = strtod(buf, NULL);
 
-	ull bytes = (ull)(gib * (1 << 30));
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = gib * (1 << 20);
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = gib * (1 << 20);
 	printval(val, "KiB");
 
 	val = gib * 1024;
@@ -177,15 +252,15 @@ ull convertgib(char *buf)
 	return bytes;
 }
 
-ull converttib(char *buf)
+maxuint_t converttib(char *buf)
 {
-	double tib = strtod(buf, NULL);
+	maxfloat_t tib = strtod(buf, NULL);
 
-	ull bytes = (ull)(tib * ((ull)1 << 40));
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = tib * (1 << 30);
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = tib * (1 << 30);
 	printval(val, "KiB");
 
 	val = tib * (1 << 20);
@@ -197,30 +272,30 @@ ull converttib(char *buf)
 	printval(tib, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
-	val = tib * ((ull)1 << 40)/ 1000;
+	val = tib * ((maxuint_t)1 << 40)/ 1000;
 	printval(val, "kB");
 
-	val = tib * ((ull)1 << 40) / 1000000;
+	val = tib * ((maxuint_t)1 << 40) / 1000000;
 	printval(val, "MB");
 
-	val = tib * ((ull)1 << 40) / 1000000000;
+	val = tib * ((maxuint_t)1 << 40) / 1000000000;
 	printval(val, "GB");
 
-	val = tib * ((ull)1 << 40) / 1000000000000;
+	val = tib * ((maxuint_t)1 << 40) / 1000000000000;
 	printval(val, "TB");
 
 	return bytes;
 }
 
-ull convertkb(char *buf)
+maxuint_t convertkb(char *buf)
 {
-	double kb = strtod(buf, NULL);
+	maxfloat_t kb = strtod(buf, NULL);
 
-	ull bytes = (ull)(kb * 1000);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(kb * 1000);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = kb * 1000 / 1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = kb * 1000 / 1024;
 	printval(val, "KiB");
 
 	val = kb * 1000 / (1 << 20);
@@ -229,7 +304,7 @@ ull convertkb(char *buf)
 	val = kb * 1000 / (1 << 30);
 	printval(val, "GiB");
 
-	val = kb * 1000 / ((ull)1 << 40);
+	val = kb * 1000 / ((maxuint_t)1 << 40);
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
@@ -247,15 +322,15 @@ ull convertkb(char *buf)
 	return bytes;
 }
 
-ull convertmb(char *buf)
+maxuint_t convertmb(char *buf)
 {
-	double mb = strtod(buf, NULL);
+	maxfloat_t mb = strtod(buf, NULL);
 
-	ull bytes = (ull)(mb * 1000000);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(mb * 1000000);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = mb * 1000000 / 1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = mb * 1000000 / 1024;
 	printval(val, "KiB");
 
 	val = mb * 1000000 / (1 << 20);
@@ -264,7 +339,7 @@ ull convertmb(char *buf)
 	val = mb * 1000000 / (1 << 30);
 	printval(val, "GiB");
 
-	val = mb * 1000000 / ((ull)1 << 40);
+	val = mb * 1000000 / ((maxuint_t)1 << 40);
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
@@ -282,15 +357,15 @@ ull convertmb(char *buf)
 	return bytes;
 }
 
-ull convertgb(char *buf)
+maxuint_t convertgb(char *buf)
 {
-	double gb = strtod(buf, NULL);
+	maxfloat_t gb = strtod(buf, NULL);
 
-	ull bytes = (ull)(gb * 1000000000);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = gb * 1000000000 / 1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = gb * 1000000000 / 1024;
 	printval(val, "KiB");
 
 	val = gb * 1000000000 / (1 << 20);
@@ -299,7 +374,7 @@ ull convertgb(char *buf)
 	val = gb * 1000000000 / (1 << 30);
 	printval(val, "GiB");
 
-	val = gb * 1000000000 / ((ull)1 << 40);
+	val = gb * 1000000000 / ((maxuint_t)1 << 40);
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
@@ -317,15 +392,15 @@ ull convertgb(char *buf)
 	return bytes;
 }
 
-ull converttb(char *buf)
+maxuint_t converttb(char *buf)
 {
-	double tb = strtod(buf, NULL);
+	maxfloat_t tb = strtod(buf, NULL);
 
-	ull bytes = (ull)(tb * 1000000000000);
-	fprintf(stdout, "%40llu B\n\n", bytes);
+	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
+	fprintf(stdout, "%40s B\n", getstr_u128(bytes, int_buf));
 
-	fprintf(stdout, "            IEC standard (base 2)\n\n");
-	double val = tb * 1000000000000 / 1024;
+	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
+	maxfloat_t val = tb * 1000000000000 / 1024;
 	printval(val, "KiB");
 
 	val = tb * 1000000000000 / (1 << 20);
@@ -334,7 +409,7 @@ ull converttb(char *buf)
 	val = tb * 1000000000000 / (1 << 30);
 	printval(val, "GiB");
 
-	val = tb * 1000000000000 / ((ull)1 << 40);
+	val = tb * 1000000000000 / ((maxuint_t)1 << 40);
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
@@ -352,37 +427,7 @@ ull converttb(char *buf)
 	return bytes;
 }
 
-void printbin(ull val)
-{
-	int count = 63;
-	char binstr[65] = {0};
-
-	if (!val) {
-		fprintf(stdout, "0b0");
-		return;
-	}
-
-	while (val && count >= 0) {
-		binstr[count--] = "01"[val & 1];
-		val >>= 1;
-	}
-
-	count++;
-
-	fprintf(stdout, "0b%s", binstr + count);
-}
-
-char *strtolower(char *buf)
-{
-	char *p = buf;
-
-	for (; *p; ++p)
-		*p = tolower(*p);
-
-	return buf;
-}
-
-bool chs2lba(char *chs, ull *lba)
+bool chs2lba(char *chs, maxuint_t *lba)
 {
 	int token_no = 0;
 	char *ptr, *token;
@@ -442,7 +487,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	ull chsparam[3] = {0, MAX_HEAD, MAX_SECTOR};
+	maxuint_t chsparam[3] = {0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = lba;
 
@@ -486,8 +531,10 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	fprintf(stdout, "LBA %llu MAX_HEAD %llu MAX_SECTOR %llu\n",
-		chsparam[0], chsparam[1], chsparam[2]);
+	fprintf(stdout, "LBA %s MAX_HEAD %s MAX_SECTOR %s\n",
+		getstr_u128(chsparam[0], int_buf),
+		getstr_u128(chsparam[1], int_buf),
+		getstr_u128(chsparam[2], int_buf));
 
 	return TRUE;
 }
@@ -545,7 +592,7 @@ int main(int argc, char **argv)
 			}
 
 			fprintf(stdout, "CONVERSION\n");
-			ull val;
+			maxuint_t val;
 
 			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
 				val = strtoull(optarg + 2, NULL, 2);
@@ -554,19 +601,22 @@ int main(int argc, char **argv)
 
 			fprintf(stdout, "\tbin: ");
 			printbin(val);
-			fprintf(stdout, "\n\tdec: %llu\n", val);
-			fprintf(stdout, "\thex: 0x%llx\n\n", val);
+			fprintf(stdout, "\n\tdec: %s\n", getstr_u128(val, int_buf));
+			fprintf(stdout, "\thex: 0x%llx%llx\n\n",
+					(ull)(val >> (sizeof(maxuint_t) << 2)), (ull)val);
 			break;
 		case 'f':
 			{
 				int ret;
 
 				if (tolower(*optarg) == 'c') {
-					ull lba = 0;
+					maxuint_t lba = 0;
 					ret = chs2lba(optarg + 1, &lba);
 					if (ret)
-						fprintf(stdout, "LBA: (dec) %llu, (hex) 0x%llx\n",
-							lba, lba);
+						fprintf(stdout, "LBA: (dec) %s, (hex) 0x%llx%llx\n",
+							getstr_u128(lba, int_buf),
+							(ull)(lba >> (sizeof(maxuint_t) << 2)),
+							(ull)(lba));
 					else
 						fprintf(stderr, "Invalid input\n");
 				} else if (tolower(*optarg) == 'l') {
@@ -605,7 +655,7 @@ int main(int argc, char **argv)
 	if (argc - optind == 2) {
 		int ret = 0;
 		int count = sizeof(units)/sizeof(*units);
-		ull bytes = 0, lba = 0, offset = 0;
+		maxuint_t bytes = 0, lba = 0, offset = 0;
 
 		while (count-- > 0) {
 			ret = strcmp(units[count], strtolower(argv[optind + 1]));
@@ -653,13 +703,22 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		fprintf(stdout, "\n\nADDRESS\n\tdec: %llu\n\thex: 0x%llx\n\n", bytes, bytes);
+		fprintf(stdout, "\n\nADDRESS\n\tdec: %s\n\thex: 0x%llx%llx\n\n",
+							getstr_u128(bytes, int_buf),
+							(ull)(bytes >> (sizeof(maxuint_t) << 2)),
+							(ull)(bytes));
 
+		/* Calculate LBA and offset */
 		lba = bytes / sectorsize;
 		offset = bytes % sectorsize;
+
 		fprintf(stdout, "LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
-		fprintf(stdout, "\n\tdec: %llu:%llu\n\thex: 0x%llx:0x%llx\n",
-			lba, offset, lba, offset);
+		/* We use a global buffer, so print decimal lba first, then offset */
+		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, int_buf));
+		fprintf(stdout, "%s\n\thex: 0x%llx%llx:0x%llx%llx\n",
+			getstr_u128(offset, int_buf),
+			(ull)(lba >> (sizeof(maxuint_t) << 2)), (ull)(lba),
+			(ull)(offset >> (sizeof(maxuint_t) << 2)), (ull)(offset));
 	}
 
 	return 0;

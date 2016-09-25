@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -O3
-LDLIBS = -lm
+LDLIBS = -lquadmath
 
 all: calb
 

@@ -14,6 +14,7 @@
 
 - [Features](#features)
 - [Installation](#installation)
+  - [Dependencies](#dependencies)
   - [Get the source code](#get-the-source-code)
   - [Compile and install](#compile-and-install)
 - [Usage](#usage)
@@ -34,9 +35,13 @@
 
 ## Installation
 
+### Dependencies
+
+`calb` depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
+
 ### Get the source code
 
-`calb` needs to be compiled from source. It doesn't have any dependencies other than standard libc. If you have git installed, run:
+If you have git installed, run:
 
     $ git clone https://github.com/jarun/calb
 Otherwise, download the latest [stable release](https://github.com/jarun/calb/releases/latest) or [development version](https://github.com/jarun/calb/archive/master.zip).
@@ -102,7 +107,7 @@ To uninstall, run:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
   - CHS: `cC-H-S-MAX_HEAD-MAX_SECTOR` [NOTE: CHS starts with `c` (case ignored)]
   Any unspecified value, including the one preceding the first `-` to the one following the last `-`, is considered `0`.
-- No negative numbers allowed. Limits are `unsigned long long` and `double`.
+- No negative numbers allowed. Input limits are `unsigned long long` and `double`.
 
 ## Examples
 
