@@ -520,8 +520,8 @@ optional arguments:\n\
                    FORMAT 'l50-0x12' denotes:\n\
                      LBA = 50, MH = 0x12, MS = 0\n\
                    decimal or '0x' prefixed hex values accepted\n\
-                   default MAX_HEAD: 0x10, default MAX_SECTOR: 0x3f\n\
-  -s               sector size in decimal or hex bytes [default 0x200]\n\
+                   default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
+  -s               sector size in bytes [decimal/hex, default 512]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
 Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\

@@ -1,6 +1,6 @@
 # calb
 
-`calb` (*CALculate Bytes*) is a utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 8) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
+`calb` (*CALculate Bytes*) is a utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
 
 `calb` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy).
 
@@ -14,7 +14,8 @@
 
 - [Features](#features)
 - [Installation](#installation)
-  - [Installing from this repository](#installing-from-this-repository)
+  - [Get the source code](#get-the-source-code)
+  - [Compile and install](#compile-and-install)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
@@ -33,9 +34,16 @@
 
 ## Installation
 
-`calb` needs to be compiled from source. It doesn't have any dependencies other than standard libc.
+### Get the source code
 
-Run:
+`calb` needs to be compiled from source. It doesn't have any dependencies other than standard libc. If you have git installed, run:
+
+    $ git clone https://github.com/jarun/calb
+Otherwise, download the latest [stable release](https://github.com/jarun/calb/releases/latest) or [development version](https://github.com/jarun/calb/archive/master.zip).
+
+### Compile and install
+
+In the source directory, run:
 
     $ make
     $ sudo make install
@@ -76,8 +84,8 @@ To uninstall, run:
                        FORMAT 'l50-0x12' denotes:
                          LBA = 50, MH = 0x12, MS = 0
                        decimal or '0x' prefixed hex values accepted
-                       default MAX_HEAD: 0x10, default MAX_SECTOR: 0x3f
-      -s               sector size in decimal or hex bytes [default 0x200]
+                       default MAX_HEAD: 16, default MAX_SECTOR: 63
+      -s               sector size in bytes [decimal/hex, default 512]
       -h               show this help and exit
 
 ### Operational notes
@@ -85,7 +93,7 @@ To uninstall, run:
 - Fractional bytes do not exist, because they can't be addressed. `calb` shows the integral floor value for bytes.
 - Units can be specified in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Ass all of these are unique, `calb` treats specified unit in a case insensitive way.
 - Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only for number conversion. This is a provision to convert a binary number to decimal/hex before using it as an input for other operations.
-- Prefix hex inputs with `0x`, binary inputs with `0b`.
+- Syntax: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - Default values:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
@@ -122,7 +130,7 @@ Note that the units are case-insensitive.
         $ calb -f c0x10-0x10-0x10
         $ calb -f c0x10-10-2-0x12
         $ calb -f c-10-2-0x12
-	$ calb -f c0x10-10--0x12
+        $ calb -f c0x10-10--0x12
 
 5. Represent a number in binary, decimal and hex:
 
