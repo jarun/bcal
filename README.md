@@ -1,6 +1,6 @@
 # calb
 
-`calb` (*CALculate Bytes*) is a utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
+`calb` (*CALculate Bytes*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
 
 `calb` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy).
 
@@ -25,12 +25,12 @@
 
 ## Features
 
-- converts to IEC and SI standards
-- shows the address in bytes
-- shows address as LBA:OFFSET
-- converts CHS to LBA and *vice versa*
-- shows binary, decimal and hex representation of a number
-- supports custom sector size, max heads/cylinder and max sectors/track
+- convert to IEC and SI standards
+- show the address in bytes
+- show address as LBA:OFFSET
+- convert CHS to LBA and *vice versa*
+- show binary, decimal and hex representation of a number
+- support custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
 ## Installation
@@ -72,8 +72,7 @@ To uninstall, run:
                        N can be decimal or '0x' prefixed hex value
 
     optional arguments:
-      -c N             show N in binary, decimal and hex formats
-                       N must be non-negative
+      -c N             show N in binary, decimal and hex
                        use prefix '0b' for binary, '0x' for hex
       -f FORMAT        convert CHS to LBA or LBA to CHS
                        formats are hyphen-separated
@@ -90,15 +89,15 @@ To uninstall, run:
                          LBA = 50, MH = 0x12, MS = 0
                        decimal or '0x' prefixed hex values accepted
                        default MAX_HEAD: 16, default MAX_SECTOR: 63
-      -s               sector size in bytes [decimal/hex, default 512]
+      -s bytes         sector size [decimal/hex, default 512]
       -h               show this help and exit
 
 ### Operational notes
 
-- Fractional bytes do not exist, because they can't be addressed. `calb` shows the integral floor value for bytes.
-- Units can be specified in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Ass all of these are unique, `calb` treats specified unit in a case insensitive way.
+- N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
+- Fractional bytes do not exist, because they can't be addressed. `calb` shows the floor value for bytes.
 - Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only for number conversion. This is a provision to convert a binary number to decimal/hex before using it as an input for other operations.
-- Syntax: Prefix hex inputs with `0x`, binary inputs with `0b`.
+- Syntax: Prefix hex inputs with `0x`, binary inputs with `0b`. No octal support.
 - Default values:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
@@ -111,7 +110,7 @@ To uninstall, run:
 
 ## Examples
 
-1. Convert storage capacity to other units and get address, LBA:
+1. Convert storage capacity to other units and get address, LBA.
 
         $ calb 20140115 b
         $ calb 0x1335053 B
@@ -119,17 +118,17 @@ To uninstall, run:
         $ calb 0xdef Gib
 Note that the units are case-insensitive.
 
-2. Convert storage capacity, set sector size to 4096 to calculate LBA:
+2. Convert storage capacity, set sector size to 4096 to calculate LBA.
 
         $ calb 0xaabbcc kb -s 4096
 
-3. Convert LBA to CHS:
+3. Convert LBA to CHS.
 
         $ calb -f l500
         $ calb -f l0x600-18-0x7e
         $ calb -f l0x300-0x12-0x7e
 
-4. Convert CHS to LBA:
+4. Convert CHS to LBA.
 
         $ calb -f c10-10-10
         $ calb -f c0x10-0x10-0x10
@@ -137,13 +136,13 @@ Note that the units are case-insensitive.
         $ calb -f c-10-2-0x12
         $ calb -f c0x10-10--0x12
 
-5. Represent a number in binary, decimal and hex:
+5. Show binary, decimal and hex representations of a number.
 
         $ calb -c 20140115
         $ calb -c 0b1001100110101000001010011
         $ calb -c 0x1335053
 
-6. Help and additional information:
+6. Help and additional information.
 
         $ man calb
         $ calb -h

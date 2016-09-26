@@ -557,8 +557,7 @@ positional arguments:\n\
                    should be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
-  -c N             show N in binary, decimal and hex formats\n\
-                   N must be non-negative\n\
+  -c N             show N in binary, decimal and hex\n\
                    use prefix '0b' for binary, '0x' for hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
                    formats are hyphen-separated\n\
@@ -575,7 +574,7 @@ optional arguments:\n\
                      LBA = 50, MH = 0x12, MS = 0\n\
                    decimal or '0x' prefixed hex values accepted\n\
                    default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
-  -s               sector size in bytes [decimal/hex, default 512]\n\
+  -s bytes         sector size [decimal/hex, default 512]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
 Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\
@@ -594,7 +593,7 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
-				fprintf(stderr, "-ve values not accepted for conversion\n");
+				fprintf(stderr, "N must be >= 0\n");
 				return 1;
 			}
 
