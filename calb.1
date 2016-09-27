@@ -1,0 +1,130 @@
+.TH "CALB" "1" "Sep 2016" "Version 0.1" "User Commands"
+.SH NAME
+calb \- Perform storage conversions and calculations.
+.SH SYNOPSIS
+.B calb [-c N] [-s bytes] [-h]
+.br
+.B "    "[N unit]
+.SH DESCRIPTION
+.B calb
+(CALculate Bytes) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
+.PP
+.B Features
+.PP
+  * convert to IEC and SI standards
+  * show the address in bytes
+  * show address as LBA:OFFSET
+  * convert CHS to LBA and vice versa
+  * show binary, decimal and hex representation of a number
+  * support custom sector size, max heads/cylinder and max sectors/track
+  * minimal dependencies
+.PP
+\fBcalb\fR follows Ubuntu's standard unit conversion and notation policy.
+
+Refer to:
+.I https://wiki.ubuntu.com/UnitsPolicy
+.SH OPERATIONAL NOTES
+.PP
+N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
+.PP
+Fractional bytes do not exist, because they can't be addressed. \fBcalb\fR shows the floor value for bytes.
+.PP
+Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only for number conversion. This is a provision to convert a binary number to decimal/hex before using it as an input for other operations.
+.PP
+Syntax: Prefix hex inputs with '0x', binary inputs with '0b'. No octal support.
+.PP
+Default values:
+  - sector size: 0x200 (512)
+  - max heads per cylinder: 0x10 (16)
+  - max sectors per track: 0x3f (63)
+.PP
+CHS and LBA inputs for format conversion are hyphen separated. The syntax is:
+  - LBA: 'lLBA-MAX_HEAD-MAX_SECTOR'   [NOTE: LBA starts with 'l' (case ignored)]
+  - CHS: 'cC-H-S-MAX_HEAD-MAX_SECTOR' [NOTE: CHS starts with 'c' (case ignored)]
+    Any unspecified value, including the one preceding the first '-' to the one following the last '-', is considered '0'.
+.PP
+No negative numbers allowed. Input limits are 'unsigned long long' and 'double'.
+.SH OPTIONS
+.TP
+.BI "-c=" N
+Show decimal, binary and hex representation of \fIN\fR. Use prefix '0b' for binary and '0x' for hex. \fIN\fR must be non-negative.
+.TP
+.BI "-f=" FORMAT
+Convert CHS to LBA or LBA to CHS. \fIFORMAT\fR is hyphen-separated representation of LBA or CHS. Decimal or '0x' prefixed hex values are accepted.
+
+LBA: lLBA-MAX_HEAD-MAX_SECTOR (starts with 'l')
+.br
+CHS: cC-H-S-MAX_HEAD-MAX_SECTOR (starts with 'c')
+
+Omitted values, (other than MAX_HEAD and MAX_SECTOR) are considered 0. Default MAX_HEAD: 16, default MAX_SECTOR: 63.
+.TP
+.BI "-s=" bytes
+Sector size in bytes. Default value is 512. Decimal and '0x' prefixed hex values accepted.
+.TP
+.BI "-h"
+Show program help and exit.
+.SH EXAMPLES
+.PP
+.IP 1. 4
+Convert storage capacity to other units and get address, LBA.
+.PP
+.EX
+.IP
+.B $ calb 20140115 b
+.B $ calb 0x1335053 B
+.B $ calb 0xaabbcc kb
+.B $ calb 0xdef Gib
+
+Note that the units are case-insensitive.
+.EE
+.PP
+.IP 2. 4
+Convert storage capacity, set sector size to 4096 to calculate LBA.
+.PP
+.EX
+.IP
+.B $ calb 0xaabbcc kb -s 4096
+.EE
+.PP
+.IP 3. 4
+Convert LBA to CHS.
+.PP
+.EX
+.IP
+.B $ calb -f l500
+.B $ calb -f l0x600-18-0x7e
+.B $ calb -f l0x300-0x12-0x7e
+.EE
+.PP
+.IP 4. 4
+Convert CHS to LBA.
+.PP
+.EX
+.IP
+.B $ calb -f c10-10-10
+.B $ calb -f c0x10-0x10-0x10
+.B $ calb -f c0x10-10-2-0x12
+.B $ calb -f c-10-2-0x12
+.B $ calb -f c0x10-10--0x12
+.EE
+.PP
+.IP 5. 4
+Show binary, decimal and hex representations of a number.
+.PP
+.EX
+.IP
+.B $ calb -c 20140115
+.B $ calb -c 0b1001100110101000001010011
+.B $ calb -c 0x1335053
+.SH AUTHORS
+Arun Prakash Jana <engineerarun@gmail.com>
+.SH HOME
+.I https://github.com/jarun/calb
+.SH REPORTING BUGS
+.I https://github.com/jarun/calb/issues
+.SH LICENSE
+Copyright \(co 2016 Arun Prakash Jana <engineerarun@gmail.com>
+.PP
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law.
