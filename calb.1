@@ -25,13 +25,13 @@ Refer to:
 .I https://wiki.ubuntu.com/UnitsPolicy
 .SH OPERATIONAL NOTES
 .PP
-N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
+N unit: N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
 .PP
-Fractional bytes do not exist, because they can't be addressed. \fBcalb\fR shows the floor value for bytes.
+Fractional bytes do not exist, because they can't be addressed. \fBcalb\fR shows the floor value of non-integer bytes.
 .PP
-Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only for number conversion. This is a provision to convert a binary number to decimal/hex before using it as an input for other operations.
+Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only with '-c'. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. No octal support.
 .PP
-Syntax: Prefix hex inputs with '0x', binary inputs with '0b'. No octal support.
+Syntax: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 Default values:
   - sector size: 0x200 (512)
