@@ -1,4 +1,8 @@
-# calb
+<h1 align="center">calb</h1>
+
+<p align="center">
+<a href="https://asciinema.org/a/87384"><img src="https://asciinema.org/a/87384.png" alt="calb_asciicast" width="625"/></a>
+</p>
 
 `calb` (*CALculate Bytes*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
 
@@ -25,12 +29,12 @@
 
 ## Features
 
-- convert to IEC and SI standards
+- convert to IEC/SI standard data storage units
 - show the address in bytes
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
 - show binary, decimal and hex representation of a number
-- support custom sector size, max heads/cylinder and max sectors/track
+- custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
 ## Installation
