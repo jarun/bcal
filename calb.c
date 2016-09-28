@@ -484,7 +484,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 
 	*lba += chsparam[2] - 1; /* S - 1 */
 
-	fprintf(stdout, "CHS2LBA\n\tC %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
+	fprintf(stdout, "\033[1mCHS2LBA\033[0m\n\tC %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
 		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
 
 	return TRUE;
@@ -538,7 +538,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	fprintf(stdout, "LBA2CHS\n\tLBA %s MAX_HEAD %s MAX_SECTOR %s\n",
+	fprintf(stdout, "\033[1mLBA2CHS\033[0m\n\tLBA %s MAX_HEAD %s MAX_SECTOR %s\n",
 		getstr_u128(chsparam[0], uint_buf),
 		getstr_u128(chsparam[1], uint_buf),
 		getstr_u128(chsparam[2], uint_buf));
@@ -597,7 +597,7 @@ int main(int argc, char **argv)
 				return 1;
 			}
 
-			fprintf(stdout, "BASE CONVERSION\n");
+			fprintf(stdout, "\033[1mBASE CONVERSION\033[0m\n");
 			maxuint_t val;
 
 			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
@@ -674,7 +674,7 @@ int main(int argc, char **argv)
 			return 1;
 		}
 
-		fprintf(stdout, "UNIT CONVERSION\n");
+		fprintf(stdout, "\033[1mUNIT CONVERSION\033[0m\n");
 
 		switch (count) {
 		case 0:
