@@ -1,0 +1,11 @@
+calb v1.0
+2016-09-28
+
+Initial features
+- convert to IEC/SI standard data storage units
+- show the address in bytes
+- show address as LBA:OFFSET
+- convert CHS to LBA and vice versa
+- show binary, decimal and hex representation of a number
+- custom sector size, max heads/cylinder and max sectors/track
+-------------------------------------------------------------------------------
