@@ -30,7 +30,7 @@ install: calb
 	install -m644 README.md $(DOCDIR)
 	rm -f calb.1.gz
 
-uninstall: calb
+uninstall:
 	rm -f $(BINDIR)/calb
 	rm -f $(MANDIR)/calb.1.gz
 	rm -rf $(DOCDIR)
