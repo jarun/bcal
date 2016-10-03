@@ -548,7 +548,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 
 void usage()
 {
-	fprintf(stdout, "usage: calb [-c N] [-s bytes] [-h]\n\
+	fprintf(stdout, "usage: bcal [-c N] [-s bytes] [-h]\n\
             [N unit]\n\n\
 Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
@@ -579,7 +579,7 @@ optional arguments:\n\
 Version %s\n\
 Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
-Webpage: https://github.com/jarun/calb\n", VERSION);
+Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
 int main(int argc, char **argv)

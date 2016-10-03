@@ -1,13 +1,13 @@
-.TH "CALB" "1" "Sep 2016" "Version 1.0" "User Commands"
+.TH "BCAL" "1" "Sep 2016" "Version 1.0" "User Commands"
 .SH NAME
-calb \- Perform storage conversions and calculations.
+bcal \- Perform storage conversions and calculations.
 .SH SYNOPSIS
-.B calb [-c N] [-s bytes] [-h]
+.B bcal [-c N] [-s bytes] [-h]
 .br
 .B "    "[N unit]
 .SH DESCRIPTION
-.B calb
-(CALculate Bytes) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
+.B bcal
+(Byte CALculator) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
 .PP
 .B Features
 .PP
@@ -19,7 +19,7 @@ calb \- Perform storage conversions and calculations.
   * custom sector size, max heads/cylinder and max sectors/track
   * minimal dependencies
 .PP
-\fBcalb\fR follows Ubuntu's standard unit conversion and notation policy.
+\fBbcal\fR follows Ubuntu's standard unit conversion and notation policy.
 
 Refer to:
 .I https://wiki.ubuntu.com/UnitsPolicy
@@ -27,7 +27,7 @@ Refer to:
 .PP
 N unit: N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
 .PP
-Fractional bytes do not exist, because they can't be addressed. \fBcalb\fR shows the floor value of non-integer bytes.
+Fractional bytes do not exist, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
 .PP
 Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only with '-c'. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. No octal support.
 .PP
@@ -70,10 +70,10 @@ Convert storage capacity to other units and get address, LBA.
 .PP
 .EX
 .IP
-.B $ calb 20140115 b
-.B $ calb 0x1335053 B
-.B $ calb 0xaabbcc kb
-.B $ calb 0xdef Gib
+.B $ bcal 20140115 b
+.B $ bcal 0x1335053 B
+.B $ bcal 0xaabbcc kb
+.B $ bcal 0xdef Gib
 
 Note that the units are case-insensitive.
 .EE
@@ -83,7 +83,7 @@ Convert storage capacity, set sector size to 4096 to calculate LBA.
 .PP
 .EX
 .IP
-.B $ calb 0xaabbcc kb -s 4096
+.B $ bcal 0xaabbcc kb -s 4096
 .EE
 .PP
 .IP 3. 4
@@ -91,9 +91,9 @@ Convert LBA to CHS.
 .PP
 .EX
 .IP
-.B $ calb -f l500
-.B $ calb -f l0x600-18-0x7e
-.B $ calb -f l0x300-0x12-0x7e
+.B $ bcal -f l500
+.B $ bcal -f l0x600-18-0x7e
+.B $ bcal -f l0x300-0x12-0x7e
 .EE
 .PP
 .IP 4. 4
@@ -101,11 +101,11 @@ Convert CHS to LBA.
 .PP
 .EX
 .IP
-.B $ calb -f c10-10-10
-.B $ calb -f c0x10-0x10-0x10
-.B $ calb -f c0x10-10-2-0x12
-.B $ calb -f c-10-2-0x12
-.B $ calb -f c0x10-10--0x12
+.B $ bcal -f c10-10-10
+.B $ bcal -f c0x10-0x10-0x10
+.B $ bcal -f c0x10-10-2-0x12
+.B $ bcal -f c-10-2-0x12
+.B $ bcal -f c0x10-10--0x12
 .EE
 .PP
 .IP 5. 4
@@ -113,15 +113,15 @@ Show binary, decimal and hex representations of a number.
 .PP
 .EX
 .IP
-.B $ calb -c 20140115
-.B $ calb -c 0b1001100110101000001010011
-.B $ calb -c 0x1335053
+.B $ bcal -c 20140115
+.B $ bcal -c 0b1001100110101000001010011
+.B $ bcal -c 0x1335053
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>
 .SH HOME
-.I https://github.com/jarun/calb
+.I https://github.com/jarun/bcal
 .SH REPORTING BUGS
-.I https://github.com/jarun/calb/issues
+.I https://github.com/jarun/bcal/issues
 .SH LICENSE
 Copyright \(co 2016 Arun Prakash Jana <engineerarun@gmail.com>
 .PP

@@ -1,16 +1,16 @@
-<h1 align="center">calb</h1>
+<h1 align="center">bcal</h1>
 
 <p align="center">
-<a href="https://asciinema.org/a/87456"><img src="https://asciinema.org/a/87456.png" alt="calb_asciicast" width="734"/></a>
+<a href="https://asciinema.org/a/87456"><img src="https://asciinema.org/a/87456.png" alt="bcal_asciicast" width="734"/></a>
 </p>
 
-`calb` (*CALculate Bytes*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `calb` is for you.
+`bcal` (*Byte CALculator*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
 
-Though it started with storage, the scope of `calb` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's tool**.
+Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's tool**.
 
-`calb` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy).
+`bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy).
 
-`calb` is written in C and **GPLv3** licensed.
+`bcal` is written in C and **GPLv3** licensed.
 
 <p align="center">
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/paypal-donate-orange.svg?maxAge=2592000" alt="Donate" /></a>
@@ -43,14 +43,14 @@ Though it started with storage, the scope of `calb` isn't limited to the storage
 
 ### Dependencies
 
-`calb` depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
+`bcal` depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
 
 ### Get the source code
 
 If you have git installed, run:
 
-    $ git clone https://github.com/jarun/calb
-Otherwise, download the latest [stable release](https://github.com/jarun/calb/releases/latest) or [development version](https://github.com/jarun/calb/archive/master.zip).
+    $ git clone https://github.com/jarun/bcal
+Otherwise, download the latest [stable release](https://github.com/jarun/bcal/releases/latest) or [development version](https://github.com/jarun/bcal/archive/master.zip).
 
 ### Compile and install
 
@@ -66,7 +66,7 @@ To uninstall, run:
 
 ### cmdline options
 
-    usage: calb [-c N] [-s bytes] [-h]
+    usage: bcal [-c N] [-s bytes] [-h]
             [N unit]
 
     Perform storage conversions and calculations.
@@ -101,7 +101,7 @@ To uninstall, run:
 ### Operational notes
 
 - N unit: N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
-- Fractional bytes do not exist, because they can't be addressed. `calb` shows the floor value of non-integer bytes.
+- Fractional bytes do not exist, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
 - Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only with `-c`. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. No octal support.
 - Syntax: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - Default values:
@@ -118,40 +118,40 @@ To uninstall, run:
 
 1. Convert storage capacity to other units and get address, LBA.
 
-        $ calb 20140115 b
-        $ calb 0x1335053 B
-        $ calb 0xaabbcc kb
-        $ calb 0xdef Gib
+        $ bcal 20140115 b
+        $ bcal 0x1335053 B
+        $ bcal 0xaabbcc kb
+        $ bcal 0xdef Gib
 Note that the units are case-insensitive.
 
 2. Convert storage capacity, set sector size to 4096 to calculate LBA.
 
-        $ calb 0xaabbcc kb -s 4096
+        $ bcal 0xaabbcc kb -s 4096
 
 3. Convert LBA to CHS.
 
-        $ calb -f l500
-        $ calb -f l0x600-18-0x7e
-        $ calb -f l0x300-0x12-0x7e
+        $ bcal -f l500
+        $ bcal -f l0x600-18-0x7e
+        $ bcal -f l0x300-0x12-0x7e
 
 4. Convert CHS to LBA.
 
-        $ calb -f c10-10-10
-        $ calb -f c0x10-0x10-0x10
-        $ calb -f c0x10-10-2-0x12
-        $ calb -f c-10-2-0x12
-        $ calb -f c0x10-10--0x12
+        $ bcal -f c10-10-10
+        $ bcal -f c0x10-0x10-0x10
+        $ bcal -f c0x10-10-2-0x12
+        $ bcal -f c-10-2-0x12
+        $ bcal -f c0x10-10--0x12
 
 5. Show binary, decimal and hex representations of a number.
 
-        $ calb -c 20140115
-        $ calb -c 0b1001100110101000001010011
-        $ calb -c 0x1335053
+        $ bcal -c 20140115
+        $ bcal -c 0b1001100110101000001010011
+        $ bcal -c 0x1335053
 
 6. Help and additional information.
 
-        $ man calb
-        $ calb -h
+        $ man bcal
+        $ bcal -h
 
 ## Copyright
 

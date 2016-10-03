@@ -5,32 +5,32 @@ LDLIBS = -lquadmath
 PREFIX ?= /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
 MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
-DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/calb
+DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 
-all: calb
+all: bcal
 
-calb: calb.c
-	$(CC) $(CFLAGS) -o calb calb.c $(LDLIBS)
-	strip calb
+bcal: bcal.c
+	$(CC) $(CFLAGS) -o bcal bcal.c $(LDLIBS)
+	strip bcal
 
 .PHONY: clean
 clean:
-	-rm -f calb
+	-rm -f bcal
 
 distclean: clean
 	rm -f *~
 
-install: calb
+install: bcal
 	install -m755 -d $(BINDIR)
 	install -m755 -d $(MANDIR)
 	install -m755 -d $(DOCDIR)
-	gzip -c calb.1 > calb.1.gz
-	install -m755 calb $(BINDIR)
-	install -m644 calb.1.gz $(MANDIR)
+	gzip -c bcal.1 > bcal.1.gz
+	install -m755 bcal $(BINDIR)
+	install -m644 bcal.1.gz $(MANDIR)
 	install -m644 README.md $(DOCDIR)
-	rm -f calb.1.gz
+	rm -f bcal.1.gz
 
 uninstall:
-	rm -f $(BINDIR)/calb
-	rm -f $(MANDIR)/calb.1.gz
+	rm -f $(BINDIR)/bcal
+	rm -f $(MANDIR)/bcal.1.gz
 	rm -rf $(DOCDIR)
