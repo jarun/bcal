@@ -1,3 +1,11 @@
+bcal v1.1
+2016-10-04
+
+Modifications
+- Rename utility to bcal (Byte CALculator)
+
+-------------------------------------------------------------------------------
+
 calb v1.0
 2016-09-28
 
@@ -8,4 +16,5 @@ Initial features
 - convert CHS to LBA and vice versa
 - show binary, decimal and hex representation of a number
 - custom sector size, max heads/cylinder and max sectors/track
+
 -------------------------------------------------------------------------------
