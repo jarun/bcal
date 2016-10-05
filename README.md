@@ -1,6 +1,12 @@
 <h1 align="center">bcal</h1>
 
 <p align="center">
+<a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg" alt="Latest release" /></a>
+<a href="https://aur.archlinux.org/packages/bcal"><img src="https://img.shields.io/aur/version/bcal.svg" alt="AUR" /></a>
+<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
+</p>
+
+<p align="center">
 <a href="https://asciinema.org/a/87939"><img src="https://asciinema.org/a/87939.png" alt="bcal_asciicast" width="734"/></a>
 </p>
 
@@ -9,8 +15,6 @@
 Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's tool**.
 
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy).
-
-`bcal` is written in C and **GPLv3** licensed.
 
 <p align="center">
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/paypal-donate-orange.svg?maxAge=2592000" alt="Donate" /></a>
@@ -23,6 +27,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
   - [Dependencies](#dependencies)
   - [Get the source code](#get-the-source-code)
   - [Compile and install](#compile-and-install)
+  - [Arch users](#arch-users)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
@@ -43,7 +48,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 ### Dependencies
 
-`bcal` depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
+`bcal` is written in C and depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
 
 ### Get the source code
 
@@ -61,6 +66,10 @@ In the source directory, run:
 To uninstall, run:
 
     $ sudo make uninstall
+
+### Arch users
+
+Arch Linux users can install `bcal` from [AUR](https://aur.archlinux.org/packages/bcal/).
 
 ## Usage
 
