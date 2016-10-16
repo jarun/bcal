@@ -626,7 +626,7 @@ int main(int argc, char **argv)
 					} else
 						fprintf(stderr, "Invalid input\n");
 				} else if (tolower(*optarg) == 'l') {
-					t_chs chs = {0};
+					t_chs chs;
 					ret = lba2chs(optarg + 1, &chs);
 					if (ret)
 						fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
