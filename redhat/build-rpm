@@ -8,7 +8,7 @@ install -d -m0755 $rpmdir/{BUILD,BUILDROOT,RPMS/$(uname -m),SOURCES,SPECS,SRPMS}
 
 # copy the sources into place
 cp redhat/bcal.spec $rpmdir/SPECS/bcal.spec
-vers=$(git describe --always | tr - .)
+vers=$(git describe --always | sed 's/^v//' | tr - .)
 sed -i -e "s/Version:\s*\(\S\+\)/Version: $vers/" $rpmdir/SPECS/bcal.spec
 git archive --prefix=bcal-$vers/ --format=tar.gz -o $rpmdir/SOURCES/bcal-$vers.tar.gz HEAD
 
