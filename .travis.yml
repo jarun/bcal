@@ -10,7 +10,11 @@ services:
 before_install:
     - sudo docker pull $OS_TYPE:$OS_VERSION
 
-script: ./build-docker $OS_TYPE $OS_VERSION
+script: 
+    - ./build-docker $OS_TYPE $OS_VERSION
+
+after_install:
+    - ls -l dist
 
 deploy:
   skip_cleanup: true
