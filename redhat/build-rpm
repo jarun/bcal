@@ -2,20 +2,24 @@
 
 set -xe
 
+# create the rpm tree
 rpmdir=$(mktemp -d)
-
 install -d -m0755 $rpmdir/{BUILD,BUILDROOT,RPMS/$(uname -m),SOURCES,SPECS,SRPMS}
 
+# copy the sources into place
 cp redhat/bcal.spec $rpmdir/SPECS/bcal.spec
 vers=$(git describe --always | tr - .)
 sed -i -e "s/Version:\s*\(\S\+\)/Version: $vers/" $rpmdir/SPECS/bcal.spec
 git archive --prefix=bcal-$vers/ --format=tar.gz -o $rpmdir/SOURCES/bcal-$vers.tar.gz HEAD
 
+# do the build
 ( cd $rpmdir/SPECS && rpmbuild --define="%_topdir $rpmdir" -ba bcal.spec )
 
+# retreive the artifacts
 mkdir -p dist
 cp $rpmdir/{SRPMS,RPMS/*}/*.rpm dist/
 
+# clean up
 rm -rf $rpmdir
 
 # vim: et:ai:ts=4:sw=4

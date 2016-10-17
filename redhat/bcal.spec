@@ -10,7 +10,8 @@ License:	GPLv3
 URL:		https://github.com/jarun/bcal
 Source0:	%{name}-%{version}.tar.gz
 
-BuildRequires:	gcc /usr/bin/strip gzip libquadmath-devel
+BuildRequires:	gcc binutils make gzip
+BuildRequires:	libquadmath-devel
 
 %description
 bcal (Byte CALculator) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43rd bit of a 64-bit address is set, bcal is for you.

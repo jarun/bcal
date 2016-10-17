@@ -1,20 +1,25 @@
 language: c
-sudo: false
+sudo: required
+env:
+    matrix:
+        - OS_TYPE=centos OS_VERSION=7
+        - OS_TYPE=fedora OS_VERSION=24
+services:
+    - docker
+
 before_install:
-addons:
-  apt:
-    packages:
-      - debhelper
-      - devscripts
-      - zsh
-script:
-  - make
+    - sudo docker pull $OS_TYPE:$OS_VERSION
+
+script: ./build-docker $OS_TYPE $OS_VERSION
+
 deploy:
   provider: releases
   api-key:
     secure: ZtMbo/H21MoodNvw7+tvPId97meS4Xs2beUzqOhI166iuaLSWtjXxQgeC7vdYTWgPNacN6gxwhnXTLMXpt81a7g0NWxjRQ72/Rwh7aCdgQkJI/Y+0c7RNNVdLOtAWBM8csPoJy0jFdI34yHRj053tm9x65V4fMEKC9ArRm7pbTjNNovYXbW2KmRh6kr3dJdB/7tpoCpiMov6l4uHyWIcniFx97P+3dGnGqBd8SpR3IxeEypm8fzIGiX7NIJqwyG5MbLaWoyloBu21ilwh07dDifF6MI4mrkxtGY0yQ9GtHVp5cr7qyMgCt60hUGtrKhTtPQWwpzK0GSZ5eeYiLt6I/kkcj8FkWP+OazRLy/MydjGtG7q8tnbgNcmGqsbv+g1jJMEfZsnTfozeGOPPsYlhB/7kCi2BVqguXlKMRmpNPMZsc4HYK9yjV4HNsEkmwJcXgD350XS5iFu/koIGiT2PJ+/msdwPir74JpgRn00iGC0fD25V8M2TRnKn43g6jNRAZYMITaYDx+ML0SkdWIjksalW0759BgLfQopNbs9a9PbsKiNbfRRRF3xA8j2fQI6my7hXx0TzRwWTC7aMAuJkdjKn5UYOrMAZ+VXhHSOcX5LPiefwgtoU0YGjgWQdgTkQ7aR13rKuDSKepGonnkyiHWnM9gGftnNbNFi7WZRk5w=
   file_glob: true
-  file: dist/*.deb
+  file: dist/*.deb dist/*rpm
   on:
     repo: jarun/bcal
     tags: true
+
+# vim: et:ai:ts=4:sw=4:ft=yaml
