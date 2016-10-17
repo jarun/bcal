@@ -1,3 +1,12 @@
+bcal 1.2
+2016-10-17
+
+Modifications
+- Travis integration
+- RPM generation via Travis and Docker
+
+-------------------------------------------------------------------------------
+
 bcal v1.1
 2016-10-04
 

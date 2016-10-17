@@ -22,7 +22,7 @@ typedef __uint64_t maxuint_t;
 typedef double maxfloat_t;
 #endif
 
-char *VERSION = "1.1";
+char *VERSION = "1.2";
 char *units[] = { "b", "kib", "mib", "gib", "tib",
                        "kb", "mb", "gb", "tb", };
 
