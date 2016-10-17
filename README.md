@@ -27,7 +27,8 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
   - [Dependencies](#dependencies)
   - [Get the source code](#get-the-source-code)
   - [Compile and install](#compile-and-install)
-  - [Arch users](#arch-users)
+  - [Installing with a package manager](#installing-with-a-package-manager)
+  - [RPMs](#rpms)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
@@ -67,9 +68,15 @@ To uninstall, run:
 
     $ sudo make uninstall
 
-### Arch users
+### Installing with a package manager
 
-Arch Linux users can install `bcal` from [AUR](https://aur.archlinux.org/packages/bcal/).
+`bcal` is also available on
+ - [AUR](https://aur.archlinux.org/packages/bcal/)
+ - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
+
+### RPMs
+
+If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://github.com/jarun/bcal/releases/latest) and download the `.rpm` package for your OS.
 
 ## Usage
 
