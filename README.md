@@ -72,6 +72,7 @@ To uninstall, run:
 
 `bcal` is also available on
  - [AUR](https://aur.archlinux.org/packages/bcal/)
+ - [Debian Sid](https://packages.debian.org/sid/bcal)
  - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
 ### RPMs
