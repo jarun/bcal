@@ -96,7 +96,6 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
     optional arguments:
       -c N             show N in binary, decimal and hex
-                       use prefix '0b' for binary, '0x' for hex
       -f FORMAT        convert CHS to LBA or LBA to CHS
                        formats are hyphen-separated
                        LBA format:
@@ -110,17 +109,16 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
                          C = 0, H = 50, S = 0, MH = 0x12, MS = 0
                        FORMAT 'l50-0x12' denotes:
                          LBA = 50, MH = 0x12, MS = 0
-                       decimal or '0x' prefixed hex values accepted
                        default MAX_HEAD: 16, default MAX_SECTOR: 63
-      -s bytes         sector size [decimal/hex, default 512]
+      -s bytes         sector size [default 512]
       -h               show this help and exit
 
 ### Operational notes
 
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
+- Decimal, hex, binary and octal **numeric representations** are recognized for all other arguments.
+- **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `00`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
-- Hex and decimal **numeric representations** are recognized for all arguments. Binary inputs are supported only with `-c`. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. **No octal support**.
-- **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - **Default values**:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)

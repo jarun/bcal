@@ -598,7 +598,6 @@ positional arguments:\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
-                   use prefix '0b' for binary, '0x' for hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
                    formats are hyphen-separated\n\
                    LBA format:\n\
@@ -612,9 +611,8 @@ optional arguments:\n\
                      C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
                    FORMAT 'l50-0x12' denotes:\n\
                      LBA = 50, MH = 0x12, MS = 0\n\
-                   decimal or '0x' prefixed hex values accepted\n\
                    default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
-  -s bytes         sector size [decimal/hex, default 512]\n\
+  -s bytes         sector size [default 512]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
 Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\

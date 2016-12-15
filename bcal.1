@@ -29,13 +29,13 @@ Refer to:
 \fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
 .PP
 .IP 2. 4
-\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
+Decimal, hex, binary and octal \fBnumeric representations\fR are recognized for all arguments.
 .PP
 .IP 3. 4
-Hex and decimal \fBnumeric representations\fR are recognized for all arguments. Binary inputs are supported only with '-c'. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. \fBNo octal support\fR.
+\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b', octal inputs with '00'.
 .PP
 .IP 4. 4
-\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
+\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
 .PP
 .IP 5. 4
 \fBDefault values\fR:
@@ -55,10 +55,10 @@ Hex and decimal \fBnumeric representations\fR are recognized for all arguments. 
 .SH OPTIONS
 .TP
 .BI "-c=" N
-Show decimal, binary and hex representation of \fIN\fR. Use prefix '0b' for binary and '0x' for hex. \fIN\fR must be non-negative.
+Show decimal, binary and hex representation of \fIN\fR. \fIN\fR must be non-negative.
 .TP
 .BI "-f=" FORMAT
-Convert CHS to LBA or LBA to CHS. \fIFORMAT\fR is hyphen-separated representation of LBA or CHS. Decimal or '0x' prefixed hex values are accepted.
+Convert CHS to LBA or LBA to CHS. \fIFORMAT\fR is hyphen-separated representation of LBA or CHS.
 
 LBA: lLBA-MAX_HEAD-MAX_SECTOR (starts with 'l')
 .br
@@ -67,7 +67,7 @@ CHS: cC-H-S-MAX_HEAD-MAX_SECTOR (starts with 'c')
 Omitted values, (other than MAX_HEAD and MAX_SECTOR) are considered 0. Default MAX_HEAD: 16, default MAX_SECTOR: 63.
 .TP
 .BI "-s=" bytes
-Sector size in bytes. Default value is 512. Decimal and '0x' prefixed hex values accepted.
+Sector size in bytes. Default value is 512.
 .TP
 .BI "-h"
 Show program help and exit.
