@@ -548,13 +548,13 @@ bool lba2chs(char *lba, t_chs *p_chs)
 
 void usage()
 {
-	fprintf(stdout, "usage: bcal [-c N] [-s bytes] [-h]\n\
+	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
             [N unit]\n\n\
 Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
   N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
-                   should be space-separated, case is ignored\n\
+                   must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\

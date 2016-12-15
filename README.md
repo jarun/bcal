@@ -83,7 +83,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
 ### cmdline options
 
-    usage: bcal [-c N] [-s bytes] [-h]
+    usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
             [N unit]
 
     Perform storage conversions and calculations.
@@ -91,7 +91,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
     positional arguments:
       N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
                        see https://wiki.ubuntu.com/UnitsPolicy
-                       should be space-separated, case is ignored
+                       must be space-separated, case is ignored
                        N can be decimal or '0x' prefixed hex value
 
     optional arguments:
@@ -117,19 +117,20 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
 ### Operational notes
 
-- N unit: N can be decimal or '0x' prefixed hex value. Unit can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, unit is case-insensitive.
-- Fractional bytes do not exist, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
-- Hex and decimal inputs are recognized for all inputs. Binary inputs are supported only with `-c`. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. No octal support.
-- Syntax: Prefix hex inputs with `0x`, binary inputs with `0b`.
-- Default values:
+- **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
+- **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
+- Hex and decimal **numeric representations** are recognized for all arguments. Binary inputs are supported only with `-c`. This is a provision to convert a binary number to decimal/hex before using it as an input to other operations. **No octal support**.
+- **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
+- **Default values**:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- CHS and LBA inputs for format conversion are hyphen separated. The syntax is:
+- **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
   - CHS: `cC-H-S-MAX_HEAD-MAX_SECTOR` [NOTE: CHS starts with `c` (case ignored)]
-  Any unspecified value, including the one preceding the first `-` to the one following the last `-`, is considered `0`.
-- No negative numbers allowed. Input limits are `unsigned long long` and `double`.
+  - Format conversion arguments must be hyphen separated.
+  - Any unspecified value, including the one preceding the first `-` to the one following the last `-`, is considered `0` (zero).
+- **No negative arguments** allowed. Input limits are `unsigned long long` and `double`.
 
 ## Examples
 
