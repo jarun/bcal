@@ -23,8 +23,7 @@ typedef double maxfloat_t;
 #endif
 
 char *VERSION = "1.4";
-char *units[] = { "b", "kib", "mib", "gib", "tib",
-                       "kb", "mb", "gb", "tb", };
+char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
 char uint_buf[UINT_BUF_LEN];
 char float_buf[FLOAT_BUF_LEN];
@@ -39,7 +38,7 @@ typedef struct {
 	ulong s;
 } t_chs;
 
-void printbin(maxuint_t n)
+void binprint(maxuint_t n)
 {
 	int count = 127;
 	char binstr[129] = {0};
@@ -434,19 +433,35 @@ maxuint_t converttb(char *buf)
 	return bytes;
 }
 
+ulong wrap_strtol(char *token)
+{
+	int base = 0;
+
+	/* NOTE: no NULL check here! */
+
+	if (strlen(token) > 2 && token[0] == 0 &&
+			(token[1] == 'b' || token[1] == 'B'))
+		base = 2;
+
+	return strtol(token, NULL, base);
+}
+
 bool chs2lba(char *chs, maxuint_t *lba)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	long chsparam[5] = {0, 0, 0, MAX_HEAD, MAX_SECTOR};
+	ulong chsparam[5] = {0, 0, 0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = chs;
 
 	while (*ptr && token_no < 5) {
 		if (*ptr == '-') {
+			/* Replace '-' with NULL and get the token */
 			*ptr = '\0';
 			chsparam[token_no++] = strtol(token, NULL, 0);
+			/* Restore the '-' */
 			*ptr++ = '-';
+			/* Point to start of next token */
 			token = ptr;
 
 			if (*ptr == '\0' && token_no < 5)
@@ -462,25 +477,39 @@ bool chs2lba(char *chs, maxuint_t *lba)
 	}
 
 	/* Fail if CHS is omitted */
-	if (token_no < 3)
+	if (token_no < 3) {
+		fprintf(stderr, "CHS2LBA: CHS missing\n");
 		return FALSE;
+	}
+
+	if (!chsparam[3]) {
+		fprintf(stderr, "CHS2LBA: MAX_HEAD = 0\n");
+		return FALSE;
+	}
+
+	if (!chsparam[4]) {
+		fprintf(stderr, "CHS2LBA: MAX_SECTOR = 0\n");
+		return FALSE;
+	}
+
+	if (!chsparam[2]) {
+		fprintf(stderr, "CHS2LBA: S = 0\n");
+		return FALSE;
+	}
 
 	if (chsparam[1] > chsparam[3]) {
-		fprintf(stderr, "H > MAX_HEAD\n");
+		fprintf(stderr, "CHS2LBA: H > MAX_HEAD\n");
 		return FALSE;
 	}
 
 	if (chsparam[2] > chsparam[4]) {
-		fprintf(stderr, "S > MAX_SECTOR\n");
+		fprintf(stderr, "CHS2LBA: S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
 
 	*lba = chsparam[3] * chsparam[4] * chsparam[0]; /* MH * MS * C */
 	*lba += chsparam[4] * chsparam[1]; /* MS * H */
-
-	if (!*lba && !chsparam[2])
-		return FALSE;
 
 	*lba += chsparam[2] - 1; /* S - 1 */
 
@@ -518,30 +547,39 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	}
 
 	/* Fail if LBA is omitted */
-	if (!token_no)
+	if (!token_no) {
+		fprintf(stderr, "LBA2CHS: LBA missing\n");
 		return FALSE;
+	}
 
-	if (!chsparam[1] || !chsparam[2])
+	if (!chsparam[1]) {
+		fprintf(stderr, "LBA2CHS: MAX_HEAD = 0\n");
 		return FALSE;
+	}
+
+	if (!chsparam[2]) {
+		fprintf(stderr, "LBA2CHS: MAX_SECTOR = 0\n");
+		return FALSE;
+	}
 
 	p_chs->c = (ulong)(chsparam[0] / (chsparam[2] * chsparam[1])); /* L / (MS * MH) */
 
 	p_chs->h = (ulong)((chsparam[0] / chsparam[2]) % chsparam[1]); /* (L / MS) % MH */
 	if (p_chs->h > MAX_HEAD) {
-		fprintf(stderr, "H > MAX_HEAD\n");
+		fprintf(stderr, "LBA2CHS: H > MAX_HEAD\n");
 		return FALSE;
 	}
 
 	p_chs->s = (ulong)((chsparam[0] % chsparam[2]) + 1); /* (L % MS) + 1 */
 	if (p_chs->s > MAX_SECTOR) {
-		fprintf(stderr, "S > MAX_SECTOR\n");
+		fprintf(stderr, "LBA2CHS: S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
-	fprintf(stdout, "\033[1mLBA2CHS\033[0m\n\tLBA %s MAX_HEAD %s MAX_SECTOR %s\n",
-		getstr_u128(chsparam[0], uint_buf),
-		getstr_u128(chsparam[1], uint_buf),
-		getstr_u128(chsparam[2], uint_buf));
+	fprintf(stdout, "\033[1mLBA2CHS\033[0m\n\tLBA %s ",
+		getstr_u128(chsparam[0], uint_buf));
+	fprintf(stdout, "MAX_HEAD %s ", getstr_u128(chsparam[1], uint_buf));
+	fprintf(stdout, "MAX_SECTOR %s\n", getstr_u128(chsparam[2], uint_buf));
 
 	return TRUE;
 }
@@ -600,26 +638,24 @@ int main(int argc, char **argv)
 			fprintf(stdout, "\033[1mBASE CONVERSION\033[0m\n");
 			maxuint_t val;
 
-			if (*optarg == '0' && tolower(*(optarg + 1)) == 'b')
+			if (strlen(optarg) > 2 && *optarg == '0'
+					&& (*(optarg + 1) == 'b' || *(optarg + 1) == 'B'))
 				val = strtoull(optarg + 2, NULL, 2);
 			else
 				val = strtoull(optarg, NULL, 0);
 
 			fprintf(stdout, "\tbin: ");
-			printbin(val);
+			binprint(val);
 			fprintf(stdout, "\n\tdec: %s\n\thex: ", getstr_u128(val, uint_buf));
 			printhex_u128(val);
 			fprintf(stdout, "\n\n");
 			break;
 		case 'f':
 			{
-				int ret;
-
 				if (tolower(*optarg) == 'c') {
 					maxuint_t lba = 0;
-					ret = chs2lba(optarg + 1, &lba);
-					if (ret) {
-						fprintf(stdout, "\tLBA: (dec) %s, (hex): ",
+					if (chs2lba(optarg + 1, &lba)) {
+						fprintf(stdout, "\tLBA: (dec) %s, (hex) ",
 							getstr_u128(lba, uint_buf));
 						printhex_u128(lba);
 						fprintf(stdout, "\n\n");
@@ -627,8 +663,7 @@ int main(int argc, char **argv)
 						fprintf(stderr, "Invalid input\n");
 				} else if (tolower(*optarg) == 'l') {
 					t_chs chs;
-					ret = lba2chs(optarg + 1, &chs);
-					if (ret)
+					if (lba2chs(optarg + 1, &chs))
 						fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
 							chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
 					else
@@ -659,15 +694,12 @@ int main(int argc, char **argv)
 	}
 
 	if (argc - optind == 2) {
-		int ret = 0;
 		int count = sizeof(units)/sizeof(*units);
 		maxuint_t bytes = 0, lba = 0, offset = 0;
 
-		while (count-- > 0) {
-			ret = strcmp(units[count], strtolower(argv[optind + 1]));
-			if (!ret)
+		while (count-- > 0)
+			if (!strcmp(units[count], strtolower(argv[optind + 1])))
                                 break;
-		}
 
 		if (count == -1) {
 			fprintf(stderr, "No matching unit\n");
