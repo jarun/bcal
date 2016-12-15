@@ -433,17 +433,19 @@ maxuint_t converttb(char *buf)
 	return bytes;
 }
 
-ulong wrap_strtol(char *token)
+/* This function adds check for binary input to strtoul() */
+ulong strtoul_b(char *token)
 {
 	int base = 0;
 
 	/* NOTE: no NULL check here! */
 
-	if (strlen(token) > 2 && token[0] == 0 &&
-			(token[1] == 'b' || token[1] == 'B'))
+	if (strlen(token) > 2 && token[0] == '0' &&
+			(token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
+	}
 
-	return strtol(token, NULL, base);
+	return strtoul(token + base, NULL, base);
 }
 
 bool chs2lba(char *chs, maxuint_t *lba)
@@ -458,14 +460,14 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		if (*ptr == '-') {
 			/* Replace '-' with NULL and get the token */
 			*ptr = '\0';
-			chsparam[token_no++] = strtol(token, NULL, 0);
+			chsparam[token_no++] = strtoul_b(token);
 			/* Restore the '-' */
 			*ptr++ = '-';
 			/* Point to start of next token */
 			token = ptr;
 
 			if (*ptr == '\0' && token_no < 5)
-				chsparam[token_no++] = strtol(token, NULL, 0);
+				chsparam[token_no++] = strtoul_b(token);
 
 			continue;
 		}
@@ -473,7 +475,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		ptr++;
 
 		if (*ptr == '\0' && token_no < 5)
-			chsparam[token_no++] = strtol(token, NULL, 0);
+			chsparam[token_no++] = strtoul_b(token);
 	}
 
 	/* Fail if CHS is omitted */
@@ -513,7 +515,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 
 	*lba += chsparam[2] - 1; /* S - 1 */
 
-	fprintf(stdout, "\033[1mCHS2LBA\033[0m\n\tC %ld H %ld S %ld MAX_HEAD %ld MAX_SECTOR %ld\n",
+	fprintf(stdout, "\033[1mCHS2LBA\033[0m\n\tC %lu H %lu S %lu MAX_HEAD %lu MAX_SECTOR %lu\n",
 		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
 
 	return TRUE;
@@ -623,7 +625,7 @@ Webpage: https://github.com/jarun/bcal\n", VERSION);
 int main(int argc, char **argv)
 {
 	int opt = 0;
-	long sectorsize = SECTOR_SIZE;
+	ulong sectorsize = SECTOR_SIZE;
 
 	opterr = 0;
 
@@ -651,33 +653,31 @@ int main(int argc, char **argv)
 			fprintf(stdout, "\n\n");
 			break;
 		case 'f':
-			{
-				if (tolower(*optarg) == 'c') {
-					maxuint_t lba = 0;
-					if (chs2lba(optarg + 1, &lba)) {
-						fprintf(stdout, "\tLBA: (dec) %s, (hex) ",
-							getstr_u128(lba, uint_buf));
-						printhex_u128(lba);
-						fprintf(stdout, "\n\n");
-					} else
-						fprintf(stderr, "Invalid input\n");
-				} else if (tolower(*optarg) == 'l') {
-					t_chs chs;
-					if (lba2chs(optarg + 1, &chs))
-						fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
-							chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
-					else
-						fprintf(stderr, "Invalid input\n");
+			if (tolower(*optarg) == 'c') {
+				maxuint_t lba = 0;
+				if (chs2lba(optarg + 1, &lba)) {
+					fprintf(stdout, "\tLBA: (dec) %s, (hex) ",
+						getstr_u128(lba, uint_buf));
+					printhex_u128(lba);
+					fprintf(stdout, "\n\n");
 				} else
 					fprintf(stderr, "Invalid input\n");
-			}
+			} else if (tolower(*optarg) == 'l') {
+				t_chs chs;
+				if (lba2chs(optarg + 1, &chs))
+					fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
+						chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
+				else
+					fprintf(stderr, "Invalid input\n");
+			} else
+				fprintf(stderr, "Invalid input\n");
 			break;
 		case 's':
-			sectorsize = strtol(optarg, NULL, 0);
-			if (sectorsize <= 0) {
+			if (*optarg == '-') {
 				fprintf(stderr, "sector size must be +ve\n");
 				return 1;
 			}
+			sectorsize = strtoul_b(optarg);
 			break;
 		case 'h':
 			usage();
