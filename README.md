@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-<a href="https://asciinema.org/a/4m7oxhoq8lcbkyxfeo810yoq6"><img src="https://asciinema.org/a/4m7oxhoq8lcbkyxfeo810yoq6.png" alt="bcal_asciicast" width="734"/></a>
+<a href="https://asciinema.org/a/96309"><img src="https://asciinema.org/a/96309.png" alt="bcal_asciicast" width="800"/></a>
 </p>
 
 `bcal` (*Byte CALculator*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
@@ -84,7 +84,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 ### cmdline options
 
     usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
-            [N unit]
+                [N unit]
 
     Perform storage conversions and calculations.
 
@@ -118,17 +118,17 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
 - Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `00`.
+- **No negative arguments** allowed. Input limits are `unsigned long long` and `double`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
-- **Default values**:
-  - sector size: 0x200 (512)
-  - max heads per cylinder: 0x10 (16)
-  - max sectors per track: 0x3f (63)
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
   - CHS: `cC-H-S-MAX_HEAD-MAX_SECTOR` [NOTE: CHS starts with `c` (case ignored)]
   - Format conversion arguments must be hyphen separated.
   - Any unspecified value, including the one preceding the first `-` to the one following the last `-`, is considered `0` (zero).
-- **No negative arguments** allowed. Input limits are `unsigned long long` and `double`.
+- **Default values**:
+  - sector size: 0x200 (512)
+  - max heads per cylinder: 0x10 (16)
+  - max sectors per track: 0x3f (63)
 
 ## Examples
 

@@ -35,13 +35,10 @@ Decimal and hex \fBnumeric representations\fR are recognized for unit conversion
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b', octal inputs with '00'.
 .PP
 .IP 4. 4
-\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
+\fBNo negative arguments\fR allowed. Input limits are \fIunsigned long long\fR and \fIdouble\fR.
 .PP
 .IP 5. 4
-\fBDefault values\fR:
-  - sector size: 0x200 (512)
-  - max heads per cylinder: 0x10 (16)
-  - max sectors per track: 0x3f (63)
+\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
 .PP
 .IP 6. 4
 \fBCHS and LBA syntax\fR:
@@ -51,7 +48,10 @@ Decimal and hex \fBnumeric representations\fR are recognized for unit conversion
   - Any unspecified value, including the one preceding the first '-' to the one following the last '-', is considered '0' (zero).
 .PP
 .IP 7. 4
-\fBNo negative arguments\fR allowed. Input limits are \fIunsigned long long\fR and \fIdouble\fR.
+\fBDefault values\fR:
+  - sector size: 0x200 (512)
+  - max heads per cylinder: 0x10 (16)
+  - max sectors per track: 0x3f (63)
 .SH OPTIONS
 .TP
 .BI "-c=" N
