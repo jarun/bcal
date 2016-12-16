@@ -116,7 +116,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 ### Operational notes
 
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
-- Decimal, hex, binary and octal **numeric representations** are recognized for all other arguments.
+- Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `00`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
 - **Default values**:

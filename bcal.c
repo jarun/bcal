@@ -114,6 +114,36 @@ char *strtolower(char *buf)
 	return buf;
 }
 
+/* This function adds check for binary input to strtoul() */
+ulong strtoul_b(char *token)
+{
+	int base = 0;
+
+	/* NOTE: no NULL check here! */
+
+	if (strlen(token) > 2 && token[0] == '0' &&
+			(token[1] == 'b' || token[1] == 'B')) {
+		base = 2;
+	}
+
+	return strtoul(token + base, NULL, base);
+}
+
+/* This function adds check for binary input to strtoull() */
+ull strtoull_b(char *token)
+{
+	int base = 0;
+
+	/* NOTE: no NULL check here! */
+
+	if (strlen(token) > 2 && token[0] == '0' &&
+			(token[1] == 'b' || token[1] == 'B')) {
+		base = 2;
+	}
+
+	return strtoull(token + base, NULL, base);
+}
+
 maxuint_t convertbyte(char *buf)
 {
 	/* Convert and print in bytes */
@@ -433,21 +463,6 @@ maxuint_t converttb(char *buf)
 	return bytes;
 }
 
-/* This function adds check for binary input to strtoul() */
-ulong strtoul_b(char *token)
-{
-	int base = 0;
-
-	/* NOTE: no NULL check here! */
-
-	if (strlen(token) > 2 && token[0] == '0' &&
-			(token[1] == 'b' || token[1] == 'B')) {
-		base = 2;
-	}
-
-	return strtoul(token + base, NULL, base);
-}
-
 bool chs2lba(char *chs, maxuint_t *lba)
 {
 	int token_no = 0;
@@ -532,12 +547,12 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	while (*ptr && token_no < 3) {
 		if (*ptr == '-') {
 			*ptr = '\0';
-			chsparam[token_no++] = strtoull(token, NULL, 0);
+			chsparam[token_no++] = strtoull_b(token);
 			*ptr++ = '-';
 			token = ptr;
 
 			if (*ptr == '\0' && token_no < 3)
-				chsparam[token_no++] = strtoull(token, NULL, 0);
+				chsparam[token_no++] = strtoull_b(token);
 
 			continue;
 		}
@@ -545,7 +560,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		ptr++;
 
 		if (*ptr == '\0' && token_no < 3)
-			chsparam[token_no++] = strtoull(token, NULL, 0);
+			chsparam[token_no++] = strtoull_b(token);
 	}
 
 	/* Fail if LBA is omitted */
@@ -636,13 +651,7 @@ int main(int argc, char **argv)
 			}
 
 			fprintf(stdout, "\033[1mBASE CONVERSION\033[0m\n");
-			maxuint_t val;
-
-			if (strlen(optarg) > 2 && *optarg == '0'
-					&& (*(optarg + 1) == 'b' || *(optarg + 1) == 'B'))
-				val = strtoull(optarg + 2, NULL, 2);
-			else
-				val = strtoull(optarg, NULL, 0);
+			maxuint_t val = strtoull_b(optarg);
 
 			fprintf(stdout, "\tbin: ");
 			binprint(val);
