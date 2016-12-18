@@ -3,6 +3,7 @@
 <p align="center">
 <a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg" alt="Latest release" /></a>
 <a href="https://aur.archlinux.org/packages/bcal"><img src="https://img.shields.io/aur/version/bcal.svg" alt="AUR" /></a>
+<a href="http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-zesty+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
 </p>
 
@@ -17,7 +18,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
 <p align="center">
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/paypal-donate-orange.svg?maxAge=2592000" alt="Donate" /></a>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://tuxtricks.files.wordpress.com/2016/12/donate.png" alt="Donate via PayPal!" title="Donate via PayPal!" /></a>
 </p>
 
 ## Table of Contents
@@ -73,6 +74,7 @@ To uninstall, run:
 `bcal` is also available on
  - [AUR](https://aur.archlinux.org/packages/bcal/)
  - [Debian Sid](https://packages.debian.org/sid/bcal)
+ - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
  - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
 ### RPMs
