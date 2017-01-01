@@ -173,4 +173,4 @@ Note that the units are case-insensitive.
 
 ## Copyright
 
-Copyright (C) 2016 [Arun Prakash Jana](mailto:engineerarun@gmail.com)
+Copyright © 2016-2017 [Arun Prakash Jana](mailto:engineerarun@gmail.com)

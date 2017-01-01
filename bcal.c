@@ -630,7 +630,7 @@ optional arguments:\n\
   -s bytes         sector size [default 512]\n\
   -h               show this help and exit\n\n\
 Version %s\n\
-Copyright (C) 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\
+Copyright © 2016-2017 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
