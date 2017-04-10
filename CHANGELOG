@@ -1,3 +1,11 @@
+bcal 1.5
+2017-04-10
+
+Modifications
+- Support binary and octal in CHS2LBA and LBA2CHS conversions
+
+-------------------------------------------------------------------------------
+
 bcal 1.4
 2016-10-17
 
