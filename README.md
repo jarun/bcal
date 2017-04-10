@@ -9,35 +9,36 @@
 </p>
 
 <p align="center">
-<a href="https://asciinema.org/a/96309"><img src="https://asciinema.org/a/96309.png" alt="bcal_asciicast" width="800"/></a>
+<a href="https://asciinema.org/a/96309"><img src="https://asciinema.org/a/96309.png" alt="bcal_asciicast" width="650"/></a>
 </p>
 
 `bcal` (*Byte CALculator*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
 
-Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's tool**.
+Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's utility**.
 
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
-<p align="center">
+<p align="right">
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://tuxtricks.files.wordpress.com/2016/12/donate.png" alt="Donate via PayPal!" title="Donate via PayPal!" /></a>
 </p>
 
-## Table of Contents
+### Table of Contents
 
 - [Features](#features)
 - [Installation](#installation)
   - [Dependencies](#dependencies)
-  - [Get the source code](#get-the-source-code)
-  - [Compile and install](#compile-and-install)
   - [Installing with a package manager](#installing-with-a-package-manager)
-  - [RPMs](#rpms)
+  - [Installing from this repository](#installing-from-this-repository)
+    - [Get the source code](#get-the-source-code)
+    - [Compile and install](#compile-and-install)
+    - [Generated RPMs](#generated-rpms)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
 - [Examples](#examples)
 - [Copyright](#copyright)
 
-## Features
+### Features
 
 - convert to IEC/SI standard data storage units
 - show the address in bytes
@@ -47,20 +48,27 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
-## Installation
+### Installation
 
-### Dependencies
+#### Dependencies
 
 `bcal` is written in C and depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
 
-### Get the source code
+#### Installing with a package manager
 
-If you have git installed, run:
+`bcal` is also available on
+ - [AUR](https://aur.archlinux.org/packages/bcal/)
+ - [Debian Sid](https://packages.debian.org/sid/bcal)
+ - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
+ - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
-    $ git clone https://github.com/jarun/bcal
-Otherwise, download the latest [stable release](https://github.com/jarun/bcal/releases/latest) or [development version](https://github.com/jarun/bcal/archive/master.zip).
+#### Installing from this repository
 
-### Compile and install
+##### Get the source code
+
+If you have git installed, clone this repository. Otherwise, download the latest [stable release](https://github.com/jarun/bcal/releases/latest) or [development version](https://github.com/jarun/bcal/archive/master.zip) (*risky*).
+
+##### Compile and install
 
 In the source directory, run:
 
@@ -70,21 +78,13 @@ To uninstall, run:
 
     $ sudo make uninstall
 
-### Installing with a package manager
-
-`bcal` is also available on
- - [AUR](https://aur.archlinux.org/packages/bcal/)
- - [Debian Sid](https://packages.debian.org/sid/bcal)
- - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
- - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
-
-### RPMs
+##### Generated RPMs
 
 If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://github.com/jarun/bcal/releases/latest) and download the `.rpm` package for your OS.
 
-## Usage
+### Usage
 
-### cmdline options
+#### cmdline options
 
     usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
                 [N unit]
@@ -116,7 +116,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
       -s bytes         sector size [default 512]
       -h               show this help and exit
 
-### Operational notes
+#### Operational notes
 
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
 - Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
@@ -133,7 +133,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
 
-## Examples
+### Examples
 
 1. Convert storage capacity to other units and get address, LBA.
 
@@ -172,6 +172,6 @@ Note that the units are case-insensitive.
         $ man bcal
         $ bcal -h
 
-## Copyright
+### Copyright
 
 Copyright © 2016-2017 [Arun Prakash Jana](mailto:engineerarun@gmail.com)
