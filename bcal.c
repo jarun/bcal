@@ -621,6 +621,68 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
+/* Convert any unit in bytes */
+maxuint_t unitconv(char *num,char *unit)
+{
+
+		int count = 9;
+		maxuint_t bytes = 0;
+
+		while (count-- > 0)
+			if (!strcmp(units[count], strtolower(unit)))
+                                break;
+
+		if (count == -1) {
+			fprintf(stderr, "No matching unit\n");
+			return 1;
+		}
+
+		maxfloat_t kib,mib,gib,tib,kb,mb,gb,tb;
+
+		switch (count) {
+		case 0:
+			bytes = strtoull(num, NULL, 0);
+			break;
+		case 1:
+			kib = strtod(num, NULL);
+			bytes = (maxuint_t)(kib * 1024);
+			break;
+		case 2:
+			mib = strtod(num, NULL);
+			bytes = (maxuint_t)(mib * (1 << 20));
+			break;
+		case 3:
+			gib = strtod(num, NULL);
+			bytes = (maxuint_t)(gib * (1 << 30));
+			break;
+		case 4:
+			tib = strtod(num, NULL);
+			bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
+			break;
+		case 5:
+			kb = strtod(num, NULL);
+			bytes = (maxuint_t)(kb * 1000);
+			break;
+		case 6:
+			mb = strtod(num, NULL);
+			bytes = (maxuint_t)(mb * 1000000);
+			break;
+		case 7:
+			gb = strtod(num, NULL);
+			bytes = (maxuint_t)(gb * 1000000000);
+			break;
+		case 8:
+			tb = strtod(num, NULL);
+			bytes = (__uint128_t)(tb * 1000000000000);
+			break;
+		default:
+			fprintf(stderr, "Unknown unit\n");
+			return 1;
+		}
+
+	return bytes;
+}
+
 void usage()
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
@@ -631,6 +693,7 @@ positional arguments:\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
+  N unit + N unit  Arithmatic addition operation\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
@@ -784,6 +847,38 @@ int main(int argc, char **argv)
 		printhex_u128(offset);
 		fprintf(stdout, "\n");
 	}
+	
+	/*Addition Operation*/
+	if (argc - optind == 5 && !strcmp(argv[3], "+") ) { 		
 
+		maxuint_t bytesa=0,bytesb=0,bytesum=0;
+		maxuint_t lba = 0, offset = 0;
+
+		bytesa=unitconv(argv[1],argv[2]);
+		bytesb=unitconv(argv[4],argv[5]);
+
+		bytesum=bytesa+bytesb;
+
+		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
+
+		convertbyte(getstr_u128(bytesum, uint_buf));
+
+		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytesum, uint_buf));
+		printhex_u128(bytesum);
+
+		/* Calculate LBA and offset */
+		lba = bytesum / sectorsize;
+		offset = bytesum % sectorsize;
+
+		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+		/* We use a global buffer, so print decimal lba first, then offset */
+		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
+		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
+		printhex_u128(lba);
+		fprintf(stdout, ":");
+		printhex_u128(offset);
+		fprintf(stdout, "\n");
+			
+	}
 	return 0;
 }
