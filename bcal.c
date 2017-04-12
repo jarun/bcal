@@ -622,10 +622,9 @@ bool lba2chs(char *lba, t_chs *p_chs)
 }
 
 /* Convert any unit in bytes */
-maxuint_t unitconv(char *num,char *unit)
+maxuint_t unitconv(char *num, char *unit)
 {
-
-		int count = 9;
+		int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
 		maxuint_t bytes = 0;
 
 		while (count-- > 0)
@@ -637,43 +636,43 @@ maxuint_t unitconv(char *num,char *unit)
 			return 1;
 		}
 
-		maxfloat_t kib,mib,gib,tib,kb,mb,gb,tb;
+		maxfloat_t byte_metric = 0;
 
 		switch (count) {
 		case 0:
 			bytes = strtoull(num, NULL, 0);
 			break;
 		case 1:
-			kib = strtod(num, NULL);
-			bytes = (maxuint_t)(kib * 1024);
+			byte_metric = strtod(num, NULL);	
+			bytes = (maxuint_t)(byte_metric * 1024);	/* Kibibyte */
 			break;
 		case 2:
-			mib = strtod(num, NULL);
-			bytes = (maxuint_t)(mib * (1 << 20));
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * (1 << 20));	/* Mebibyte */
 			break;
 		case 3:
-			gib = strtod(num, NULL);
-			bytes = (maxuint_t)(gib * (1 << 30));
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * (1 << 30));	/* Gibibyte */
 			break;
 		case 4:
-			tib = strtod(num, NULL);
-			bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * ((maxuint_t)1 << 40)); /* Tebibyte */
 			break;
 		case 5:
-			kb = strtod(num, NULL);
-			bytes = (maxuint_t)(kb * 1000);
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000);	/* Kilobyte */
 			break;
 		case 6:
-			mb = strtod(num, NULL);
-			bytes = (maxuint_t)(mb * 1000000);
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000000);	/* Megabyte */
 			break;
 		case 7:
-			gb = strtod(num, NULL);
-			bytes = (maxuint_t)(gb * 1000000000);
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000000000);	/* Gigabyte */
 			break;
 		case 8:
-			tb = strtod(num, NULL);
-			bytes = (__uint128_t)(tb * 1000000000000);
+			byte_metric = strtod(num, NULL);
+			bytes = (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
 			break;
 		default:
 			fprintf(stderr, "Unknown unit\n");
@@ -693,7 +692,7 @@ positional arguments:\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
-  N unit + N unit  Arithmatic addition operation\n\n\
+  N unit + N unit  arithmatic addition operation\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
@@ -851,13 +850,13 @@ int main(int argc, char **argv)
 	/*Addition Operation*/
 	if (argc - optind == 5 && !strcmp(argv[3], "+") ) { 		
 
-		maxuint_t bytesa=0,bytesb=0,bytesum=0;
+		maxuint_t bytesa = 0, bytesb = 0, bytesum = 0;
 		maxuint_t lba = 0, offset = 0;
 
-		bytesa=unitconv(argv[1],argv[2]);
-		bytesb=unitconv(argv[4],argv[5]);
+		bytesa = unitconv(argv[1], argv[2]);
+		bytesb = unitconv(argv[4], argv[5]);
 
-		bytesum=bytesa+bytesb;
+		bytesum = bytesa + bytesb;
 
 		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
 
@@ -877,8 +876,8 @@ int main(int argc, char **argv)
 		printhex_u128(lba);
 		fprintf(stdout, ":");
 		printhex_u128(offset);
-		fprintf(stdout, "\n");
-			
+		fprintf(stdout, "\n");		
 	}
+
 	return 0;
 }
