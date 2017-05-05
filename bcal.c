@@ -23,7 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include "stack.c"
+#include "dslib.h"
 
 #define TRUE 1
 #define FALSE !TRUE
@@ -34,7 +34,6 @@
 #define UINT_BUF_LEN 40 /* log10(1 << 128) + '\0' */
 #define FLOAT_BUF_LEN 128
 #define FLOAT_WIDTH 40
-
 
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
@@ -623,9 +622,22 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
-/* Convert any unit in bytes */
-maxuint_t byteconv(char *numstr)
+void InputError()
 {
+	fprintf(stderr, "\nPlease enter inputs properly. Always put spece between each two arguments.\n\
+And a byte unit can only be divided or multiplied by a plain integer.\nExample:\nbcal \"( 5kb + 2mb ) / 3\"\nbcal \"5tb / 12\"\nbcal \"2.5mb * 3\" etc.\n\n");
+	exit(-1);
+}
+
+/* Convert any unit in bytes */
+maxuint_t unitconv(Data bunit, short *u)
+{
+		char *numstr = bunit.p;
+
+		if(numstr == NULL) {
+			InputError();		
+		}
+
 		char *num;
 		char unit[4] = {'\0'};
 		int len = strlen(numstr);
@@ -635,21 +647,25 @@ maxuint_t byteconv(char *numstr)
 			unit[1] = numstr[len - 2];
 			unit[2] = numstr[len - 1];
 			numstr[len - 1] = numstr[len - 2] = numstr[len - 3] = '\0';
+			*u = 1;
 			
 		} else if (isalpha(numstr[len - 2])) {
 			unit[0] = numstr[len - 2];
 			unit[1] = numstr[len - 1];
 			numstr[len - 1] = numstr[len - 2] = '\0';
+			*u = 1;
 		
 		} else if (isalpha(numstr[len - 1])) {
 			unit[0] = numstr[len - 1];
 			numstr[len - 1] = '\0';
+			*u = 1;
 		} else {
-			//*converted = FALSE;
+			if(*u != 1)
+				*u = 0;
 			return strtoull(numstr, NULL, 0);
 		}
 
-		num=numstr;		
+		num = numstr;		
 		
 		int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
 		maxuint_t bytes = 0;
@@ -705,8 +721,7 @@ maxuint_t byteconv(char *numstr)
 			fprintf(stderr, "Unknown unit\n");
 			return 1;
 		}
-	
-	//*converted = TRUE;
+	*u = 1;
 	return bytes;
 }
 
@@ -714,157 +729,156 @@ int prio(char var)
 {
 	switch(var)
 	{
-		case '+':return 1; break;
-		case '-':return 1; break;
-		case '*':return 2; break;
-		case '/':return 2; break;
+		case '+': return 1; break;
+		case '-': return 1; break;
+		case '*': return 2; break;
+		case '/': return 2; break;
 	}
 	return 0;
 }
 
+void checkExp(char *exp)
+{
+	int k = strtoull(exp, NULL, 0);
+	char *e2 = getstr_u128(k, uint_buf);
+
+	if (strcmp(e2, exp) == 0) {
+		InputError();
+	} 
+}
+
 void Infix2Postfix(char *exp, queue **resf, queue **resr)
 {
+	checkExp(exp);
 	stack *op = NULL;
-	char *token = strtok(exp," ");
+	char *token = strtok(exp, " ");
 	char e = '\0';
+	Data tokenData = {"\0", 0};
 
 	while (token != NULL) {
 		
-		if (strlen(token) == 1)
-			e = token[0];
+		e = token[0];
+		strcpy(tokenData.p, token);
 		
 		switch(e) {
-
-			
+	
 			case '+':
 			case '-':
 			case '*':
 			case '/':
-					while (!isEmpty(op) && top(op)[0] != '(' && prio(e) <= prio(top(op)[0]) ) {
+					if(token[1] != '\0') {
+						InputError();
+					}
+					while (!isEmpty(op) && top(op)[0] != '(' && prio(e) <= prio(top(op)[0])) {
 
-							char *ct = pop(&op);
-						
+							Data ct = pop(&op);
 							Enqueue(resf, resr, ct);
 				        }
-
-					push(&op, token);
+					push(&op, tokenData);
 					break;
 			
 			case '(':	
-					push(&op, token);
+					push(&op, tokenData);
 					break;
 		
-			case ')':	while ( !isEmpty(op) && top(op)[0] != '(') {
-							char* ct = pop(&op);
+			case ')':	while (!isEmpty(op) && top(op)[0] != '(') {
+							Data ct = pop(&op);
 							Enqueue(resf, resr ,ct);
-						
 					}
 					pop(&op);
 					break;
 						
-			default:	Enqueue(resf,resr,token); 
-				
+			default:	Enqueue(resf, resr, tokenData); 				
 		}
 
-		token=strtok(NULL," ");
+		token = strtok(NULL," ");
 	}
 	
-	while (!isEmpty(op))
-		Enqueue(resf ,resr ,pop(&op));
+	while (!isEmpty(op)) {
+		Enqueue(resf , resr, pop(&op));
+	}
+
+	queue *i;
+	for (i = *resf; i != NULL; i = i->link) {
+		char *c = i->d.p;		
+
+		 if (strlen(c) > 1)
+	  		while (*c) {
+       				if (strchr(")+-*/(", *c)) {
+          				InputError();
+       				}
+      			 c++;
+   			}
+	}
 }
 
 maxuint_t eval(queue **front, queue **rear)
 {
-	printQue(*front);
-
 	maxuint_t ans = 0;
 	stack *est = NULL;
-	stack *conv = NULL;
+	Data ansdata;
 
 	while (*front != NULL && *rear != NULL) {
-		printStk(est);
 	
-		char *arg = Dequeue(front, rear);
-		//printf("Arg=%s\n",arg);
+		Data arg = Dequeue(front, rear);
+		
+		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){
+		
+			Data raw_b = pop(&est);
+			Data raw_a = pop(&est);
 
-		if ( !isdigit(arg[0]) ) {
-		
-			char *conv_a , *conv_b;
-		
-			maxuint_t b=byteconv(pop(&est));
-			maxuint_t a=byteconv(pop(&est));
-			conv_a = pop(&conv);
-			conv_b = pop(&conv);
-			char *r;
+			maxuint_t b = unitconv(raw_b, &raw_b.unit);
+			maxuint_t a = unitconv(raw_a, &raw_a.unit);
+
 			maxuint_t c = 0;
-
-			printf("a=%s %s b=%s %s\n",getstr_u128(a, uint_buf),conv_a,getstr_u128(b, uint_buf),conv_b);
-
-			switch(arg[0]){
+			Data raw_c;
 			
-				case '+': 	if(!strcmp(conv_a, "true") && !strcmp(conv_a, "true")){
-							c = a + b; 
-								
-						} else {
-							printf(" Error/ [%s=%s]",conv_a,conv_b);
-							puts(" Error+ ");
-							return (maxuint_t)-1;
-						}
-					  	
-						break;
-
-				case '-':	if(!strcmp(conv_a, "true") && !strcmp(conv_a, "true")){
-							c = a - b;			
-						} else {
-								puts(" Error- ");	return (maxuint_t)-1; 			
-						}
-						 
-						break;
-
-				case '*':	if(strcmp(conv_a, conv_b)){
-							c = a * b; 
-							
-						} else {
-							printf("   Error* %s=%s      ",conv_a,conv_b);
-							return (maxuint_t)-1;
-						}
-						
-						break;
-
-				case '/': 	if(strcmp(conv_a, conv_b)){
-							c = a / b; 
-						
-						} else {
-							printf("   Error/ %s=%s      ",conv_a,conv_b);
-							return (maxuint_t)-1;	
-						}
-						
-						break;
+			switch (arg.p[0]) {
+			
+				case '+': if (raw_a.unit && raw_b.unit) {					
+					  	c = a + b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '-': if (raw_a.unit && raw_b.unit) {	
+					  	c = a - b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '*': if (!raw_a.unit || !raw_b.unit) {	
+					  	c = a * b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '/': if (raw_a.unit && !raw_b.unit) {	
+					  	c = a / b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
 			}
 			
-			r = getstr_u128(c, uint_buf);	        
-			push(&conv, "true");
-			printf("c=%s true\n",r);
-			push(&est, r);	
+			strcpy(raw_c.p, getstr_u128(c, uint_buf));			        
+			push(&est, raw_c);	
 		
-		} else {	     
-			push(&est, arg);
-			
-		/*	if (isalpha(arg[strlen(arg) - 1])) {
-				printf("arg=%s true\n",arg);			
-				push(&conv, "true");
-			}
-			else	{
-				printf("arg=%s false\n",arg);	
-				push(&conv, "false");
-			}*/push(&conv, "true");	
-
-			printStk(est);
+		} else {	      
+			push(&est, arg);	
 		}			
 	}
-        ans=strtoull(pop(&est), NULL, 0);	
+	
+	ansdata = pop(&est);
+        ans = strtoull(ansdata.p, NULL, 0);	
+	
 	return ans;
 }
+
 void usage()
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
@@ -875,7 +889,7 @@ positional arguments:\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
-  N unit + N unit  arithmetic addition operation\n\n\
+  \"Expresstion\"  arithmetic operation\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
@@ -1037,15 +1051,7 @@ int main(int argc, char **argv)
 
 		queue *front = NULL, *rear = NULL;		
 		Infix2Postfix(argv[1], &front, &rear);
-	
 		byteans = eval(&front, &rear);
-
-		if (byteans == (maxuint_t)-1) {
-			fprintf(stdout, "\nSome error in inputs. Please Check and Try Again.\n");
-			return 0;
-		}
-
-		//printf("[Ans=%s]\n", getstr_u128(byteans, uint_buf));
 
 		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
 
