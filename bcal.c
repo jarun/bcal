@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "stack.c"
 
 #define TRUE 1
 #define FALSE !TRUE
@@ -33,6 +34,7 @@
 #define UINT_BUF_LEN 40 /* log10(1 << 128) + '\0' */
 #define FLOAT_BUF_LEN 128
 #define FLOAT_WIDTH 40
+
 
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
@@ -622,8 +624,33 @@ bool lba2chs(char *lba, t_chs *p_chs)
 }
 
 /* Convert any unit in bytes */
-maxuint_t unitconv(char *num, char *unit)
+maxuint_t byteconv(char *numstr)
 {
+		char *num;
+		char unit[4] = {'\0'};
+		int len = strlen(numstr);
+
+		if (isalpha(numstr[len - 3])) {
+			unit[0] = numstr[len - 3];
+			unit[1] = numstr[len - 2];
+			unit[2] = numstr[len - 1];
+			numstr[len - 1] = numstr[len - 2] = numstr[len - 3] = '\0';
+			
+		} else if (isalpha(numstr[len - 2])) {
+			unit[0] = numstr[len - 2];
+			unit[1] = numstr[len - 1];
+			numstr[len - 1] = numstr[len - 2] = '\0';
+		
+		} else if (isalpha(numstr[len - 1])) {
+			unit[0] = numstr[len - 1];
+			numstr[len - 1] = '\0';
+		} else {
+			//*converted = FALSE;
+			return strtoull(numstr, NULL, 0);
+		}
+
+		num=numstr;		
+		
 		int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
 		maxuint_t bytes = 0;
 
@@ -678,10 +705,166 @@ maxuint_t unitconv(char *num, char *unit)
 			fprintf(stderr, "Unknown unit\n");
 			return 1;
 		}
-
+	
+	//*converted = TRUE;
 	return bytes;
 }
 
+int prio(char var)
+{
+	switch(var)
+	{
+		case '+':return 1; break;
+		case '-':return 1; break;
+		case '*':return 2; break;
+		case '/':return 2; break;
+	}
+	return 0;
+}
+
+void Infix2Postfix(char *exp, queue **resf, queue **resr)
+{
+	stack *op = NULL;
+	char *token = strtok(exp," ");
+	char e = '\0';
+
+	while (token != NULL) {
+		
+		if (strlen(token) == 1)
+			e = token[0];
+		
+		switch(e) {
+
+			
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+					while (!isEmpty(op) && top(op)[0] != '(' && prio(e) <= prio(top(op)[0]) ) {
+
+							char *ct = pop(&op);
+						
+							Enqueue(resf, resr, ct);
+				        }
+
+					push(&op, token);
+					break;
+			
+			case '(':	
+					push(&op, token);
+					break;
+		
+			case ')':	while ( !isEmpty(op) && top(op)[0] != '(') {
+							char* ct = pop(&op);
+							Enqueue(resf, resr ,ct);
+						
+					}
+					pop(&op);
+					break;
+						
+			default:	Enqueue(resf,resr,token); 
+				
+		}
+
+		token=strtok(NULL," ");
+	}
+	
+	while (!isEmpty(op))
+		Enqueue(resf ,resr ,pop(&op));
+}
+
+maxuint_t eval(queue **front, queue **rear)
+{
+	printQue(*front);
+
+	maxuint_t ans = 0;
+	stack *est = NULL;
+	stack *conv = NULL;
+
+	while (*front != NULL && *rear != NULL) {
+		printStk(est);
+	
+		char *arg = Dequeue(front, rear);
+		//printf("Arg=%s\n",arg);
+
+		if ( !isdigit(arg[0]) ) {
+		
+			char *conv_a , *conv_b;
+		
+			maxuint_t b=byteconv(pop(&est));
+			maxuint_t a=byteconv(pop(&est));
+			conv_a = pop(&conv);
+			conv_b = pop(&conv);
+			char *r;
+			maxuint_t c = 0;
+
+			printf("a=%s %s b=%s %s\n",getstr_u128(a, uint_buf),conv_a,getstr_u128(b, uint_buf),conv_b);
+
+			switch(arg[0]){
+			
+				case '+': 	if(!strcmp(conv_a, "true") && !strcmp(conv_a, "true")){
+							c = a + b; 
+								
+						} else {
+							printf(" Error/ [%s=%s]",conv_a,conv_b);
+							puts(" Error+ ");
+							return (maxuint_t)-1;
+						}
+					  	
+						break;
+
+				case '-':	if(!strcmp(conv_a, "true") && !strcmp(conv_a, "true")){
+							c = a - b;			
+						} else {
+								puts(" Error- ");	return (maxuint_t)-1; 			
+						}
+						 
+						break;
+
+				case '*':	if(strcmp(conv_a, conv_b)){
+							c = a * b; 
+							
+						} else {
+							printf("   Error* %s=%s      ",conv_a,conv_b);
+							return (maxuint_t)-1;
+						}
+						
+						break;
+
+				case '/': 	if(strcmp(conv_a, conv_b)){
+							c = a / b; 
+						
+						} else {
+							printf("   Error/ %s=%s      ",conv_a,conv_b);
+							return (maxuint_t)-1;	
+						}
+						
+						break;
+			}
+			
+			r = getstr_u128(c, uint_buf);	        
+			push(&conv, "true");
+			printf("c=%s true\n",r);
+			push(&est, r);	
+		
+		} else {	     
+			push(&est, arg);
+			
+		/*	if (isalpha(arg[strlen(arg) - 1])) {
+				printf("arg=%s true\n",arg);			
+				push(&conv, "true");
+			}
+			else	{
+				printf("arg=%s false\n",arg);	
+				push(&conv, "false");
+			}*/push(&conv, "true");	
+
+			printStk(est);
+		}			
+	}
+        ans=strtoull(pop(&est), NULL, 0);	
+	return ans;
+}
 void usage()
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
@@ -777,7 +960,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (argc - optind == 1 || (argc == 1 && optind == 1)) {
+	if ((argc - optind == 1 && strlen(argv[1]) < 5) || (argc == 1 && optind == 1)) {
 		usage();
 		return 1;
 	}
@@ -847,27 +1030,33 @@ int main(int argc, char **argv)
 		fprintf(stdout, "\n");
 	}
 	
-	/*Addition Operation*/
-	if (argc - optind == 5 && !strcmp(argv[3], "+") ) { 		
-
-		maxuint_t bytesa = 0, bytesb = 0, bytesum = 0;
+	/*Arithmetic Operation*/
+	if (argc - optind == 1) { 		
+		maxuint_t byteans = 0;
 		maxuint_t lba = 0, offset = 0;
 
-		bytesa = unitconv(argv[1], argv[2]);
-		bytesb = unitconv(argv[4], argv[5]);
+		queue *front = NULL, *rear = NULL;		
+		Infix2Postfix(argv[1], &front, &rear);
+	
+		byteans = eval(&front, &rear);
 
-		bytesum = bytesa + bytesb;
+		if (byteans == (maxuint_t)-1) {
+			fprintf(stdout, "\nSome error in inputs. Please Check and Try Again.\n");
+			return 0;
+		}
+
+		//printf("[Ans=%s]\n", getstr_u128(byteans, uint_buf));
 
 		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
 
-		convertbyte(getstr_u128(bytesum, uint_buf));
+		convertbyte(getstr_u128(byteans, uint_buf));
 
-		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytesum, uint_buf));
-		printhex_u128(bytesum);
+		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
+		printhex_u128(byteans);
 
 		/* Calculate LBA and offset */
-		lba = bytesum / sectorsize;
-		offset = bytesum % sectorsize;
+		lba = byteans / sectorsize;
+		offset = byteans % sectorsize;
 
 		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
 		/* We use a global buffer, so print decimal lba first, then offset */
