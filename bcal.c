@@ -630,43 +630,44 @@ And a byte unit can only be divided or multiplied by a plain integer.\nExample:\
 }
 
 /* Convert any unit in bytes */
-maxuint_t unitconv(Data bunit, short *u)
+maxuint_t unitconv(Data bunit, short *u) 
 {
+		/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
 		char *numstr = bunit.p;
 
-		if(numstr == NULL) {
-			InputError();		
+		if(numstr == NULL) {	/* If the string is empty */
+			InputError();	/* Throw Error */	
 		}
 
 		char *num;
 		char unit[4] = {'\0'};
 		int len = strlen(numstr);
 
-		if (isalpha(numstr[len - 3])) {
+		if (isalpha(numstr[len - 3])) {		/* 3 char unit Eg: Kib, Mib etc. */
 			unit[0] = numstr[len - 3];
 			unit[1] = numstr[len - 2];
 			unit[2] = numstr[len - 1];
 			numstr[len - 1] = numstr[len - 2] = numstr[len - 3] = '\0';
 			*u = 1;
 			
-		} else if (isalpha(numstr[len - 2])) {
+		} else if (isalpha(numstr[len - 2])) {	/* 2 char unit Eg: kb, mb etc. */
 			unit[0] = numstr[len - 2];
 			unit[1] = numstr[len - 1];
 			numstr[len - 1] = numstr[len - 2] = '\0';
 			*u = 1;
 		
-		} else if (isalpha(numstr[len - 1])) {
+		} else if (isalpha(numstr[len - 1])) {	/* 1 char unit Eg: b */
 			unit[0] = numstr[len - 1];
 			numstr[len - 1] = '\0';
 			*u = 1;
 		} else {
-			if(*u != 1)
+			if(*u != 1)	/* If not already converted from unit to bytes */
 				*u = 0;
 			return strtoull(numstr, NULL, 0);
 		}
 
 		num = numstr;		
-		
+
 		int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
 		maxuint_t bytes = 0;
 
@@ -725,40 +726,44 @@ maxuint_t unitconv(Data bunit, short *u)
 	return bytes;
 }
 
-int prio(char var)
+int prio(char var) /* Get the priority of operators */
 {
 	switch(var)
 	{
-		case '+': return 1; break;
+		case '+': return 2; break;
 		case '-': return 1; break;
-		case '*': return 2; break;
-		case '/': return 2; break;
+		case '*': return 3; break;
+		case '/': return 4; break;
 	}
 	return 0;
 }
 
-void checkExp(char *exp)
+int checkExp(char *exp)	/* Check if arithmetic expression */
 {
 	int k = strtoull(exp, NULL, 0);
 	char *e2 = getstr_u128(k, uint_buf);
 
 	if (strcmp(e2, exp) == 0) {
-		InputError();
+		return 0;
 	} 
+	return 1;
 }
 
+/* Convert Infix mathematical expression to Postfix */
 void Infix2Postfix(char *exp, queue **resf, queue **resr)
 {
-	checkExp(exp);
-	stack *op = NULL;
+	if (!checkExp(exp))
+		return;
+		
+	stack *op = NULL;			/* Opeartor Stack */
 	char *token = strtok(exp, " ");
 	char e = '\0';
-	Data tokenData = {"\0", 0};
+	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
 
 	while (token != NULL) {
 		
 		e = token[0];
-		strcpy(tokenData.p, token);
+		strcpy(tokenData.p, token);	/* Copy arument to string part of the structure */
 		
 		switch(e) {
 	
@@ -766,13 +771,13 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 			case '-':
 			case '*':
 			case '/':
-					if(token[1] != '\0') {
+					if(token[1] != '\0') {	/* NULL String */
 						InputError();
 					}
 					while (!isEmpty(op) && top(op)[0] != '(' && prio(e) <= prio(top(op)[0])) {
 
-							Data ct = pop(&op);
-							Enqueue(resf, resr, ct);
+							Data ct = pop(&op);	/* Pop from operator stack */
+							Enqueue(resf, resr, ct);/* Insert to Queue */
 				        }
 					push(&op, tokenData);
 					break;
@@ -788,14 +793,14 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 					pop(&op);
 					break;
 						
-			default:	Enqueue(resf, resr, tokenData); 				
+			default:	Enqueue(resf, resr, tokenData);  /* For Operands */				
 		}
 
 		token = strtok(NULL," ");
 	}
 	
 	while (!isEmpty(op)) {
-		Enqueue(resf , resr, pop(&op));
+		Enqueue(resf , resr, pop(&op));	/* Put remaining elements into the queue */
 	}
 
 	queue *i;
@@ -804,7 +809,7 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 
 		 if (strlen(c) > 1)
 	  		while (*c) {
-       				if (strchr(")+-*/(", *c)) {
+       				if (strchr(")+-*/(", *c)) {	/* Check if opeaend contains +,-,*,/ or ( between them */
           				InputError();
        				}
       			 c++;
@@ -812,51 +817,61 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 	}
 }
 
+/* Evaluates Postfix Expression */
 maxuint_t eval(queue **front, queue **rear)
 {
 	maxuint_t ans = 0;
 	stack *est = NULL;
 	Data ansdata;
 
+	if (*front == NULL)	/* If Queue is Empty */
+		return 0;
+
+	if (*front == *rear) {		/* If only one element in the queue */
+		short s = 0;
+		ansdata = Dequeue(front,rear);
+		return unitconv(ansdata, &s);
+	}
+		
 	while (*front != NULL && *rear != NULL) {
 	
 		Data arg = Dequeue(front, rear);
 		
-		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){
+		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
 		
-			Data raw_b = pop(&est);
+			Data raw_b = pop(&est);			/* Pop data from stack */
 			Data raw_a = pop(&est);
 
-			maxuint_t b = unitconv(raw_b, &raw_b.unit);
+			maxuint_t b = unitconv(raw_b, &raw_b.unit);	/* Convert to integer */
 			maxuint_t a = unitconv(raw_a, &raw_a.unit);
 
-			maxuint_t c = 0;
+			maxuint_t c = 0;	/* Result data */
 			Data raw_c;
 			
 			switch (arg.p[0]) {
 			
-				case '+': if (raw_a.unit && raw_b.unit) {					
+				case '+': if (raw_a.unit && raw_b.unit) { /* Check if both are units */					
 					  	c = a + b;
 						raw_c.unit = 1;
 					  } else {
 						InputError();
 					  }
 					  break;
-				case '-': if (raw_a.unit && raw_b.unit) {	
+				case '-': if (raw_a.unit && raw_b.unit) { /* Check if both are units */		
 					  	c = a - b;
 						raw_c.unit = 1;
 					  } else {
 						InputError();
 					  }
 					  break;
-				case '*': if (!raw_a.unit || !raw_b.unit) {	
+				case '*': if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */		
 					  	c = a * b;
 						raw_c.unit = 1;
 					  } else {
 						InputError();
 					  }
 					  break;
-				case '/': if (raw_a.unit && !raw_b.unit) {	
+				case '/': if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */		
 					  	c = a / b;
 						raw_c.unit = 1;
 					  } else {
@@ -865,8 +880,8 @@ maxuint_t eval(queue **front, queue **rear)
 					  break;
 			}
 			
-			strcpy(raw_c.p, getstr_u128(c, uint_buf));			        
-			push(&est, raw_c);	
+			strcpy(raw_c.p, getstr_u128(c, uint_buf));	/* Convert to string */			        
+			push(&est, raw_c);				/* Put in stack */
 		
 		} else {	      
 			push(&est, arg);	
@@ -874,7 +889,7 @@ maxuint_t eval(queue **front, queue **rear)
 	}
 	
 	ansdata = pop(&est);
-        ans = strtoull(ansdata.p, NULL, 0);	
+        ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */	
 	
 	return ans;
 }
@@ -974,7 +989,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if ((argc - optind == 1 && strlen(argv[1]) < 5) || (argc == 1 && optind == 1)) {
+	if (argc == 1 && optind == 1) {
 		usage();
 		return 1;
 	}
