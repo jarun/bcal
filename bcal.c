@@ -624,8 +624,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 
 void InputError()
 {
-	fprintf(stderr, "\nPlease enter inputs properly. Always put spece between each two arguments.\n\
-And a byte unit can only be divided or multiplied by a plain integer.\nExample:\nbcal \"( 5kb + 2mb ) / 3\"\nbcal \"5tb / 12\"\nbcal \"2.5mb * 3\" etc.\n\n");
+	fprintf(stderr, "\nPlease enter inputs properly. Note that a byte unit can only be divided or multiplied by a plain integer.\nAlso only byte units can be used for addition or substraction.\nExample:\nbcal \"(5kb+2mb)/3\"\nbcal \"5tb/12\"\nbcal \"2.5mb*3\" etc.\n\n");
 	exit(-1);
 }
 
@@ -677,7 +676,7 @@ maxuint_t unitconv(Data bunit, short *u)
 
 		if (count == -1) {
 			fprintf(stderr, "No matching unit\n");
-			return 1;
+			InputError();
 		}
 
 		maxfloat_t byte_metric = 0;
@@ -759,6 +758,7 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 	char *token = strtok(exp, " ");
 	char e = '\0';
 	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
+	int BraceBalence = 0;
 
 	while (token != NULL) {
 		
@@ -782,7 +782,7 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 					push(&op, tokenData);
 					break;
 			
-			case '(':	
+			case '(':	BraceBalence++;
 					push(&op, tokenData);
 					break;
 		
@@ -791,6 +791,7 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 							Enqueue(resf, resr ,ct);
 					}
 					pop(&op);
+					BraceBalence--;
 					break;
 						
 			default:	Enqueue(resf, resr, tokenData);  /* For Operands */				
@@ -803,18 +804,8 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 		Enqueue(resf , resr, pop(&op));	/* Put remaining elements into the queue */
 	}
 
-	queue *i;
-	for (i = *resf; i != NULL; i = i->link) {
-		char *c = i->d.p;		
-
-		 if (strlen(c) > 1)
-	  		while (*c) {
-       				if (strchr(")+-*/(", *c)) {	/* Check if opeaend contains +,-,*,/ or ( between them */
-          				InputError();
-       				}
-      			 c++;
-   			}
-	}
+	if (BraceBalence != 0)
+		InputError();
 }
 
 /* Evaluates Postfix Expression */
@@ -892,6 +883,48 @@ maxuint_t eval(queue **front, queue **rear)
         ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */	
 	
 	return ans;
+}
+
+int isOpr(char c) { /* Check if a char is operator or not */
+
+	switch (c) {
+	
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+		case '(':
+		case ')': return 1;
+		 default: return 0;
+	}
+}
+
+char *FixExpr(char *exp) {	/* Make the expression compatible with parsing by inserting/removing space between arguments */
+	
+	char *newExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
+	int i=0 ,j=0;
+	
+	while (exp[i] != '\0') {
+	
+		if ((isdigit(exp[i]) && isOpr(exp[i + 1])) ||
+		    ( isOpr(exp[i]) && isdigit(exp[i + 1])) ||
+		    ( isOpr(exp[i]) && isOpr(exp[i + 1])) ||
+		    (isalpha(exp[i]) && isOpr(exp[i + 1])) ) {
+			
+			newExp[j++] = exp[i];
+			newExp[j++] = ' ';
+			newExp[j] = exp[i + 1];
+		
+		} else if (isdigit(exp[i]) && exp[i + 1]==' ' && isalpha(exp[i + 2])) {
+			
+			newExp[j++] = exp[i];
+			newExp[j] = exp[i + 2];
+			i++;
+		} else
+			newExp[j++] = exp[i];
+	  i++;
+	}
+	return newExp;
 }
 
 void usage()
@@ -1060,13 +1093,16 @@ int main(int argc, char **argv)
 	}
 	
 	/*Arithmetic Operation*/
-	if (argc - optind == 1) { 		
+	if (argc - optind == 1) {
+	
+		char *expr = FixExpr(argv[1]);	 /* Make parsing compatible */
+		
 		maxuint_t byteans = 0;
 		maxuint_t lba = 0, offset = 0;
 
 		queue *front = NULL, *rear = NULL;		
-		Infix2Postfix(argv[1], &front, &rear);
-		byteans = eval(&front, &rear);
+		Infix2Postfix(expr, &front, &rear);
+		byteans = eval(&front, &rear);		/* Evaluate Expression */
 
 		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
 

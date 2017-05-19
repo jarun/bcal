@@ -2,6 +2,9 @@
 #include<stdlib.h>
 #include<string.h>
 
+#ifndef DSLIB_H
+#define DSLIB_H
+
 #define NUM_LEN 64
 
 typedef struct data
@@ -38,7 +41,7 @@ void push(stack **top, Data d)
 
 Data pop(stack **top)
 {
-	Data d;
+	Data d = {"\0", 0};
 	if (*top == NULL)
 		return d;
 	else {
@@ -66,7 +69,7 @@ void Enqueue(queue **front, queue **rear, Data d)
 
 Data Dequeue(queue **front,queue **rear)
 {
-	Data d;
+	Data d = {"\0", 0};
 
 	if (*front == NULL && *rear == NULL)
 		return d;
@@ -105,6 +108,7 @@ void printStk(stack *top)
 {
 	stack *i;
 	printf("\nStack: ");
+	if(top==NULL)puts("Empty");
 	for (i = top; i != NULL; i = i->link)
 		printf(" %s ", i->d.p);
 }
@@ -117,3 +121,5 @@ void printQue(queue *front)
 		printf(" %s ", i->d.p);
 	puts("\n");
 }
+
+#endif
