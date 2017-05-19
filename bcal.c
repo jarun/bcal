@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include "dslib.h"
 
 #define TRUE 1
 #define FALSE !TRUE
@@ -621,6 +622,311 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
+void InputError()
+{
+	fprintf(stderr, "\nPlease enter inputs properly. Note that a byte unit can only be divided or multiplied by a plain integer.\nAlso only byte units can be used for addition or substraction.\nExample:\nbcal \"(5kb+2mb)/3\"\nbcal \"5tb/12\"\nbcal \"2.5mb*3\" etc.\n\n");
+	exit(-1);
+}
+
+/* Convert any unit in bytes */
+maxuint_t unitconv(Data bunit, short *u) 
+{
+		/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
+		char *numstr = bunit.p;
+
+		if(numstr == NULL) {	/* If the string is empty */
+			InputError();	/* Throw Error */	
+		}
+
+		char *num;
+		char unit[4] = {'\0'};
+		int len = strlen(numstr);
+
+		if (isalpha(numstr[len - 3])) {		/* 3 char unit Eg: Kib, Mib etc. */
+			unit[0] = numstr[len - 3];
+			unit[1] = numstr[len - 2];
+			unit[2] = numstr[len - 1];
+			numstr[len - 1] = numstr[len - 2] = numstr[len - 3] = '\0';
+			*u = 1;
+			
+		} else if (isalpha(numstr[len - 2])) {	/* 2 char unit Eg: kb, mb etc. */
+			unit[0] = numstr[len - 2];
+			unit[1] = numstr[len - 1];
+			numstr[len - 1] = numstr[len - 2] = '\0';
+			*u = 1;
+		
+		} else if (isalpha(numstr[len - 1])) {	/* 1 char unit Eg: b */
+			unit[0] = numstr[len - 1];
+			numstr[len - 1] = '\0';
+			*u = 1;
+		} else {
+			if(*u != 1)	/* If not already converted from unit to bytes */
+				*u = 0;
+			return strtoull(numstr, NULL, 0);
+		}
+
+		num = numstr;		
+
+		int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
+		maxuint_t bytes = 0;
+
+		while (count-- > 0)
+			if (!strcmp(units[count], strtolower(unit)))
+                                break;
+
+		if (count == -1) {
+			fprintf(stderr, "No matching unit\n");
+			InputError();
+		}
+
+		maxfloat_t byte_metric = 0;
+
+		switch (count) {
+		case 0:
+			bytes = strtoull(num, NULL, 0);
+			break;
+		case 1:
+			byte_metric = strtod(num, NULL);	
+			bytes = (maxuint_t)(byte_metric * 1024);	/* Kibibyte */
+			break;
+		case 2:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * (1 << 20));	/* Mebibyte */
+			break;
+		case 3:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * (1 << 30));	/* Gibibyte */
+			break;
+		case 4:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * ((maxuint_t)1 << 40)); /* Tebibyte */
+			break;
+		case 5:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000);	/* Kilobyte */
+			break;
+		case 6:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000000);	/* Megabyte */
+			break;
+		case 7:
+			byte_metric = strtod(num, NULL);
+			bytes = (maxuint_t)(byte_metric * 1000000000);	/* Gigabyte */
+			break;
+		case 8:
+			byte_metric = strtod(num, NULL);
+			bytes = (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
+			break;
+		default:
+			fprintf(stderr, "Unknown unit\n");
+			return 1;
+		}
+	*u = 1;
+	return bytes;
+}
+
+int prio(char var) /* Get the priority of operators */
+{
+	switch(var)
+	{
+		case '+': return 2; break;
+		case '-': return 1; break;
+		case '*': return 3; break;
+		case '/': return 4; break;
+	}
+	return 0;
+}
+
+int checkExp(char *exp)	/* Check if arithmetic expression */
+{
+	int k = strtoull(exp, NULL, 0);
+	char *e2 = getstr_u128(k, uint_buf);
+
+	if (strcmp(e2, exp) == 0) {
+		return 0;
+	} 
+	return 1;
+}
+
+/* Convert Infix mathematical expression to Postfix */
+void Infix2Postfix(char *exp, queue **resf, queue **resr)
+{
+	if (!checkExp(exp))
+		return;
+		
+	stack *op = NULL;			/* Opeartor Stack */
+	char *token = strtok(exp, " ");
+	char e = '\0';
+	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
+	int BraceBalence = 0;
+
+	while (token != NULL) {
+		
+		e = token[0];
+		strcpy(tokenData.p, token);	/* Copy arument to string part of the structure */
+		
+		switch(e) {
+	
+			case '+':
+			case '-':
+			case '*':
+			case '/':
+					if(token[1] != '\0') {	/* NULL String */
+						InputError();
+					}
+					while (!isEmpty(op) && top(op)[0] != '(' && prio(e) <= prio(top(op)[0])) {
+
+							Data ct = pop(&op);	/* Pop from operator stack */
+							Enqueue(resf, resr, ct);/* Insert to Queue */
+				        }
+					push(&op, tokenData);
+					break;
+			
+			case '(':	BraceBalence++;
+					push(&op, tokenData);
+					break;
+		
+			case ')':	while (!isEmpty(op) && top(op)[0] != '(') {
+							Data ct = pop(&op);
+							Enqueue(resf, resr ,ct);
+					}
+					pop(&op);
+					BraceBalence--;
+					break;
+						
+			default:	Enqueue(resf, resr, tokenData);  /* For Operands */				
+		}
+
+		token = strtok(NULL," ");
+	}
+	
+	while (!isEmpty(op)) {
+		Enqueue(resf , resr, pop(&op));	/* Put remaining elements into the queue */
+	}
+
+	if (BraceBalence != 0)
+		InputError();
+}
+
+/* Evaluates Postfix Expression */
+maxuint_t eval(queue **front, queue **rear)
+{
+	maxuint_t ans = 0;
+	stack *est = NULL;
+	Data ansdata;
+
+	if (*front == NULL)	/* If Queue is Empty */
+		return 0;
+
+	if (*front == *rear) {		/* If only one element in the queue */
+		short s = 0;
+		ansdata = Dequeue(front,rear);
+		return unitconv(ansdata, &s);
+	}
+		
+	while (*front != NULL && *rear != NULL) {
+	
+		Data arg = Dequeue(front, rear);
+		
+		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
+		
+			Data raw_b = pop(&est);			/* Pop data from stack */
+			Data raw_a = pop(&est);
+
+			maxuint_t b = unitconv(raw_b, &raw_b.unit);	/* Convert to integer */
+			maxuint_t a = unitconv(raw_a, &raw_a.unit);
+
+			maxuint_t c = 0;	/* Result data */
+			Data raw_c;
+			
+			switch (arg.p[0]) {
+			
+				case '+': if (raw_a.unit && raw_b.unit) { /* Check if both are units */					
+					  	c = a + b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '-': if (raw_a.unit && raw_b.unit) { /* Check if both are units */		
+					  	c = a - b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '*': if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */		
+					  	c = a * b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+				case '/': if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */		
+					  	c = a / b;
+						raw_c.unit = 1;
+					  } else {
+						InputError();
+					  }
+					  break;
+			}
+			
+			strcpy(raw_c.p, getstr_u128(c, uint_buf));	/* Convert to string */			        
+			push(&est, raw_c);				/* Put in stack */
+		
+		} else {	      
+			push(&est, arg);	
+		}			
+	}
+	
+	ansdata = pop(&est);
+        ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */	
+	
+	return ans;
+}
+
+int isOpr(char c) { /* Check if a char is operator or not */
+
+	switch (c) {
+	
+		case '+':
+		case '-':
+		case '*':
+		case '/':
+		case '(':
+		case ')': return 1;
+		 default: return 0;
+	}
+}
+
+char *FixExpr(char *exp) {	/* Make the expression compatible with parsing by inserting/removing space between arguments */
+	
+	char *newExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
+	int i=0 ,j=0;
+	
+	while (exp[i] != '\0') {
+	
+		if ((isdigit(exp[i]) && isOpr(exp[i + 1])) ||
+		    ( isOpr(exp[i]) && isdigit(exp[i + 1])) ||
+		    ( isOpr(exp[i]) && isOpr(exp[i + 1])) ||
+		    (isalpha(exp[i]) && isOpr(exp[i + 1])) ) {
+			
+			newExp[j++] = exp[i];
+			newExp[j++] = ' ';
+			newExp[j] = exp[i + 1];
+		
+		} else if (isdigit(exp[i]) && exp[i + 1]==' ' && isalpha(exp[i + 2])) {
+			
+			newExp[j++] = exp[i];
+			newExp[j] = exp[i + 2];
+			i++;
+		} else
+			newExp[j++] = exp[i];
+	  i++;
+	}
+	return newExp;
+}
+
 void usage()
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
@@ -631,6 +937,7 @@ positional arguments:\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
+  \"Expresstion\"  arithmetic operation\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
@@ -715,7 +1022,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (argc - optind == 1 || (argc == 1 && optind == 1)) {
+	if (argc == 1 && optind == 1) {
 		usage();
 		return 1;
 	}
@@ -783,6 +1090,39 @@ int main(int argc, char **argv)
 		fprintf(stdout, ":");
 		printhex_u128(offset);
 		fprintf(stdout, "\n");
+	}
+	
+	/*Arithmetic Operation*/
+	if (argc - optind == 1) {
+	
+		char *expr = FixExpr(argv[1]);	 /* Make parsing compatible */
+		
+		maxuint_t byteans = 0;
+		maxuint_t lba = 0, offset = 0;
+
+		queue *front = NULL, *rear = NULL;		
+		Infix2Postfix(expr, &front, &rear);
+		byteans = eval(&front, &rear);		/* Evaluate Expression */
+
+		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
+
+		convertbyte(getstr_u128(byteans, uint_buf));
+
+		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
+		printhex_u128(byteans);
+
+		/* Calculate LBA and offset */
+		lba = byteans / sectorsize;
+		offset = byteans % sectorsize;
+
+		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+		/* We use a global buffer, so print decimal lba first, then offset */
+		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
+		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
+		printhex_u128(lba);
+		fprintf(stdout, ":");
+		printhex_u128(offset);
+		fprintf(stdout, "\n");		
 	}
 
 	return 0;

@@ -10,7 +10,7 @@ DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 all: bcal
 
 bcal: bcal.c
-	$(CC) $(CFLAGS) -o bcal bcal.c $(LDLIBS)
+	$(CC) $(CFLAGS) -o bcal -include dslib.h bcal.c $(LDLIBS)
 	strip bcal
 
 .PHONY: clean
