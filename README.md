@@ -96,6 +96,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
                        see https://wiki.ubuntu.com/UnitsPolicy
                        must be space-separated, case is ignored
                        N can be decimal or '0x' prefixed hex value
+     "Expression"      arithmetic operation
 
     optional arguments:
       -c N             show N in binary, decimal and hex
