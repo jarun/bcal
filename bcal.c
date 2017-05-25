@@ -1140,30 +1140,18 @@ int main(int argc, char **argv)
 		char *expr = fixexpr(argv[1]);	 /* Make parsing compatible */
 
 		maxuint_t byteans = 0;
-		maxuint_t lba = 0, offset = 0;
 
 		queue *front = NULL, *rear = NULL;
 		infix2postfix(expr, &front, &rear);
+		free(expr);
 		byteans = eval(&front, &rear);		/* Evaluate Expression */
 
-		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
+		fprintf(stdout, "\033[1mRESULT\033[0m\n");
 
 		convertbyte(getstr_u128(byteans, uint_buf));
 
 		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
 		printhex_u128(byteans);
-
-		/* Calculate LBA and offset */
-		lba = byteans / sectorsize;
-		offset = byteans % sectorsize;
-
-		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
-		/* We use a global buffer, so print decimal lba first, then offset */
-		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
-		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
-		printhex_u128(lba);
-		fprintf(stdout, ":");
-		printhex_u128(offset);
 		fprintf(stdout, "\n");
 	}
 
