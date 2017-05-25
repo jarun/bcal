@@ -5,6 +5,8 @@ bcal \- Perform storage conversions and calculations.
 .B bcal [-c N] [-f FORMAT] [-s bytes] [-h]
 .br
 .B "    "[N unit]
+.br
+.B "    "["Expression"]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
@@ -13,6 +15,7 @@ bcal \- Perform storage conversions and calculations.
 .PP
   * convert to IEC/SI standard data storage units
   * show the address in bytes
+  * evaluate arithmetic expression of storage units
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
   * show binary, decimal and hex representation of a number
@@ -29,18 +32,21 @@ Refer to:
 \fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
 .PP
 .IP 2. 4
-Decimal and hex \fBnumeric representations\fR are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
+\fBExpression\fR: Expression should be within \fIquotes\fR, inner spaces are ignored. A storage unit can only be divided or multiplied by a plain integer.Only \fIstorage units\fR can be used for addition or substraction.
 .PP
 .IP 3. 4
-\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b', octal inputs with '00'.
+Decimal and hex \fBnumeric representations\fR are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
 .PP
 .IP 4. 4
-\fBNo negative arguments\fR allowed. Input limits are \fIunsigned long long\fR and \fIdouble\fR.
+\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b', octal inputs with '00'.
 .PP
 .IP 5. 4
-\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
+\fBNo negative arguments\fR allowed. Input limits are \fIunsigned long long\fR and \fIdouble\fR.
 .PP
 .IP 6. 4
+\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.
+.PP
+.IP 7. 4
 \fBCHS and LBA syntax\fR:
   - LBA: 'lLBA-MAX_HEAD-MAX_SECTOR'   [NOTE: LBA starts with 'l' (case ignored)]
   - CHS: 'cC-H-S-MAX_HEAD-MAX_SECTOR' [NOTE: CHS starts with 'c' (case ignored)]
@@ -87,6 +93,14 @@ Note that the units are case-insensitive.
 .EE
 .PP
 .IP 2. 4
+Evaluate arithmetic expression of storage units
+.PP
+.EX
+.IP
+.B $ bcal """(5kb+2mb)/3"""
+.B $ bcal """5tb/12"""
+.B $ bcal """2.5mb*3"""
+.IP 3. 4
 Convert storage capacity, set sector size to 4096 to calculate LBA.
 .PP
 .EX
@@ -94,7 +108,7 @@ Convert storage capacity, set sector size to 4096 to calculate LBA.
 .B $ bcal 0xaabbcc kb -s 4096
 .EE
 .PP
-.IP 3. 4
+.IP 4. 4
 Convert LBA to CHS.
 .PP
 .EX
@@ -104,7 +118,7 @@ Convert LBA to CHS.
 .B $ bcal -f l0x300-0x12-0x7e
 .EE
 .PP
-.IP 4. 4
+.IP 5. 4
 Convert CHS to LBA.
 .PP
 .EX
@@ -116,7 +130,7 @@ Convert CHS to LBA.
 .B $ bcal -f c0x10-10--0x12
 .EE
 .PP
-.IP 5. 4
+.IP 6. 4
 Show binary, decimal and hex representations of a number.
 .PP
 .EX
