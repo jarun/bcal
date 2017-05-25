@@ -743,44 +743,9 @@ int priority(char sign) /* Get the priority of operators */
 	return 0;
 }
 
-/* Check if arithmetic expression */
-int checkExp(char *exp)
-{
-	int k = strtoull(exp, NULL, 0);
-	char *e2 = getstr_u128(k, uint_buf);
-
-	if (strcmp(e2, exp) == 0)
-		return 0;
-
-	return 1;
-}
-
-#if 0
-/* Trim all whitespace from both ends */
-char *strstrip(char *s)
-{
-	if (!s || !*s)
-		return s;
-
-	size_t len = strlen(s) - 1;
-
-	while (len != 0 && isspace(s[len]))
-		len--;
-	s[len + 1] = '\0';
-
-	while (*s && isspace(*s))
-		s++;
-
-	return s;
-}
-#endif
-
 /* Convert Infix mathematical expression to Postfix */
-void Infix2Postfix(char *exp, queue **resf, queue **resr)
+void infix2postfix(char *exp, queue **resf, queue **resr)
 {
-	if (!checkExp(exp))
-		return;
-
 	stack *op = NULL;			/* Operator Stack */
 	char *token = strtok(exp, " ");
 	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
@@ -797,12 +762,12 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 			if (token[1] != '\0')
 				errormsg();
 
-			while (!isEmpty(op) && top(op)[0] != '(' &&
+			while (!isempty(op) && top(op)[0] != '(' &&
 			       priority(token[0]) <= priority(top(op)[0])) {
 				/* Pop from operator stack */
 				Data ct = pop(&op);
 				/* Insert to Queue */
-				Enqueue(resf, resr, ct);
+				enqueue(resf, resr, ct);
 		        }
 
 			push(&op, tokenData);
@@ -812,9 +777,9 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 			push(&op, tokenData);
 			break;
 		case ')':
-			while (!isEmpty(op) && top(op)[0] != '(') {
+			while (!isempty(op) && top(op)[0] != '(') {
 				Data ct = pop(&op);
-				Enqueue(resf, resr ,ct);
+				enqueue(resf, resr ,ct);
 			}
 
 			pop(&op);
@@ -822,15 +787,15 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 			break;
 		default:
 			/* Enqueue operands */
-			Enqueue(resf, resr, tokenData);
+			enqueue(resf, resr, tokenData);
 		}
 
 		token = strtok(NULL, " ");;
 	}
 
-	while (!isEmpty(op))
+	while (!isempty(op))
 		/* Put remaining elements into the queue */
-		Enqueue(resf , resr, pop(&op));
+		enqueue(resf , resr, pop(&op));
 
 	if (balanced != 0)
 		errormsg();
@@ -848,13 +813,13 @@ maxuint_t eval(queue **front, queue **rear)
 
 	if (*front == *rear) {		/* If only one element in the queue */
 		short s = 0;
-		ansdata = Dequeue(front,rear);
+		ansdata = dequeue(front,rear);
 		return unitconv(ansdata, &s);
 	}
 
 	while (*front != NULL && *rear != NULL) {
 
-		Data arg = Dequeue(front, rear);
+		Data arg = dequeue(front, rear);
 
 		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
 
@@ -872,39 +837,38 @@ maxuint_t eval(queue **front, queue **rear)
 				case '+': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
 					  	c = a + b;
 						raw_c.unit = 1;
-					  } else {
+					  } else
 						errormsg();
-					  }
+
 					  break;
 				case '-': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
 					  	c = a - b;
 						raw_c.unit = 1;
-					  } else {
+					  } else
 						errormsg();
-					  }
+
 					  break;
 				case '*': if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */
 					  	c = a * b;
 						raw_c.unit = 1;
-					  } else {
+					  } else
 						errormsg();
-					  }
+
 					  break;
 				case '/': if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */
 					  	c = a / b;
 						raw_c.unit = 1;
-					  } else {
+					  } else
 						errormsg();
-					  }
+
 					  break;
 			}
 
 			strcpy(raw_c.p, getstr_u128(c, uint_buf));	/* Convert to string */
 			push(&est, raw_c);				/* Put in stack */
 
-		} else {
+		} else
 			push(&est, arg);
-		}
 	}
 
 	ansdata = pop(&est);
@@ -927,47 +891,83 @@ int isoperator(char c)
 	}
 }
 
-void removeinnerspaces(char *str)
+/* Check if valid storage arithmetic expression */
+int checkexp(char *exp)
 {
-	char *dest = str;
+	while (*exp) {
+		if (*exp == 'b' || *exp == 'B')
+			return 1;
 
-	while (*str != '\0') {
-		while (isspace(*str) && isspace(*(str + 1)))
-			str++;
-
-		*dest++ = *str++;
+		exp++;
 	}
 
-	*dest = '\0';
+	return 0;
 }
 
-/* Make the expression compatible with parsing by inserting/removing space between arguments */
+/* Trim all whitespace from both ends */
+char *strstrip(char *s)
+{
+	if (!s || !*s)
+		return s;
+
+	size_t len = strlen(s) - 1;
+
+	while (len != 0 && isspace(s[len]))
+		len--;
+	s[len + 1] = '\0';
+
+	while (*s && isspace(*s))
+		s++;
+
+	return s;
+}
+
+/* Replace consecutive inner whitespaces with a single space */
+void removeinnerspaces(char *s)
+{
+	char *p = s;
+
+	while (*s != '\0') {
+		if (!isspace(*s))
+			*p++ = *s;
+
+		s++;
+	}
+
+	*p = '\0';
+}
+
+/* Make the expression compatible with parsing by
+ * inserting/removing space between arguments
+ */
 char *fixexpr(char *exp)
 {
+	strstrip(exp);
 	removeinnerspaces(exp);
 
-	char *newExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
+	if (!checkexp(exp))
+		errormsg();
+
 	int i = 0, j = 0;
+	char *tmpExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
 
 	while (exp[i] != '\0') {
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && isdigit(exp[i + 1])) ||
-		    (isoperator(exp[i]) && isoperator(exp[i + 1])) ||
+		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) || isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
-			newExp[j++] = exp[i];
-			newExp[j++] = ' ';
-			newExp[j] = exp[i + 1];
-		} else if (isdigit(exp[i]) && exp[i + 1]==' ' && isalpha(exp[i + 2])) {
-			newExp[j++] = exp[i];
-			newExp[j] = exp[i + 2];
-			i++;
+			tmpExp[j++] = exp[i];
+			tmpExp[j++] = ' ';
+			tmpExp[j] = exp[i + 1];
 		} else
-			newExp[j++] = exp[i];
+			tmpExp[j++] = exp[i];
 
 		i++;
 	}
 
-	return newExp;
+	if (tmpExp[j])
+		tmpExp[++j] = '\0';
+
+	return tmpExp;
 }
 
 void usage()
@@ -1137,14 +1137,13 @@ int main(int argc, char **argv)
 
 	/*Arithmetic Operation*/
 	if (argc - optind == 1) {
-
 		char *expr = fixexpr(argv[1]);	 /* Make parsing compatible */
 
 		maxuint_t byteans = 0;
 		maxuint_t lba = 0, offset = 0;
 
 		queue *front = NULL, *rear = NULL;
-		Infix2Postfix(expr, &front, &rear);
+		infix2postfix(expr, &front, &rear);
 		byteans = eval(&front, &rear);		/* Evaluate Expression */
 
 		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
