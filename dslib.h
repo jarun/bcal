@@ -11,26 +11,26 @@ typedef struct data
 {
 	char p[NUM_LEN];
 	short unit;
-}Data;
-	
+} Data;
+
 typedef struct stk
 {
 	Data d;
 	struct stk *link;
-}stack;
+} stack;
 
 typedef struct queue
 {
 	Data d;
 	struct queue *link;
-}queue;
+} queue;
 
 void push(stack **top, Data d)
 {
 	stack *new = (stack*)malloc(sizeof(stack));
 	new->d = d;
 	new->link = NULL;
-	
+
 	if (*top == NULL)
 		*top = new;
 	else {
@@ -53,12 +53,12 @@ Data pop(stack **top)
 	}
 }
 
-void Enqueue(queue **front, queue **rear, Data d)
+void enqueue(queue **front, queue **rear, Data d)
 {
 	queue *new = (queue*)malloc(sizeof(queue));
 	new->d = d;
 	new->link = NULL;
-	
+
 	if (*front == NULL && *rear == NULL)
 		*front = *rear = new;
 	else {
@@ -67,7 +67,7 @@ void Enqueue(queue **front, queue **rear, Data d)
 	}
 }
 
-Data Dequeue(queue **front,queue **rear)
+Data dequeue(queue **front,queue **rear)
 {
 	Data d = {"\0", 0};
 
@@ -88,7 +88,7 @@ Data Dequeue(queue **front,queue **rear)
 	}
 }
 
-int isEmpty(stack *top)
+int isempty(stack *top)
 {
 	if(top == NULL)
 		return 1;
@@ -104,16 +104,16 @@ char* top(stack *top)
 		return top->d.p;
 }
 
-void printStk(stack *top)
+void printstack(stack *top)
 {
 	stack *i;
 	printf("\nStack: ");
-	if(top==NULL)puts("Empty");
+	if (top==NULL)puts("Empty");
 	for (i = top; i != NULL; i = i->link)
 		printf(" %s ", i->d.p);
 }
 
-void printQue(queue *front)
+void printqueue(queue *front)
 {
 	queue *i;
 	printf("Queue: ");

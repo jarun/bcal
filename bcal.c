@@ -891,11 +891,11 @@ int isoperator(char c)
 	}
 }
 
-/* Check if arithmetic expression */
+/* Check if valid storage arithmetic expression */
 int checkexp(char *exp)
 {
 	while (*exp) {
-		if (!(isdigit(*exp) || isspace(*exp)))
+		if (*exp == 'b' || *exp == 'B')
 			return 1;
 
 		exp++;
@@ -928,10 +928,10 @@ void removeinnerspaces(char *s)
 	char *p = s;
 
 	while (*s != '\0') {
-		while (isspace(*s) && isspace(*(s + 1)))
-			s++;
+		if (!isspace(*s))
+			*p++ = *s;
 
-		*p++ = *s++;
+		s++;
 	}
 
 	*p = '\0';
@@ -948,31 +948,26 @@ char *fixexpr(char *exp)
 	if (!checkexp(exp))
 		errormsg();
 
-	char *tmpExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
 	int i = 0, j = 0;
+	char *tmpExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
 
 	while (exp[i] != '\0') {
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && isdigit(exp[i + 1])) ||
-		    (isoperator(exp[i]) && isoperator(exp[i + 1])) ||
+		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) || isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
 			tmpExp[j++] = exp[i];
 			tmpExp[j++] = ' ';
 			tmpExp[j] = exp[i + 1];
-		} else if (isdigit(exp[i]) && exp[i + 1]==' ' && isalpha(exp[i + 2])) {
-			tmpExp[j++] = exp[i];
-			tmpExp[j] = exp[i + 2];
-			i++;
 		} else
 			tmpExp[j++] = exp[i];
 
 		i++;
 	}
 
-	strcpy(exp, tmpExp);
-	free(tmpExp);
+	if (tmpExp[j])
+		tmpExp[++j] = '\0';
 
-	return exp;
+	return tmpExp;
 }
 
 void usage()
@@ -985,7 +980,7 @@ positional arguments:\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
-  \"Expression\"  arithmetic operation\n\n\
+  \"Expresstion\"  arithmetic operation\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
@@ -1145,30 +1140,18 @@ int main(int argc, char **argv)
 		char *expr = fixexpr(argv[1]);	 /* Make parsing compatible */
 
 		maxuint_t byteans = 0;
-		maxuint_t lba = 0, offset = 0;
 
 		queue *front = NULL, *rear = NULL;
 		infix2postfix(expr, &front, &rear);
+		free(expr);
 		byteans = eval(&front, &rear);		/* Evaluate Expression */
 
-		fprintf(stdout, "\033[1mUNIT  CONVERSION\033[0m\n");
+		fprintf(stdout, "\033[1mRESULT\033[0m\n");
 
 		convertbyte(getstr_u128(byteans, uint_buf));
 
 		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
 		printhex_u128(byteans);
-
-		/* Calculate LBA and offset */
-		lba = byteans / sectorsize;
-		offset = byteans % sectorsize;
-
-		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
-		/* We use a global buffer, so print decimal lba first, then offset */
-		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
-		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
-		printhex_u128(lba);
-		fprintf(stdout, ":");
-		printhex_u128(offset);
 		fprintf(stdout, "\n");
 	}
 
