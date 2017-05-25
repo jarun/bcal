@@ -664,7 +664,7 @@ maxuint_t unitconv(Data bunit, short *u)
 		numstr[len - 1] = '\0';
 		*u = 1;
 	} else {
-		if(*u != 1)	/* If not already converted from unit to bytes */
+		if (*u != 1)	/* If not already converted from unit to bytes */
 			*u = 0;
 		return strtoull(numstr, NULL, 0);
 	}
@@ -798,7 +798,7 @@ void Infix2Postfix(char *exp, queue **resf, queue **resr)
 				errormsg();
 
 			while (!isEmpty(op) && top(op)[0] != '(' &&
-			       priority(token[0] <= priority(top(op)[0]))) {
+			       priority(token[0]) <= priority(top(op)[0])) {
 				/* Pop from operator stack */
 				Data ct = pop(&op);
 				/* Insert to Queue */
@@ -908,22 +908,22 @@ maxuint_t eval(queue **front, queue **rear)
 	}
 
 	ansdata = pop(&est);
-        ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
+	ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
 
 	return ans;
 }
 
-int isOpr(char c) { /* Check if a char is operator or not */
-
+/* Check if a char is operator or not */
+int isoperator(char c)
+{
 	switch (c) {
-
 		case '+':
 		case '-':
 		case '*':
 		case '/':
 		case '(':
 		case ')': return 1;
-		 default: return 0;
+		default: return 0;
 	}
 }
 
@@ -941,17 +941,19 @@ void removeinnerspaces(char *str)
 	*dest = '\0';
 }
 
-char *fixexpr(char *exp) {	/* Make the expression compatible with parsing by inserting/removing space between arguments */
+/* Make the expression compatible with parsing by inserting/removing space between arguments */
+char *fixexpr(char *exp)
+{
 	removeinnerspaces(exp);
 
 	char *newExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
 	int i = 0, j = 0;
 
 	while (exp[i] != '\0') {
-		if ((isdigit(exp[i]) && isOpr(exp[i + 1])) ||
-		    (isOpr(exp[i]) && isdigit(exp[i + 1])) ||
-		    (isOpr(exp[i]) && isOpr(exp[i + 1])) ||
-		    (isalpha(exp[i]) && isOpr(exp[i + 1]))) {
+		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
+		    (isoperator(exp[i]) && isdigit(exp[i + 1])) ||
+		    (isoperator(exp[i]) && isoperator(exp[i + 1])) ||
+		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
 			newExp[j++] = exp[i];
 			newExp[j++] = ' ';
 			newExp[j] = exp[i + 1];
