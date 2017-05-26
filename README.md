@@ -47,6 +47,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - show binary, decimal and hex representation of a number
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
+- evaluate arithmetic expression of storage units
 
 ### Installation
 
@@ -88,10 +89,12 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
     usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
                 [N unit]
+                ["Expression"]
 
     Perform storage conversions and calculations.
 
     positional arguments:
+    "Expression"       evaluate arithmetic expression of storage units
       N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
                        see https://wiki.ubuntu.com/UnitsPolicy
                        must be space-separated, case is ignored
@@ -120,6 +123,7 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
 - Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
+- **Expression**: Expression should be within quotes, inner spaces are ignored. A storage unit can only be divided or multiplied by a plain integer.Only storage units can be used for addition or substraction.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `00`.
 - **No negative arguments** allowed. Input limits are `unsigned long long` and `double`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
@@ -172,6 +176,12 @@ Note that the units are case-insensitive.
         $ man bcal
         $ bcal -h
 
+7. Evaluate arithmetic expression of storage units.
+
+	$ bcal "(5kb+2mb)/3"
+	$ bcal "5tb/12"
+	$ bcal "2.5mb*3"
+        
 ### Copyright
 
 Copyright © 2016-2017 [Arun Prakash Jana](https://github.com/jarun)
