@@ -47,6 +47,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - show binary, decimal and hex representation of a number
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
+- evaluate arithmetic expression of storage units
 
 ### Installation
 
