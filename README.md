@@ -178,9 +178,9 @@ Note that the units are case-insensitive.
 
 7. Evaluate arithmetic expression of storage units.
 
-        $ bcal "(5kb+2mb)/3"
-        $ bcal "5tb/12"
-        $ bcal "2.5mb*3"
+	$ bcal "(5kb+2mb)/3"
+	$ bcal "5tb/12"
+	$ bcal "2.5mb*3"
         
 ### Copyright
 
