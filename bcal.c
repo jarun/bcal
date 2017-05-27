@@ -991,31 +991,29 @@ char *fixexpr(char *exp)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
-	if (!checkexp(exp)) {
-		usage();
-		exit(-1);
-	}
+	if (!checkexp(exp))
+		return NULL;
 
 	int i = 0, j = 0;
-	char *tmpExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
+	char *parsed = (char*)malloc(2 * strlen(exp) * sizeof(char));
 
 	while (exp[i] != '\0') {
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
 		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) || isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
-			tmpExp[j++] = exp[i];
-			tmpExp[j++] = ' ';
-			tmpExp[j] = exp[i + 1];
+			parsed[j++] = exp[i];
+			parsed[j++] = ' ';
+			parsed[j] = exp[i + 1];
 		} else
-			tmpExp[j++] = exp[i];
+			parsed[j++] = exp[i];
 
 		i++;
 	}
 
-	if (tmpExp[j])
-		tmpExp[++j] = '\0';
+	if (parsed[j])
+		parsed[++j] = '\0';
 
-	return tmpExp;
+	return parsed;
 }
 
 int main(int argc, char **argv)
@@ -1151,6 +1149,10 @@ int main(int argc, char **argv)
 	/*Arithmetic Operation*/
 	if (argc - optind == 1) {
 		char *expr = fixexpr(argv[1]);	 /* Make parsing compatible */
+		if (expr == NULL) {
+			usage();
+			return 1;
+		}
 
 		maxuint_t byteans = 0;
 
