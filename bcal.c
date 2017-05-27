@@ -622,15 +622,46 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
-void errormsg()
+void usage()
 {
-	fprintf(stderr, "Invalid input.\n\n\
-Expression should be within quotes, inner spaces are ignored.\n\
-A storage unit can only be divided or multiplied by a plain integer.\n\
-Only storage units can be used for addition or substraction.\n\n\
-Examples:\nbcal \"(5kb+2mb)/3\"\nbcal \"5 tb / 12\"\nbcal \"2.5mb*3\" etc.\n");
-
-	exit(-1);
+	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
+	    [expression] [N unit] \n\n\
+Perform storage conversions and calculations.\n\n\
+positional arguments:\n\
+  expression       evaluate storage arithmetic expression\n\
+		   +, -, *, / with decimal inputs supported\n\
+		   unit can be multipled or divided by +ve integer(s)\n\
+		   units can be added or subtracted from each other\n\
+		   Examples:\n\
+		       bcal \"(5kb+2mb)/3\"\n\
+		       bcal \"5 tb / 12\"\n\
+		       bcal \"2.5mb*3\"\n\
+  N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
+		   see https://wiki.ubuntu.com/UnitsPolicy\n\
+		   must be space-separated, case is ignored\n\
+		   N can be decimal or '0x' prefixed hex value\n\n\
+optional arguments:\n\
+  -c N             show N in binary, decimal and hex\n\
+  -f FORMAT        convert CHS to LBA or LBA to CHS\n\
+		   formats are hyphen-separated\n\
+		   LBA format:\n\
+		       starts with 'l':\n\
+		       lLBA-MAX_HEAD-MAX_SECTOR\n\
+		   CHS format:\n\
+		       starts with 'c':\n\
+		       cC-H-S-MAX_HEAD-MAX_SECTOR\n\
+		   omitted values are considered 0\n\
+		   FORMAT 'c-50--0x12-' denotes:\n\
+		     C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
+		   FORMAT 'l50-0x12' denotes:\n\
+		     LBA = 50, MH = 0x12, MS = 0\n\
+		   default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
+  -s bytes         sector size [default 512]\n\
+  -h               show this help and exit\n\n\
+Version %s\n\
+Copyright © 2016-2017 Arun Prakash Jana <engineerarun@gmail.com>\n\
+License: GPLv3\n\
+Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
 /* Convert any unit in bytes */
@@ -639,8 +670,10 @@ maxuint_t unitconv(Data bunit, short *u)
 	/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
 	char *numstr = bunit.p;
 
-	if (numstr == NULL)	/* If the string is empty */
-		errormsg();	/* Throw Error */
+	if (numstr == NULL) {
+		usage();
+		exit(-1);
+	}
 
 	char *num;
 	char unit[4] = {'\0'};
@@ -680,7 +713,8 @@ maxuint_t unitconv(Data bunit, short *u)
 
 	if (count == -1) {
 		fprintf(stderr, "No matching unit\n");
-		errormsg();
+		usage();
+		exit(-1);
 	}
 
 	maxfloat_t byte_metric = 0;
@@ -759,8 +793,10 @@ void infix2postfix(char *exp, queue **resf, queue **resr)
 		case '-':
 		case '*':
 		case '/':
-			if (token[1] != '\0')
-				errormsg();
+			if (token[1] != '\0') {
+				usage();
+				exit(-1);
+			}
 
 			while (!isempty(op) && top(op)[0] != '(' &&
 			       priority(token[0]) <= priority(top(op)[0])) {
@@ -797,8 +833,10 @@ void infix2postfix(char *exp, queue **resf, queue **resr)
 		/* Put remaining elements into the queue */
 		enqueue(resf , resr, pop(&op));
 
-	if (balanced != 0)
-		errormsg();
+	if (balanced != 0) {
+		usage();
+		exit(-1);
+	}
 }
 
 /* Evaluates Postfix Expression */
@@ -837,29 +875,37 @@ maxuint_t eval(queue **front, queue **rear)
 				case '+': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
 					  	c = a + b;
 						raw_c.unit = 1;
-					  } else
-						errormsg();
+					  } else {
+						usage();
+						exit(-1);
+					  }
 
 					  break;
 				case '-': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
 					  	c = a - b;
 						raw_c.unit = 1;
-					  } else
-						errormsg();
+					  } else {
+						  usage();
+						  exit(-1);
+					  }
 
 					  break;
 				case '*': if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */
 					  	c = a * b;
 						raw_c.unit = 1;
-					  } else
-						errormsg();
+					  } else {
+						  usage();
+						  exit(-1);
+					  }
 
 					  break;
 				case '/': if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */
 					  	c = a / b;
 						raw_c.unit = 1;
-					  } else
-						errormsg();
+					  } else {
+						  usage();
+						  exit(-1);
+					  }
 
 					  break;
 			}
@@ -945,8 +991,10 @@ char *fixexpr(char *exp)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
-	if (!checkexp(exp))
-		errormsg();
+	if (!checkexp(exp)) {
+		usage();
+		exit(-1);
+	}
 
 	int i = 0, j = 0;
 	char *tmpExp = (char*)malloc(2 * strlen(exp) * sizeof(char));
@@ -968,48 +1016,6 @@ char *fixexpr(char *exp)
 		tmpExp[++j] = '\0';
 
 	return tmpExp;
-}
-
-void usage()
-{
-	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
-            [expression] [N unit] \n\n\
-Perform storage conversions and calculations.\n\n\
-positional arguments:\n\
-  expression       evaluate storage arithmetic expression\n\
-                   +, -, *, / with decimal inputs supported\n\
-                   unit can be multipled or divided by +ve integer(s)\n\
-                   units can be added or subtracted from each other\n\
-                   Examples:\n\
-                       bcal \"(5kb+2mb)/3\"\n\
-                       bcal \"5 tb / 12\"\n\
-                       bcal \"2.5mb*3\"\n\
-  N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
-                   see https://wiki.ubuntu.com/UnitsPolicy\n\
-                   must be space-separated, case is ignored\n\
-                   N can be decimal or '0x' prefixed hex value\n\n\
-optional arguments:\n\
-  -c N             show N in binary, decimal and hex\n\
-  -f FORMAT        convert CHS to LBA or LBA to CHS\n\
-                   formats are hyphen-separated\n\
-                   LBA format:\n\
-                       starts with 'l':\n\
-                       lLBA-MAX_HEAD-MAX_SECTOR\n\
-                   CHS format:\n\
-                       starts with 'c':\n\
-                       cC-H-S-MAX_HEAD-MAX_SECTOR\n\
-                   omitted values are considered 0\n\
-                   FORMAT 'c-50--0x12-' denotes:\n\
-                     C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
-                   FORMAT 'l50-0x12' denotes:\n\
-                     LBA = 50, MH = 0x12, MS = 0\n\
-                   default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
-  -s bytes         sector size [default 512]\n\
-  -h               show this help and exit\n\n\
-Version %s\n\
-Copyright © 2016-2017 Arun Prakash Jana <engineerarun@gmail.com>\n\
-License: GPLv3\n\
-Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
 int main(int argc, char **argv)
