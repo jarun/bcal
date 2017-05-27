@@ -973,14 +973,21 @@ char *fixexpr(char *exp)
 void usage()
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
-            [N unit]\n\n\
+            [expression] [N unit] \n\n\
 Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
+  expression       evaluate storage arithmetic expression\n\
+                   +, -, *, / with decimal inputs supported\n\
+                   unit can be multipled or divided by +ve integer(s)\n\
+                   units can be added or subtracted from each other\n\
+                   Examples:\n\
+                       bcal \"(5kb+2mb)/3\"\n\
+                       bcal \"5 tb / 12\"\n\
+                       bcal \"2.5mb*3\"\n\
   N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
                    see https://wiki.ubuntu.com/UnitsPolicy\n\
                    must be space-separated, case is ignored\n\
                    N can be decimal or '0x' prefixed hex value\n\n\
-  \"Expression\"   arithmetic operation of storage units\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\

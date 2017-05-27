@@ -40,6 +40,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 ### Features
 
+- evaluate arithmetic expressions involving storage units
 - convert to IEC/SI standard data storage units
 - show the address in bytes
 - show address as LBA:OFFSET
@@ -47,7 +48,6 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - show binary, decimal and hex representation of a number
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
-- evaluate arithmetic expression of storage units
 
 ### Installation
 
@@ -88,13 +88,19 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 #### cmdline options
 
     usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
-                [N unit]
-                ["Expression"]
+                [expression] [N unit]
 
     Perform storage conversions and calculations.
 
     positional arguments:
-    "Expression"       evaluate arithmetic expression of storage units
+      expression       evaluate storage arithmetic expression
+                       +, -, *, / with decimal inputs supported
+                       unit can be multipled or divided by +ve integer(s)
+                       units can be added or subtracted from each other
+                       Examples:
+                           bcal "(5kb+2mb)/3"
+                           bcal "5 tb / 12"
+                           bcal "2.5mb*3"
       N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
                        see https://wiki.ubuntu.com/UnitsPolicy
                        must be space-separated, case is ignored
@@ -121,9 +127,9 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
 #### Operational notes
 
+- **Expression**: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be divided or multiplied by plain integers. Only storage units can be used for addition and subtraction.
 - **N unit**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, `unit` is case-insensitive. `N` and `unit` must be space-separated.
-- Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
-- **Expression**: Expression should be within quotes, inner spaces are ignored. A storage unit can only be divided or multiplied by a plain integer.Only storage units can be used for addition or substraction.
+- Only decimal is recognized in expressions. Decimal and hex **numeric representations** are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `00`.
 - **No negative arguments** allowed. Input limits are `unsigned long long` and `double`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
@@ -139,7 +145,13 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
 
 ### Examples
 
-1. Convert storage capacity to other units and get address, LBA.
+1. Evaluate arithmetic expression of storage units.
+
+        $ bcal "(5kb+2mb)/3"
+        $ bcal "5 tb / 12"
+        $ bcal "2.5mb*3"
+
+2. Convert storage capacity to other units and get address, LBA.
 
         $ bcal 20140115 b
         $ bcal 0x1335053 B
@@ -147,17 +159,17 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
         $ bcal 0xdef Gib
 Note that the units are case-insensitive.
 
-2. Convert storage capacity, set sector size to 4096 to calculate LBA.
+3. Convert storage capacity, set sector size to 4096 to calculate LBA.
 
         $ bcal 0xaabbcc kb -s 4096
 
-3. Convert LBA to CHS.
+4. Convert LBA to CHS.
 
         $ bcal -f l500
         $ bcal -f l0x600-18-0x7e
         $ bcal -f l0x300-0x12-0x7e
 
-4. Convert CHS to LBA.
+5. Convert CHS to LBA.
 
         $ bcal -f c10-10-10
         $ bcal -f c0x10-0x10-0x10
@@ -165,23 +177,17 @@ Note that the units are case-insensitive.
         $ bcal -f c-10-2-0x12
         $ bcal -f c0x10-10--0x12
 
-5. Show binary, decimal and hex representations of a number.
+6. Show binary, decimal and hex representations of a number.
 
         $ bcal -c 20140115
         $ bcal -c 0b1001100110101000001010011
         $ bcal -c 0x1335053
 
-6. Help and additional information.
+7. Help and additional information.
 
         $ man bcal
         $ bcal -h
 
-7. Evaluate arithmetic expression of storage units.
-
-	$ bcal "(5kb+2mb)/3"
-	$ bcal "5tb/12"
-	$ bcal "2.5mb*3"
-        
 ### Copyright
 
 Copyright © 2016-2017 [Arun Prakash Jana](https://github.com/jarun)

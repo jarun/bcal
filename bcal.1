@@ -4,15 +4,14 @@ bcal \- Perform storage conversions and calculations.
 .SH SYNOPSIS
 .B bcal [-c N] [-f FORMAT] [-s bytes] [-h]
 .br
-.B "    "[N unit]
-.br
-.B "    "["Expression"]
+.B "    "[expression] [N unit]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
 .PP
 .B Features
 .PP
+  * evaluate arithmetic expressions involving storage units
   * convert to IEC/SI standard data storage units
   * show the address in bytes
   * evaluate arithmetic expression of storage units
@@ -29,13 +28,13 @@ Refer to:
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
+\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be divided or multiplied by plain integers. Only storage units can be used for addition and subtraction.
 .PP
 .IP 2. 4
-\fBExpression\fR: Expression should be within \fIquotes\fR, inner spaces are ignored. A storage unit can only be divided or multiplied by a plain integer.Only \fIstorage units\fR can be used for addition or substraction.
+\fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
 .PP
 .IP 3. 4
-Decimal and hex \fBnumeric representations\fR are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
+Only decimal is recognized in expressions. Decimal and hex \fBnumeric representations\fR are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
 .PP
 .IP 4. 4
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b', octal inputs with '00'.
@@ -53,7 +52,7 @@ Decimal and hex \fBnumeric representations\fR are recognized for unit conversion
   - Format conversion arguments must be hyphen separated.
   - Any unspecified value, including the one preceding the first '-' to the one following the last '-', is considered '0' (zero).
 .PP
-.IP 7. 4
+.IP 8. 4
 \fBDefault values\fR:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
@@ -80,6 +79,16 @@ Show program help and exit.
 .SH EXAMPLES
 .PP
 .IP 1. 4
+Evaluate arithmetic expression of storage units
+.PP
+.EX
+.IP
+.B $ bcal """(5kb+2mb)/3"""
+.B $ bcal """5 tb / 12"""
+.B $ bcal """2.5mb*3"""
+.EE
+.PP
+.IP 2. 4
 Convert storage capacity to other units and get address, LBA.
 .PP
 .EX
@@ -88,18 +97,9 @@ Convert storage capacity to other units and get address, LBA.
 .B $ bcal 0x1335053 B
 .B $ bcal 0xaabbcc kb
 .B $ bcal 0xdef Gib
-
 Note that the units are case-insensitive.
 .EE
 .PP
-.IP 2. 4
-Evaluate arithmetic expression of storage units
-.PP
-.EX
-.IP
-.B $ bcal """(5kb+2mb)/3"""
-.B $ bcal """5tb/12"""
-.B $ bcal """2.5mb*3"""
 .IP 3. 4
 Convert storage capacity, set sector size to 4096 to calculate LBA.
 .PP
