@@ -43,12 +43,6 @@ typedef __uint64_t maxuint_t;
 typedef double maxfloat_t;
 #endif
 
-char *VERSION = "1.5";
-char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
-
-char uint_buf[UINT_BUF_LEN];
-char float_buf[FLOAT_BUF_LEN];
-
 typedef unsigned char bool;
 typedef unsigned long ulong;
 typedef unsigned long long ull;
@@ -58,6 +52,12 @@ typedef struct {
 	ulong h;
 	ulong s;
 } t_chs;
+
+char *VERSION = "1.5";
+char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
+
+char uint_buf[UINT_BUF_LEN];
+char float_buf[FLOAT_BUF_LEN];
 
 void binprint(maxuint_t n)
 {
@@ -1016,6 +1016,100 @@ char *fixexpr(char *exp)
 	return parsed;
 }
 
+int convertunit(char *value, char *unit, ulong sectorsize)
+{
+	int count = sizeof(units)/sizeof(*units);
+	maxuint_t bytes = 0, lba = 0, offset = 0;
+
+	while (count-- > 0)
+		if (!strcmp(units[count], strtolower(unit)))
+			break;
+
+	if (count == -1) {
+		fprintf(stderr, "No matching unit\n");
+		return 1;
+	}
+
+	fprintf(stdout, "\033[1mUNIT CONVERSION\033[0m\n");
+
+	switch (count) {
+	case 0:
+		bytes = convertbyte(value);
+		break;
+	case 1:
+		bytes = convertkib(value);
+		break;
+	case 2:
+		bytes = convertmib(value);
+		break;
+	case 3:
+		bytes = convertgib(value);
+		break;
+	case 4:
+		bytes = converttib(value);
+		break;
+	case 5:
+		bytes = convertkb(value);
+		break;
+	case 6:
+		bytes = convertmb(value);
+		break;
+	case 7:
+		bytes = convertgb(value);
+		break;
+	case 8:
+		bytes = converttb(value);
+		break;
+	default:
+		fprintf(stderr, "Unknown unit\n");
+		return 1;
+	}
+
+	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
+	printhex_u128(bytes);
+
+	/* Calculate LBA and offset */
+	lba = bytes / sectorsize;
+	offset = bytes % sectorsize;
+
+	fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+	/* We use a global buffer, so print decimal lba first, then offset */
+	fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
+	fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
+	printhex_u128(lba);
+	fprintf(stdout, ":");
+	printhex_u128(offset);
+	fprintf(stdout, "\n");
+
+	return 0;
+}
+
+int evaluate(char *exp)
+{
+	char *expr = fixexpr(exp);	 /* Make parsing compatible */
+	if (expr == NULL) {
+		usage();
+		return 1;
+	}
+
+	maxuint_t byteans = 0;
+
+	queue *front = NULL, *rear = NULL;
+	infix2postfix(expr, &front, &rear);
+	free(expr);
+	byteans = eval(&front, &rear);		/* Evaluate Expression */
+
+	fprintf(stdout, "\033[1mRESULT\033[0m\n");
+
+	convertbyte(getstr_u128(byteans, uint_buf));
+
+	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
+	printhex_u128(byteans);
+	fprintf(stdout, "\n");
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	int opt = 0;
@@ -1081,94 +1175,12 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (argc - optind == 2) {
-		int count = sizeof(units)/sizeof(*units);
-		maxuint_t bytes = 0, lba = 0, offset = 0;
-
-		while (count-- > 0)
-			if (!strcmp(units[count], strtolower(argv[optind + 1])))
-                                break;
-
-		if (count == -1) {
-			fprintf(stderr, "No matching unit\n");
-			return 1;
-		}
-
-		fprintf(stdout, "\033[1mUNIT CONVERSION\033[0m\n");
-
-		switch (count) {
-		case 0:
-			bytes = convertbyte(argv[optind]);
-			break;
-		case 1:
-			bytes = convertkib(argv[optind]);
-			break;
-		case 2:
-			bytes = convertmib(argv[optind]);
-			break;
-		case 3:
-			bytes = convertgib(argv[optind]);
-			break;
-		case 4:
-			bytes = converttib(argv[optind]);
-			break;
-		case 5:
-			bytes = convertkb(argv[optind]);
-			break;
-		case 6:
-			bytes = convertmb(argv[optind]);
-			break;
-		case 7:
-			bytes = convertgb(argv[optind]);
-			break;
-		case 8:
-			bytes = converttb(argv[optind]);
-			break;
-		default:
-			fprintf(stderr, "Unknown unit\n");
-			return 1;
-		}
-
-		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
-		printhex_u128(bytes);
-
-		/* Calculate LBA and offset */
-		lba = bytes / sectorsize;
-		offset = bytes % sectorsize;
-
-		fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
-		/* We use a global buffer, so print decimal lba first, then offset */
-		fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
-		fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
-		printhex_u128(lba);
-		fprintf(stdout, ":");
-		printhex_u128(offset);
-		fprintf(stdout, "\n");
-	}
+	if (argc - optind == 2)
+		return convertunit(argv[optind], argv[optind + 1], sectorsize);
 
 	/*Arithmetic Operation*/
-	if (argc - optind == 1) {
-		char *expr = fixexpr(argv[1]);	 /* Make parsing compatible */
-		if (expr == NULL) {
-			usage();
-			return 1;
-		}
-
-		maxuint_t byteans = 0;
-
-		queue *front = NULL, *rear = NULL;
-		infix2postfix(expr, &front, &rear);
-		free(expr);
-		byteans = eval(&front, &rear);		/* Evaluate Expression */
-
-		fprintf(stdout, "\033[1mRESULT\033[0m\n");
-
-		convertbyte(getstr_u128(byteans, uint_buf));
-
-		fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
-		printhex_u128(byteans);
-		fprintf(stdout, "\n");
-	}
+	if (argc - optind == 1)
+		return evaluate(argv[1]);
 
 	return 0;
 }

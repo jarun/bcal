@@ -150,25 +150,21 @@ If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://g
         $ bcal "(5kb+2mb)/3"
         $ bcal "5 tb / 12"
         $ bcal "2.5mb*3"
-
 2. Convert storage capacity to other units and get address, LBA.
 
         $ bcal 20140115 b
         $ bcal 0x1335053 B
         $ bcal 0xaabbcc kb
         $ bcal 0xdef Gib
-Note that the units are case-insensitive.
-
+    Note that the units are case-insensitive.
 3. Convert storage capacity, set sector size to 4096 to calculate LBA.
 
         $ bcal 0xaabbcc kb -s 4096
-
 4. Convert LBA to CHS.
 
         $ bcal -f l500
         $ bcal -f l0x600-18-0x7e
         $ bcal -f l0x300-0x12-0x7e
-
 5. Convert CHS to LBA.
 
         $ bcal -f c10-10-10
@@ -176,13 +172,11 @@ Note that the units are case-insensitive.
         $ bcal -f c0x10-10-2-0x12
         $ bcal -f c-10-2-0x12
         $ bcal -f c0x10-10--0x12
-
 6. Show binary, decimal and hex representations of a number.
 
         $ bcal -c 20140115
         $ bcal -c 0b1001100110101000001010011
         $ bcal -c 0x1335053
-
 7. Help and additional information.
 
         $ man bcal
