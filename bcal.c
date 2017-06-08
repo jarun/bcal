@@ -664,51 +664,43 @@ License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
+int xstricmp(const char *s1, const char *s2)
+{
+	while (*s1 && (tolower(*s1) == tolower(*s2))) {
+		s1++;
+		s2++;
+	}
+	return *(const unsigned char*)s1 - *(const unsigned char*)s2;
+}
+
 /* Convert any unit in bytes */
 maxuint_t unitconv(Data bunit, short *u)
 {
 	/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
 	char *numstr = bunit.p;
 
-	if (numstr == NULL) {
+	if (numstr == NULL || *numstr == '\0') {
 		usage();
 		exit(-1);
 	}
 
-	char *num;
-	char unit[4] = {'\0'};
-	int len = strlen(numstr);
+	int len = strlen(numstr) - 1;
+	char *unit;
 
-	if (isalpha(numstr[len - 3])) {		/* 3 char unit Eg: Kib, Mib etc. */
-		unit[0] = numstr[len - 3];
-		unit[1] = numstr[len - 2];
-		unit[2] = numstr[len - 1];
-		numstr[len - 1] = numstr[len - 2] = numstr[len - 3] = '\0';
-		*u = 1;
-
-	} else if (isalpha(numstr[len - 2])) {	/* 2 char unit Eg: kb, mb etc. */
-		unit[0] = numstr[len - 2];
-		unit[1] = numstr[len - 1];
-		numstr[len - 1] = numstr[len - 2] = '\0';
-		*u = 1;
-
-	} else if (isalpha(numstr[len - 1])) {	/* 1 char unit Eg: b */
-		unit[0] = numstr[len - 1];
-		numstr[len - 1] = '\0';
-		*u = 1;
-	} else {
-		if (*u != 1)	/* If not already converted from unit to bytes */
+	if (isdigit(numstr[len])) {
+		if (*u != 1) /* ensure this is not the result of a previous operation */
 			*u = 0;
 		return strtoull(numstr, NULL, 0);
 	}
 
-	num = numstr;
+	while (isalpha(numstr[len]))
+		len--;
 
-	int count = 9;	/* Number of available units is 9(from "b" to "tb"). */
-	maxuint_t bytes = 0;
+	unit = numstr + len + 1;
 
-	while (count-- > 0)
-		if (!strcmp(units[count], strtolower(unit)))
+	int count = sizeof(units) / sizeof(units[0]);	/* Number of available units is 9 (from "b" to "tb"). */
+	while (--count >= 0)
+		if (!xstricmp(units[count], unit))
                         break;
 
 	if (count == -1) {
@@ -717,52 +709,42 @@ maxuint_t unitconv(Data bunit, short *u)
 		exit(-1);
 	}
 
+	*u = 1;
+	*unit = '\0';
+
 	maxfloat_t byte_metric = 0;
 
 	switch (count) {
 	case 0:
-		bytes = strtoull(num, NULL, 0);
-		break;
+		return strtoull(numstr, NULL, 0);
 	case 1:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * 1024);	/* Kibibyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * 1024);	/* Kibibyte */
 	case 2:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * (1 << 20));	/* Mebibyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * (1 << 20));	/* Mebibyte */
 	case 3:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * (1 << 30));	/* Gibibyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * (1 << 30));	/* Gibibyte */
 	case 4:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * ((maxuint_t)1 << 40)); /* Tebibyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40)); /* Tebibyte */
 	case 5:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * 1000);	/* Kilobyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * 1000);	/* Kilobyte */
 	case 6:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * 1000000);	/* Megabyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * 1000000);	/* Megabyte */
 	case 7:
-		byte_metric = strtod(num, NULL);
-		bytes = (maxuint_t)(byte_metric * 1000000000);	/* Gigabyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (maxuint_t)(byte_metric * 1000000000);	/* Gigabyte */
 	case 8:
-		byte_metric = strtod(num, NULL);
-		bytes = (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
-		break;
+		byte_metric = strtod(numstr, NULL);
+		return (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
 	default:
 		fprintf(stderr, "Unknown unit\n");
 		return 1;
 	}
-
-	*u = 1;
-
-	return bytes;
 }
 
 int priority(char sign) /* Get the priority of operators */
@@ -851,16 +833,14 @@ maxuint_t eval(queue **front, queue **rear)
 
 	if (*front == *rear) {		/* If only one element in the queue */
 		short s = 0;
-		ansdata = dequeue(front,rear);
+		ansdata = dequeue(front, rear);
 		return unitconv(ansdata, &s);
 	}
 
 	while (*front != NULL && *rear != NULL) {
-
 		Data arg = dequeue(front, rear);
 
 		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
-
 			Data raw_b = pop(&est);			/* Pop data from stack */
 			Data raw_a = pop(&est);
 
@@ -871,43 +851,42 @@ maxuint_t eval(queue **front, queue **rear)
 			Data raw_c;
 
 			switch (arg.p[0]) {
-
-				case '+': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
-					  	c = a + b;
-						raw_c.unit = 1;
-					  } else {
-						usage();
-						exit(-1);
-					  }
-
-					  break;
-				case '-': if (raw_a.unit && raw_b.unit) { /* Check if both are units */
-					  	c = a - b;
-						raw_c.unit = 1;
-					  } else {
-						  usage();
-						  exit(-1);
-					  }
-
-					  break;
-				case '*': if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */
-					  	c = a * b;
-						raw_c.unit = 1;
-					  } else {
-						  usage();
-						  exit(-1);
-					  }
-
-					  break;
-				case '/': if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */
-					  	c = a / b;
-						raw_c.unit = 1;
-					  } else {
-						  usage();
-						  exit(-1);
-					  }
-
-					  break;
+			case '+':
+				if (raw_a.unit && raw_b.unit) { /* Check if both are units */
+				  	c = a + b;
+					raw_c.unit = 1;
+				} else {
+					usage();
+					exit(-1);
+				}
+				break;
+			case '-':
+				if (raw_a.unit && raw_b.unit) { /* Check if both are units */
+					c = a - b;
+					raw_c.unit = 1;
+				} else {
+					usage();
+					exit(-1);
+				}
+				break;
+			case '*':
+				if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */
+					c = a * b;
+					raw_c.unit = 1;
+				} else {
+					usage();
+					exit(-1);
+				}
+				break;
+			case '/':
+				if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */
+					c = a / b;
+					raw_c.unit = 1;
+				} else {
+					usage();
+					exit(-1);
+				}
+				break;
 			}
 
 			strcpy(raw_c.p, getstr_u128(c, uint_buf));	/* Convert to string */
@@ -1097,6 +1076,7 @@ int evaluate(char *exp)
 	queue *front = NULL, *rear = NULL;
 	infix2postfix(expr, &front, &rear);
 	free(expr);
+
 	byteans = eval(&front, &rear);		/* Evaluate Expression */
 
 	fprintf(stdout, "\033[1mRESULT\033[0m\n");
