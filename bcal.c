@@ -770,6 +770,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 	char *token = strtok(exp, " ");
 	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
 	int balanced = 0;
+	Data ct;
 
 	while (token) {
 		strcpy(tokenData.p, token);	/* Copy argument to string part of the structure */
@@ -787,7 +788,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 			while (!isempty(op) && top(op)[0] != '(' &&
 			       priority(token[0]) <= priority(top(op)[0])) {
 				/* Pop from operator stack */
-				Data ct = pop(&op);
+				pop(&op, &ct);
 				/* Insert to Queue */
 				enqueue(resf, resr, ct);
 		        }
@@ -800,11 +801,11 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 			break;
 		case ')':
 			while (!isempty(op) && top(op)[0] != '(') {
-				Data ct = pop(&op);
+				pop(&op, &ct);
 				enqueue(resf, resr ,ct);
 			}
 
-			pop(&op);
+			pop(&op, &ct);
 			balanced--;
 			break;
 		default:
@@ -815,9 +816,11 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 		token = strtok(NULL, " ");;
 	}
 
-	while (!isempty(op))
+	while (!isempty(op)) {
 		/* Put remaining elements into the queue */
-		enqueue(resf , resr, pop(&op));
+		pop(&op, &ct);
+		enqueue(resf , resr, ct);
+	}
 
 	if (balanced != 0) {
 		fprintf(stderr, "infix2postfix: Unbalanced expression\n");
@@ -833,7 +836,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 maxuint_t eval(queue **front, queue **rear, int *out)
 {
 	stack *est = NULL;
-	Data ansdata;
+	Data ansdata, arg, raw_a, raw_b;
 	*out = 0;
 
 	if (*front == NULL)	/* If Queue is Empty */
@@ -841,16 +844,16 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 
 	if (*front == *rear) {		/* If only one element in the queue */
 		short s = 0;
-		ansdata = dequeue(front, rear);
+		dequeue(front, rear, &ansdata);
 		return unitconv(ansdata, &s, out);
 	}
 
 	while (*front != NULL && *rear != NULL) {
-		Data arg = dequeue(front, rear);
+		dequeue(front, rear, &arg);
 
 		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
-			Data raw_b = pop(&est);			/* Pop data from stack */
-			Data raw_a = pop(&est);
+			pop(&est, &raw_b);			/* Pop data from stack */
+			pop(&est, &raw_a);
 
 			maxuint_t b = unitconv(raw_b, &raw_b.unit, out);	/* Convert to integer */
 			if (*out == -1)
@@ -870,6 +873,8 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				} else {
 					fprintf(stderr, "eval: Unit mismatch in +\n");
 					*out = -1;
+					emptystack(&est);
+					cleanqueue(front,rear);
 					return 0;
 				}
 				break;
@@ -880,6 +885,8 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				} else {
 					fprintf(stderr, "eval: Unit mismatch in -\n");
 					*out = -1;
+					emptystack(&est);
+					cleanqueue(front,rear);
 					return 0;
 				}
 				break;
@@ -890,6 +897,8 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				} else {
 					fprintf(stderr, "eval: Unit mismatch in *\n");
 					*out = -1;
+					emptystack(&est);
+					cleanqueue(front,rear);
 					return 0;
 				}
 				break;
@@ -900,6 +909,8 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				} else {
 					fprintf(stderr, "eval: Unit mismatch in /\n");
 					*out = -1;
+					emptystack(&est);
+					cleanqueue(front,rear);
 					return 0;
 				}
 				break;
@@ -912,7 +923,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 			push(&est, arg);
 	}
 
-	ansdata = pop(&est);
+	pop(&est, &ansdata);
 	return strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
 }
 

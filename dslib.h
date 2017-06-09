@@ -39,17 +39,17 @@ void push(stack **top, Data d)
 	}
 }
 
-Data pop(stack **top)
+void pop(stack **top, Data *d)
 {
-	Data d = {"\0", 0};
-	if (*top == NULL)
-		return d;
-	else {
+	strcpy(d->p,"\0");
+	d->unit=0;
+	
+	if (*top != NULL) {
+	
 		stack *pp = *top;
 		*top = (*top)->link;
-		d = pp->d;
+		*d = pp->d;
 		free(pp);
-		return d;
 	}
 }
 
@@ -67,24 +67,25 @@ void enqueue(queue **front, queue **rear, Data d)
 	}
 }
 
-Data dequeue(queue **front,queue **rear)
+void dequeue(queue **front,queue **rear, Data *d)
 {
-	Data d = {"\0", 0};
+	strcpy(d->p,"\0");
+	d->unit=0;
 
-	if (*front == NULL && *rear == NULL)
-		return d;
-	else if (*front == *rear){
-		queue *del = *front;
-		d = del->d;
-		free(del);
-		*front = *rear = NULL;
-		return d;
-	} else {
-		queue *del = *front;
-		*front = (*front)->link;
-		d = del->d;
-		free(del);
-		return d;
+	if (*front != NULL && *rear != NULL) {
+	
+		if (*front == *rear) {
+			queue *del = *front;
+			*d = del->d;
+			free(del);
+			*front = *rear = NULL;
+
+		} else {
+			queue *del = *front;
+			*front = (*front)->link;
+			*d = del->d;
+			free(del);
+		}
 	}
 }
 
@@ -102,6 +103,30 @@ char* top(stack *top)
 		return NULL;
 	else
 		return top->d.p;
+}
+
+void emptystack(stack **top)
+{
+	if(*top == NULL)
+		return;
+		
+	while(*top != NULL) {
+		stack *dt = *top;
+		*top = (*top)->link;
+		free(dt);
+	}
+}
+
+void cleanqueue(queue **front, queue **rear)
+{
+	if (*front != NULL && *rear != NULL) {
+	
+		while(*front != NULL) {
+			queue *dt = *front;
+			*front = (*front)->link;
+			free(dt);
+		}
+	}
 }
 
 void printstack(stack *top)
