@@ -673,44 +673,47 @@ int xstricmp(const char *s1, const char *s2)
 	return *(const unsigned char*)s1 - *(const unsigned char*)s2;
 }
 
-/* Convert any unit in bytes */
-maxuint_t unitconv(Data bunit, short *u)
+/* Convert any unit in bytes
+ * Failure if out parameter holds -1
+ */
+maxuint_t unitconv(Data bunit, short *isunit, int *out)
 {
 	/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
 	char *numstr = bunit.p;
+	*out = 0;
 
 	if (numstr == NULL || *numstr == '\0') {
-		usage();
-		exit(-1);
+		fprintf(stderr, "unitconv: Invalid token\n");
+		*out = -1;
+		return 0;
 	}
 
 	int len = strlen(numstr) - 1;
-	char *unit;
 
 	if (isdigit(numstr[len])) {
-		if (*u != 1) /* ensure this is not the result of a previous operation */
-			*u = 0;
+		if (*isunit != 1) /* ensure this is not the result of a previous operation */
+			*isunit = 0;
 		return strtoull(numstr, NULL, 0);
 	}
 
 	while (isalpha(numstr[len]))
 		len--;
 
-	unit = numstr + len + 1;
+	char *punit = numstr + len + 1;
 
 	int count = sizeof(units) / sizeof(units[0]);	/* Number of available units is 9 (from "b" to "tb"). */
 	while (--count >= 0)
-		if (!xstricmp(units[count], unit))
+		if (!xstricmp(units[count], punit))
                         break;
 
 	if (count == -1) {
-		fprintf(stderr, "No matching unit\n");
-		usage();
-		exit(-1);
+		fprintf(stderr, "unitconv: No matching unit\n");
+		*out = -1;
+		return 0;
 	}
 
-	*u = 1;
-	*unit = '\0';
+	*isunit = 1;
+	*punit = '\0';
 
 	maxfloat_t byte_metric = 0;
 
@@ -742,8 +745,9 @@ maxuint_t unitconv(Data bunit, short *u)
 		byte_metric = strtod(numstr, NULL);
 		return (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
 	default:
-		fprintf(stderr, "Unknown unit\n");
-		return 1;
+		fprintf(stderr, "unitconv: Unknown unit\n");
+		*out = -1;
+		return 0;
 	}
 }
 
@@ -760,7 +764,7 @@ int priority(char sign) /* Get the priority of operators */
 }
 
 /* Convert Infix mathematical expression to Postfix */
-void infix2postfix(char *exp, queue **resf, queue **resr)
+int infix2postfix(char *exp, queue **resf, queue **resr)
 {
 	stack *op = NULL;			/* Operator Stack */
 	char *token = strtok(exp, " ");
@@ -776,8 +780,8 @@ void infix2postfix(char *exp, queue **resf, queue **resr)
 		case '*':
 		case '/':
 			if (token[1] != '\0') {
-				usage();
-				exit(-1);
+				fprintf(stderr, "infix2postfix: Invalid token terminator\n");
+				return -1;
 			}
 
 			while (!isempty(op) && top(op)[0] != '(' &&
@@ -816,17 +820,21 @@ void infix2postfix(char *exp, queue **resf, queue **resr)
 		enqueue(resf , resr, pop(&op));
 
 	if (balanced != 0) {
-		usage();
-		exit(-1);
+		fprintf(stderr, "infix2postfix: Unbalanced expression\n");
+		return -1;
 	}
+
+	return 0;
 }
 
-/* Evaluates Postfix Expression */
-maxuint_t eval(queue **front, queue **rear)
+/* Evaluates Postfix Expression
+ * Failure if out parameter holds -1
+ */
+maxuint_t eval(queue **front, queue **rear, int *out)
 {
-	maxuint_t ans = 0;
 	stack *est = NULL;
 	Data ansdata;
+	*out = 0;
 
 	if (*front == NULL)	/* If Queue is Empty */
 		return 0;
@@ -834,7 +842,7 @@ maxuint_t eval(queue **front, queue **rear)
 	if (*front == *rear) {		/* If only one element in the queue */
 		short s = 0;
 		ansdata = dequeue(front, rear);
-		return unitconv(ansdata, &s);
+		return unitconv(ansdata, &s, out);
 	}
 
 	while (*front != NULL && *rear != NULL) {
@@ -844,8 +852,12 @@ maxuint_t eval(queue **front, queue **rear)
 			Data raw_b = pop(&est);			/* Pop data from stack */
 			Data raw_a = pop(&est);
 
-			maxuint_t b = unitconv(raw_b, &raw_b.unit);	/* Convert to integer */
-			maxuint_t a = unitconv(raw_a, &raw_a.unit);
+			maxuint_t b = unitconv(raw_b, &raw_b.unit, out);	/* Convert to integer */
+			if (*out == -1)
+				return 0;
+			maxuint_t a = unitconv(raw_a, &raw_a.unit, out);
+			if (*out == -1)
+				return 0;
 
 			maxuint_t c = 0;	/* Result data */
 			Data raw_c;
@@ -856,8 +868,9 @@ maxuint_t eval(queue **front, queue **rear)
 				  	c = a + b;
 					raw_c.unit = 1;
 				} else {
-					usage();
-					exit(-1);
+					fprintf(stderr, "eval: Unit mismatch in +\n");
+					*out = -1;
+					return 0;
 				}
 				break;
 			case '-':
@@ -865,8 +878,9 @@ maxuint_t eval(queue **front, queue **rear)
 					c = a - b;
 					raw_c.unit = 1;
 				} else {
-					usage();
-					exit(-1);
+					fprintf(stderr, "eval: Unit mismatch in -\n");
+					*out = -1;
+					return 0;
 				}
 				break;
 			case '*':
@@ -874,8 +888,9 @@ maxuint_t eval(queue **front, queue **rear)
 					c = a * b;
 					raw_c.unit = 1;
 				} else {
-					usage();
-					exit(-1);
+					fprintf(stderr, "eval: Unit mismatch in *\n");
+					*out = -1;
+					return 0;
 				}
 				break;
 			case '/':
@@ -883,8 +898,9 @@ maxuint_t eval(queue **front, queue **rear)
 					c = a / b;
 					raw_c.unit = 1;
 				} else {
-					usage();
-					exit(-1);
+					fprintf(stderr, "eval: Unit mismatch in /\n");
+					*out = -1;
+					return 0;
 				}
 				break;
 			}
@@ -897,9 +913,7 @@ maxuint_t eval(queue **front, queue **rear)
 	}
 
 	ansdata = pop(&est);
-	ans = strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
-
-	return ans;
+	return strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
 }
 
 /* Check if a char is operator or not */
@@ -1006,7 +1020,7 @@ int convertunit(char *value, char *unit, ulong sectorsize)
 
 	if (count == -1) {
 		fprintf(stderr, "No matching unit\n");
-		return 1;
+		return -1;
 	}
 
 	fprintf(stdout, "\033[1mUNIT CONVERSION\033[0m\n");
@@ -1041,7 +1055,7 @@ int convertunit(char *value, char *unit, ulong sectorsize)
 		break;
 	default:
 		fprintf(stderr, "Unknown unit\n");
-		return 1;
+		return -1;
 	}
 
 	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
@@ -1066,25 +1080,28 @@ int convertunit(char *value, char *unit, ulong sectorsize)
 int evaluate(char *exp)
 {
 	char *expr = fixexpr(exp);	 /* Make parsing compatible */
-	if (expr == NULL) {
-		usage();
-		return 1;
-	}
+	if (expr == NULL)
+		return -1;
 
-	maxuint_t byteans = 0;
+	maxuint_t bytes = 0;
+	int ret = 0;
 
 	queue *front = NULL, *rear = NULL;
-	infix2postfix(expr, &front, &rear);
+	ret = infix2postfix(expr, &front, &rear);
 	free(expr);
+	if (ret == -1)
+		return -1;
 
-	byteans = eval(&front, &rear);		/* Evaluate Expression */
+	bytes = eval(&front, &rear, &ret);  /* Evaluate Expression */
+	if (ret == -1)
+		return -1;
 
 	fprintf(stdout, "\033[1mRESULT\033[0m\n");
 
-	convertbyte(getstr_u128(byteans, uint_buf));
+	convertbyte(getstr_u128(bytes, uint_buf));
 
-	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(byteans, uint_buf));
-	printhex_u128(byteans);
+	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
+	printhex_u128(bytes);
 	fprintf(stdout, "\n");
 
 	return 0;
@@ -1146,21 +1163,28 @@ int main(int argc, char **argv)
 			return 0;
 		default:
 			usage();
-			return 1;
+			return -1;
 		}
 	}
 
 	if (argc == 1 && optind == 1) {
 		usage();
-		return 1;
+		return -1;
 	}
 
+	/* Conversion */
 	if (argc - optind == 2)
-		return convertunit(argv[optind], argv[optind + 1], sectorsize);
+		if (convertunit(argv[optind], argv[optind + 1], sectorsize) == -1) {
+			usage();
+			return -1;
+		}
 
 	/*Arithmetic Operation*/
 	if (argc - optind == 1)
-		return evaluate(argv[1]);
+		if (evaluate(argv[1]) == -1) {
+			usage();
+			return -1;
+		}
 
 	return 0;
 }
