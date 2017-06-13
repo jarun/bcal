@@ -874,7 +874,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					fprintf(stderr, "eval: Unit mismatch in +\n");
 					*out = -1;
 					emptystack(&est);
-					cleanqueue(front,rear);
+					cleanqueue(front);
 					return 0;
 				}
 				break;
@@ -886,7 +886,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					fprintf(stderr, "eval: Unit mismatch in -\n");
 					*out = -1;
 					emptystack(&est);
-					cleanqueue(front,rear);
+					cleanqueue(front);
 					return 0;
 				}
 				break;
@@ -898,7 +898,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					fprintf(stderr, "eval: Unit mismatch in *\n");
 					*out = -1;
 					emptystack(&est);
-					cleanqueue(front,rear);
+					cleanqueue(front);
 					return 0;
 				}
 				break;
@@ -910,7 +910,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					fprintf(stderr, "eval: Unit mismatch in /\n");
 					*out = -1;
 					emptystack(&est);
-					cleanqueue(front,rear);
+					cleanqueue(front);
 					return 0;
 				}
 				break;
