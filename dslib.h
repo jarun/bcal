@@ -43,9 +43,8 @@ void pop(stack **top, Data *d)
 {
 	d->p[0]='\0';
 	d->unit=0;
-	
+
 	if (*top != NULL) {
-	
 		stack *tmp = *top;
 		*top = (*top)->link;
 		*d = tmp->d;
@@ -73,15 +72,15 @@ void dequeue(queue **front,queue **rear, Data *d)
 	d->unit=0;
 
 	if (*front != NULL) {
-	
+		queue *tmp;
+
 		if (*front == *rear) {
-			queue *tmp = *front;
+			tmp = *front;
 			*d = tmp->d;
 			free(tmp);
 			*front = *rear = NULL;
-
 		} else {
-			queue *tmp = *front;
+			tmp = *front;
 			*front = (*front)->link;
 			*d = tmp->d;
 			free(tmp);
@@ -91,27 +90,26 @@ void dequeue(queue **front,queue **rear, Data *d)
 
 int isempty(stack *top)
 {
-	if(top == NULL)
+	if (top == NULL)
 		return 1;
-	else
-		return 0;
+
+	return 0;
 }
 
 char* top(stack *top)
 {
 	if (top == NULL)
 		return NULL;
-	else
-		return top->d.p;
+
+	return top->d.p;
 }
 
 void emptystack(stack **top)
 {
-	if(*top == NULL)
-		return;
-		
-	while(*top != NULL) {
-		stack *tmp = *top;
+	stack *tmp;
+
+	while (*top != NULL) {
+		tmp = *top;
 		*top = (*top)->link;
 		free(tmp);
 	}
@@ -119,13 +117,12 @@ void emptystack(stack **top)
 
 void cleanqueue(queue **front)
 {
-	if (*front != NULL) {
-	
-		while(*front != NULL) {
-			queue *tmp = *front;
-			*front = (*front)->link;
-			free(tmp);
-		}
+	queue *tmp;
+
+	while (*front != NULL) {
+		tmp = *front;
+		*front = (*front)->link;
+		free(tmp);
 	}
 }
 
@@ -133,18 +130,28 @@ void printstack(stack *top)
 {
 	stack *i;
 	printf("\nStack: ");
-	if (top==NULL)puts("Empty");
+
+	if (top == NULL)
+		printf("Empty");
+
 	for (i = top; i != NULL; i = i->link)
 		printf(" %s ", i->d.p);
+
+	printf("\n");
 }
 
 void printqueue(queue *front)
 {
 	queue *i;
-	printf("Queue: ");
+	printf("\nQueue: ");
+
+	if (front == NULL)
+		printf("Empty");
+
 	for (i = front; i != NULL; i = i->link)
 		printf(" %s ", i->d.p);
-	puts("\n");
+
+	printf("\n");
 }
 
 #endif
