@@ -119,13 +119,10 @@ void emptystack(stack **top)
 
 void cleanqueue(queue **front)
 {
-	if (*front != NULL) {
-	
-		while(*front != NULL) {
-			queue *tmp = *front;
-			*front = (*front)->link;
-			free(tmp);
-		}
+	while(*front != NULL) {
+		queue *tmp = *front;
+		*front = (*front)->link;
+		free(tmp);
 	}
 }
 
