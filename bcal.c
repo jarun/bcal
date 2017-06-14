@@ -34,6 +34,7 @@
 #define UINT_BUF_LEN 40 /* log10(1 << 128) + '\0' */
 #define FLOAT_BUF_LEN 128
 #define FLOAT_WIDTH 40
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
@@ -79,7 +80,8 @@ void binprint(maxuint_t n)
 	fprintf(stdout, "0b%s", binstr + count);
 }
 
-char *getstr_u128(maxuint_t n, char *buf) {
+char *getstr_u128(maxuint_t n, char *buf)
+{
 	if (n == 0) {
 		buf[0] = '0';
 		buf[1] = '\0';
@@ -102,7 +104,9 @@ char *getstr_u128(maxuint_t n, char *buf) {
 
 char *getstr_f128(maxfloat_t val, char *buf)
 {
-	int n = quadmath_snprintf(buf, FLOAT_BUF_LEN, "%#*.10Qe", FLOAT_WIDTH, val);
+	int n = quadmath_snprintf(buf, FLOAT_BUF_LEN,
+				  "%#*.10Qe", FLOAT_WIDTH, val);
+
 	buf[n] = '\0';
 	return buf;
 }
@@ -110,7 +114,8 @@ char *getstr_f128(maxfloat_t val, char *buf)
 void printval(maxfloat_t val, char *unit)
 {
 	if (val - (maxuint_t)val == 0)
-		fprintf(stdout, "%40s %s\n", getstr_u128((maxuint_t)val, uint_buf), unit);
+		fprintf(stdout, "%40s %s\n", getstr_u128((maxuint_t)val,
+							 uint_buf), unit);
 	else
 		fprintf(stdout, "%s %s\n", getstr_f128(val, float_buf), unit);
 }
@@ -167,14 +172,16 @@ ull strtoull_b(char *token)
 
 maxuint_t convertbyte(char *buf)
 {
+	maxfloat_t val;
 	/* Convert and print in bytes */
 	maxuint_t bytes = strtoull(buf, NULL, 0);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	/* Convert and print in IEC standard units */
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = bytes / (maxfloat_t)1024;
+	val = bytes / (maxfloat_t)1024;
 	printval(val, "KiB");
 
 	val = bytes / (maxfloat_t)(1 << 20);
@@ -206,15 +213,16 @@ maxuint_t convertbyte(char *buf)
 
 maxuint_t convertkib(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t kib = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
 	printval(kib, "KiB");
 
-	maxfloat_t val = kib / 1024;
+	val = kib / 1024;
 	printval(val, "MiB");
 
 	val = kib / (1 << 20);
@@ -241,13 +249,14 @@ maxuint_t convertkib(char *buf)
 
 maxuint_t convertmib(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t mib = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = mib * 1024;
+	val = mib * 1024;
 	printval(val, "KiB");
 
 	printval(mib, "MiB");
@@ -259,7 +268,7 @@ maxuint_t convertmib(char *buf)
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
-	val = mib * (1 << 20)/ 1000;
+	val = mib * (1 << 20) / 1000;
 	printval(val, "kB");
 
 	val = mib * (1 << 20) / 1000000;
@@ -276,13 +285,14 @@ maxuint_t convertmib(char *buf)
 
 maxuint_t convertgib(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t gib = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = gib * (1 << 20);
+	val = gib * (1 << 20);
 	printval(val, "KiB");
 
 	val = gib * 1024;
@@ -294,7 +304,7 @@ maxuint_t convertgib(char *buf)
 	printval(val, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
-	val = gib * (1 << 30)/ 1000;
+	val = gib * (1 << 30) / 1000;
 	printval(val, "kB");
 
 	val = gib * (1 << 30) / 1000000;
@@ -311,13 +321,14 @@ maxuint_t convertgib(char *buf)
 
 maxuint_t converttib(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t tib = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = tib * (1 << 30);
+	val = tib * (1 << 30);
 	printval(val, "KiB");
 
 	val = tib * (1 << 20);
@@ -329,7 +340,7 @@ maxuint_t converttib(char *buf)
 	printval(tib, "TiB");
 
 	fprintf(stdout, "\n            SI standard (base 10)\n\n");
-	val = tib * ((maxuint_t)1 << 40)/ 1000;
+	val = tib * ((maxuint_t)1 << 40) / 1000;
 	printval(val, "kB");
 
 	val = tib * ((maxuint_t)1 << 40) / 1000000;
@@ -346,13 +357,14 @@ maxuint_t converttib(char *buf)
 
 maxuint_t convertkb(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t kb = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = kb * 1000 / 1024;
+	val = kb * 1000 / 1024;
 	printval(val, "KiB");
 
 	val = kb * 1000 / (1 << 20);
@@ -381,13 +393,14 @@ maxuint_t convertkb(char *buf)
 
 maxuint_t convertmb(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t mb = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = mb * 1000000 / 1024;
+	val = mb * 1000000 / 1024;
 	printval(val, "KiB");
 
 	val = mb * 1000000 / (1 << 20);
@@ -416,13 +429,14 @@ maxuint_t convertmb(char *buf)
 
 maxuint_t convertgb(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t gb = strtod(buf, NULL);
-
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = gb * 1000000000 / 1024;
+	val = gb * 1000000000 / 1024;
 	printval(val, "KiB");
 
 	val = gb * 1000000000 / (1 << 20);
@@ -451,13 +465,14 @@ maxuint_t convertgb(char *buf)
 
 maxuint_t converttb(char *buf)
 {
+	maxfloat_t val;
 	maxfloat_t tb = strtod(buf, NULL);
-
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
+
 	fprintf(stdout, "%40s B\n", getstr_u128(bytes, uint_buf));
 
 	fprintf(stdout, "\n            IEC standard (base 2)\n\n");
-	maxfloat_t val = tb * 1000000000000 / 1024;
+	val = tb * 1000000000000 / 1024;
 	printval(val, "KiB");
 
 	val = tb * 1000000000000 / (1 << 20);
@@ -488,7 +503,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	ulong chsparam[5] = {0, 0, 0, MAX_HEAD, MAX_SECTOR};
+	ulong param[5] = {0, 0, 0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = chs;
 
@@ -496,14 +511,14 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		if (*ptr == '-') {
 			/* Replace '-' with NULL and get the token */
 			*ptr = '\0';
-			chsparam[token_no++] = strtoul_b(token);
+			param[token_no++] = strtoul_b(token);
 			/* Restore the '-' */
 			*ptr++ = '-';
 			/* Point to start of next token */
 			token = ptr;
 
 			if (*ptr == '\0' && token_no < 5)
-				chsparam[token_no++] = strtoul_b(token);
+				param[token_no++] = strtoul_b(token);
 
 			continue;
 		}
@@ -511,7 +526,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		ptr++;
 
 		if (*ptr == '\0' && token_no < 5)
-			chsparam[token_no++] = strtoul_b(token);
+			param[token_no++] = strtoul_b(token);
 	}
 
 	/* Fail if CHS is omitted */
@@ -520,39 +535,40 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		return FALSE;
 	}
 
-	if (!chsparam[3]) {
+	if (!param[3]) {
 		fprintf(stderr, "CHS2LBA: MAX_HEAD = 0\n");
 		return FALSE;
 	}
 
-	if (!chsparam[4]) {
+	if (!param[4]) {
 		fprintf(stderr, "CHS2LBA: MAX_SECTOR = 0\n");
 		return FALSE;
 	}
 
-	if (!chsparam[2]) {
+	if (!param[2]) {
 		fprintf(stderr, "CHS2LBA: S = 0\n");
 		return FALSE;
 	}
 
-	if (chsparam[1] > chsparam[3]) {
+	if (param[1] > param[3]) {
 		fprintf(stderr, "CHS2LBA: H > MAX_HEAD\n");
 		return FALSE;
 	}
 
-	if (chsparam[2] > chsparam[4]) {
+	if (param[2] > param[4]) {
 		fprintf(stderr, "CHS2LBA: S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
 
-	*lba = chsparam[3] * chsparam[4] * chsparam[0]; /* MH * MS * C */
-	*lba += chsparam[4] * chsparam[1]; /* MS * H */
+	*lba = param[3] * param[4] * param[0]; /* MH * MS * C */
+	*lba += param[4] * param[1]; /* MS * H */
 
-	*lba += chsparam[2] - 1; /* S - 1 */
+	*lba += param[2] - 1; /* S - 1 */
 
-	fprintf(stdout, "\033[1mCHS2LBA\033[0m\n\tC %lu H %lu S %lu MAX_HEAD %lu MAX_SECTOR %lu\n",
-		chsparam[0], chsparam[1], chsparam[2], chsparam[3], chsparam[4]);
+	fprintf(stdout, "\033[1mCHS2LBA\033[0m\n");
+	fprintf(stdout, "\tC %lu H %lu S %lu MAX_HEAD %lu MAX_SECTOR %lu\n",
+		param[0], param[1], param[2], param[3], param[4]);
 
 	return TRUE;
 }
@@ -561,19 +577,19 @@ bool lba2chs(char *lba, t_chs *p_chs)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	maxuint_t chsparam[3] = {0, MAX_HEAD, MAX_SECTOR};
+	maxuint_t param[3] = {0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = lba;
 
 	while (*ptr && token_no < 3) {
 		if (*ptr == '-') {
 			*ptr = '\0';
-			chsparam[token_no++] = strtoull_b(token);
+			param[token_no++] = strtoull_b(token);
 			*ptr++ = '-';
 			token = ptr;
 
 			if (*ptr == '\0' && token_no < 3)
-				chsparam[token_no++] = strtoull_b(token);
+				param[token_no++] = strtoull_b(token);
 
 			continue;
 		}
@@ -581,7 +597,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		ptr++;
 
 		if (*ptr == '\0' && token_no < 3)
-			chsparam[token_no++] = strtoull_b(token);
+			param[token_no++] = strtoull_b(token);
 	}
 
 	/* Fail if LBA is omitted */
@@ -590,39 +606,41 @@ bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	if (!chsparam[1]) {
+	if (!param[1]) {
 		fprintf(stderr, "LBA2CHS: MAX_HEAD = 0\n");
 		return FALSE;
 	}
 
-	if (!chsparam[2]) {
+	if (!param[2]) {
 		fprintf(stderr, "LBA2CHS: MAX_SECTOR = 0\n");
 		return FALSE;
 	}
 
-	p_chs->c = (ulong)(chsparam[0] / (chsparam[2] * chsparam[1])); /* L / (MS * MH) */
-
-	p_chs->h = (ulong)((chsparam[0] / chsparam[2]) % chsparam[1]); /* (L / MS) % MH */
+	/* L / (MS * MH) */
+	p_chs->c = (ulong)(param[0] / (param[2] * param[1]));
+	/* (L / MS) % MH */
+	p_chs->h = (ulong)((param[0] / param[2]) % param[1]);
 	if (p_chs->h > MAX_HEAD) {
 		fprintf(stderr, "LBA2CHS: H > MAX_HEAD\n");
 		return FALSE;
 	}
 
-	p_chs->s = (ulong)((chsparam[0] % chsparam[2]) + 1); /* (L % MS) + 1 */
+	/* (L % MS) + 1 */
+	p_chs->s = (ulong)((param[0] % param[2]) + 1);
 	if (p_chs->s > MAX_SECTOR) {
 		fprintf(stderr, "LBA2CHS: S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
 	fprintf(stdout, "\033[1mLBA2CHS\033[0m\n\tLBA %s ",
-		getstr_u128(chsparam[0], uint_buf));
-	fprintf(stdout, "MAX_HEAD %s ", getstr_u128(chsparam[1], uint_buf));
-	fprintf(stdout, "MAX_SECTOR %s\n", getstr_u128(chsparam[2], uint_buf));
+		getstr_u128(param[0], uint_buf));
+	fprintf(stdout, "MAX_HEAD %s ", getstr_u128(param[1], uint_buf));
+	fprintf(stdout, "MAX_SECTOR %s\n", getstr_u128(param[2], uint_buf));
 
 	return TRUE;
 }
 
-void usage()
+void usage(void)
 {
 	fprintf(stdout, "usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
 	    [expression] [N unit] \n\n\
@@ -670,7 +688,7 @@ int xstricmp(const char *s1, const char *s2)
 		s1++;
 		s2++;
 	}
-	return *(const unsigned char*)s1 - *(const unsigned char*)s2;
+	return *(const unsigned char *)s1 - *(const unsigned char *)s2;
 }
 
 /* Convert any unit in bytes
@@ -678,20 +696,25 @@ int xstricmp(const char *s1, const char *s2)
  */
 maxuint_t unitconv(Data bunit, short *isunit, int *out)
 {
-	/* Data is a C structure containing a string p and a short indicating if the string is a unit or a plain number */
-	char *numstr = bunit.p;
+	/* Data is a C structure containing a string p and a short
+	 * indicating if the string is a unit or a plain number
+	 */
+	char *numstr = bunit.p, *punit;
+	int len, count;
+	maxfloat_t byte_metric = 0;
+
 	*out = 0;
 
 	if (numstr == NULL || *numstr == '\0') {
-		fprintf(stderr, "unitconv: Invalid token\n");
+		fprintf(stderr, "%s: Invalid token\n", __func__);
 		*out = -1;
 		return 0;
 	}
 
-	int len = strlen(numstr) - 1;
-
+	len = strlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
-		if (*isunit != 1) /* ensure this is not the result of a previous operation */
+		/* ensure this is not the result of a previous operation */
+		if (*isunit != 1)
 			*isunit = 0;
 		return strtoull(numstr, NULL, 0);
 	}
@@ -699,15 +722,15 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	while (isalpha(numstr[len]))
 		len--;
 
-	char *punit = numstr + len + 1;
+	punit = numstr + len + 1;
 
-	int count = sizeof(units) / sizeof(units[0]);	/* Number of available units is 9 (from "b" to "tb"). */
+	count = ARRAY_SIZE(units);
 	while (--count >= 0)
 		if (!xstricmp(units[count], punit))
-                        break;
+			break;
 
 	if (count == -1) {
-		fprintf(stderr, "unitconv: No matching unit\n");
+		fprintf(stderr, "%s: No matching unit\n", __func__);
 		*out = -1;
 		return 0;
 	}
@@ -715,37 +738,35 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	*isunit = 1;
 	*punit = '\0';
 
-	maxfloat_t byte_metric = 0;
-
 	switch (count) {
 	case 0:
 		return strtoull(numstr, NULL, 0);
-	case 1:
+	case 1: /* Kibibyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * 1024);	/* Kibibyte */
-	case 2:
+		return (maxuint_t)(byte_metric * 1024);
+	case 2: /* Mebibyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * (1 << 20));	/* Mebibyte */
-	case 3:
+		return (maxuint_t)(byte_metric * (1 << 20));
+	case 3: /* Gibibyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * (1 << 30));	/* Gibibyte */
-	case 4:
+		return (maxuint_t)(byte_metric * (1 << 30));
+	case 4: /* Tebibyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40)); /* Tebibyte */
-	case 5:
+		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40));
+	case 5: /* Kilobyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * 1000);	/* Kilobyte */
-	case 6:
+		return (maxuint_t)(byte_metric * 1000);
+	case 6: /* Megabyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * 1000000);	/* Megabyte */
-	case 7:
+		return (maxuint_t)(byte_metric * 1000000);
+	case 7: /* Gigabyte */
 		byte_metric = strtod(numstr, NULL);
-		return (maxuint_t)(byte_metric * 1000000000);	/* Gigabyte */
-	case 8:
+		return (maxuint_t)(byte_metric * 1000000000);
+	case 8: /* Terabyte */
 		byte_metric = strtod(numstr, NULL);
-		return (__uint128_t)(byte_metric * 1000000000000);	/* Terabyte */
+		return (__uint128_t)(byte_metric * 1000000000000);
 	default:
-		fprintf(stderr, "unitconv: Unknown unit\n");
+		fprintf(stderr, "%s: Unknown unit\n", __func__);
 		*out = -1;
 		return 0;
 	}
@@ -766,14 +787,15 @@ int priority(char sign) /* Get the priority of operators */
 /* Convert Infix mathematical expression to Postfix */
 int infix2postfix(char *exp, queue **resf, queue **resr)
 {
-	stack *op = NULL;			/* Operator Stack */
+	stack *op = NULL;  /* Operator Stack */
 	char *token = strtok(exp, " ");
-	Data tokenData = {"\0", 0};		/* C structure: distinguish between plain data & unit data */
+	Data tokenData = {"\0", 0};
 	int balanced = 0;
 	Data ct;
 
 	while (token) {
-		strcpy(tokenData.p, token);	/* Copy argument to string part of the structure */
+		/* Copy argument to string part of the structure */
+		strcpy(tokenData.p, token);
 
 		switch (token[0]) {
 		case '+':
@@ -781,7 +803,9 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '*':
 		case '/':
 			if (token[1] != '\0') {
-				fprintf(stderr, "infix2postfix: Invalid token terminator\n");
+				fprintf(stderr,
+					"%s: Invalid token terminator\n",
+					__func__);
 				return -1;
 			}
 
@@ -791,7 +815,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 				pop(&op, &ct);
 				/* Insert to Queue */
 				enqueue(resf, resr, ct);
-		        }
+			}
 
 			push(&op, tokenData);
 			break;
@@ -802,7 +826,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 		case ')':
 			while (!isempty(op) && top(op)[0] != '(') {
 				pop(&op, &ct);
-				enqueue(resf, resr ,ct);
+				enqueue(resf, resr, ct);
 			}
 
 			pop(&op, &ct);
@@ -813,17 +837,17 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 			enqueue(resf, resr, tokenData);
 		}
 
-		token = strtok(NULL, " ");;
+		token = strtok(NULL, " ");
 	}
 
 	while (!isempty(op)) {
 		/* Put remaining elements into the queue */
 		pop(&op, &ct);
-		enqueue(resf , resr, ct);
+		enqueue(resf, resr, ct);
 	}
 
 	if (balanced != 0) {
-		fprintf(stderr, "infix2postfix: Unbalanced expression\n");
+		fprintf(stderr, "%s: Unbalanced expression\n", __func__);
 		return -1;
 	}
 
@@ -838,12 +862,16 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 	stack *est = NULL;
 	Data ansdata, arg, raw_a, raw_b;
 	*out = 0;
+	maxuint_t a, b, c;
 
-	if (*front == NULL)	/* If Queue is Empty */
+	/* Check if queue is empty */
+	if (*front == NULL)
 		return 0;
 
-	if (*front == *rear) {		/* If only one element in the queue */
+	/* Check if only one element in the queue */
+	if (*front == *rear) {
 		short s = 0;
+
 		dequeue(front, rear, &ansdata);
 		return unitconv(ansdata, &s, out);
 	}
@@ -851,27 +879,31 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 	while (*front != NULL && *rear != NULL) {
 		dequeue(front, rear, &arg);
 
-		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])){ /* Check if arg is an operator */
-			pop(&est, &raw_b);			/* Pop data from stack */
+		/* Check if arg is an operator */
+		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])) {
+			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
-			maxuint_t b = unitconv(raw_b, &raw_b.unit, out);	/* Convert to integer */
+			b = unitconv(raw_b, &raw_b.unit, out);
 			if (*out == -1)
 				return 0;
-			maxuint_t a = unitconv(raw_a, &raw_a.unit, out);
+			a = unitconv(raw_a, &raw_a.unit, out);
 			if (*out == -1)
 				return 0;
 
-			maxuint_t c = 0;	/* Result data */
+			c = 0;
 			Data raw_c;
 
 			switch (arg.p[0]) {
 			case '+':
-				if (raw_a.unit && raw_b.unit) { /* Check if both are units */
-				  	c = a + b;
+				/* Check if both are units */
+				if (raw_a.unit && raw_b.unit) {
+					c = a + b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr, "eval: Unit mismatch in +\n");
+					fprintf(stderr,
+						"%s: Unit mismatch in +\n",
+						__func__);
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -879,11 +911,14 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				}
 				break;
 			case '-':
-				if (raw_a.unit && raw_b.unit) { /* Check if both are units */
+				/* Check if both are units */
+				if (raw_a.unit && raw_b.unit) {
 					c = a - b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr, "eval: Unit mismatch in -\n");
+					fprintf(stderr,
+						"%s: Unit mismatch in -\n",
+						__func__);
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -891,11 +926,14 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				}
 				break;
 			case '*':
-				if (!raw_a.unit || !raw_b.unit) { /* Check if only one is unit */
+				/* Check if only one is unit */
+				if (!raw_a.unit || !raw_b.unit) {
 					c = a * b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr, "eval: Unit mismatch in *\n");
+					fprintf(stderr,
+						"%s: Unit mismatch in *\n",
+						__func__);
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -903,11 +941,14 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				}
 				break;
 			case '/':
-				if (raw_a.unit && !raw_b.unit) { /* Check if only the dividend is unit */
+				/* Check if only the dividend is unit */
+				if (raw_a.unit && !raw_b.unit) {
 					c = a / b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr, "eval: Unit mismatch in /\n");
+					fprintf(stderr,
+						"%s: Unit mismatch in /\n",
+						__func__);
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -916,28 +957,31 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				break;
 			}
 
-			strcpy(raw_c.p, getstr_u128(c, uint_buf));	/* Convert to string */
-			push(&est, raw_c);				/* Put in stack */
+			/* Convert to string */
+			strcpy(raw_c.p, getstr_u128(c, uint_buf));
+			/* Push to stack */
+			push(&est, raw_c);
 
 		} else
 			push(&est, arg);
 	}
 
 	pop(&est, &ansdata);
-	return strtoull(ansdata.p, NULL, 0);	/* Convert string to integer */
+	/* Convert string to integer */
+	return strtoull(ansdata.p, NULL, 0);
 }
 
 /* Check if a char is operator or not */
 int isoperator(char c)
 {
 	switch (c) {
-		case '+':
-		case '-':
-		case '*':
-		case '/':
-		case '(':
-		case ')': return 1;
-		default: return 0;
+	case '+':
+	case '-':
+	case '*':
+	case '/':
+	case '(':
+	case ')': return 1;
+	default: return 0;
 	}
 }
 
@@ -999,11 +1043,12 @@ char *fixexpr(char *exp)
 		return NULL;
 
 	int i = 0, j = 0;
-	char *parsed = (char*)malloc(2 * strlen(exp) * sizeof(char));
+	char *parsed = (char *)malloc(2 * strlen(exp) * sizeof(char));
 
 	while (exp[i] != '\0') {
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) || isoperator(exp[i + 1]))) ||
+		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
+		     isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
 			parsed[j++] = exp[i];
 			parsed[j++] = ' ';
@@ -1020,7 +1065,7 @@ char *fixexpr(char *exp)
 	return parsed;
 }
 
-int convertunit(char *value, char *unit, ulong sectorsize)
+int convertunit(char *value, char *unit, ulong sectorsz)
 {
 	int count = sizeof(units)/sizeof(*units);
 	maxuint_t bytes = 0, lba = 0, offset = 0;
@@ -1069,14 +1114,15 @@ int convertunit(char *value, char *unit, ulong sectorsize)
 		return -1;
 	}
 
-	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
+	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ",
+		getstr_u128(bytes, uint_buf));
 	printhex_u128(bytes);
 
 	/* Calculate LBA and offset */
-	lba = bytes / sectorsize;
-	offset = bytes % sectorsize;
+	lba = bytes / sectorsz;
+	offset = bytes % sectorsz;
 
-	fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsize);
+	fprintf(stdout, "\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsz);
 	/* We use a global buffer, so print decimal lba first, then offset */
 	fprintf(stdout, "\n\tdec: %s:", getstr_u128(lba, uint_buf));
 	fprintf(stdout, "%s\n\thex: ", getstr_u128(offset, uint_buf));
@@ -1090,14 +1136,14 @@ int convertunit(char *value, char *unit, ulong sectorsize)
 
 int evaluate(char *exp)
 {
+	int ret = 0;
+	maxuint_t bytes = 0;
+	queue *front = NULL, *rear = NULL;
 	char *expr = fixexpr(exp);	 /* Make parsing compatible */
+
 	if (expr == NULL)
 		return -1;
 
-	maxuint_t bytes = 0;
-	int ret = 0;
-
-	queue *front = NULL, *rear = NULL;
 	ret = infix2postfix(expr, &front, &rear);
 	free(expr);
 	if (ret == -1)
@@ -1111,7 +1157,8 @@ int evaluate(char *exp)
 
 	convertbyte(getstr_u128(bytes, uint_buf));
 
-	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ", getstr_u128(bytes, uint_buf));
+	fprintf(stdout, "\n    ADDRESS\n\tdec: %s\n\thex: ",
+		getstr_u128(bytes, uint_buf));
 	printhex_u128(bytes);
 	fprintf(stdout, "\n");
 
@@ -1121,7 +1168,7 @@ int evaluate(char *exp)
 int main(int argc, char **argv)
 {
 	int opt = 0;
-	ulong sectorsize = SECTOR_SIZE;
+	ulong sectorsz = SECTOR_SIZE;
 
 	opterr = 0;
 
@@ -1138,15 +1185,18 @@ int main(int argc, char **argv)
 
 			fprintf(stdout, "\tbin: ");
 			binprint(val);
-			fprintf(stdout, "\n\tdec: %s\n\thex: ", getstr_u128(val, uint_buf));
+			fprintf(stdout, "\n\tdec: %s\n\thex: ",
+				getstr_u128(val, uint_buf));
 			printhex_u128(val);
 			fprintf(stdout, "\n\n");
 			break;
 		case 'f':
 			if (tolower(*optarg) == 'c') {
 				maxuint_t lba = 0;
+
 				if (chs2lba(optarg + 1, &lba)) {
-					fprintf(stdout, "\tLBA: (dec) %s, (hex) ",
+					fprintf(stdout,
+						"\tLBA: (dec) %s, (hex) ",
 						getstr_u128(lba, uint_buf));
 					printhex_u128(lba);
 					fprintf(stdout, "\n\n");
@@ -1154,10 +1204,15 @@ int main(int argc, char **argv)
 					fprintf(stderr, "Invalid input\n");
 			} else if (tolower(*optarg) == 'l') {
 				t_chs chs;
-				if (lba2chs(optarg + 1, &chs))
-					fprintf(stdout, "\tCHS: (dec) %lu %lu %lu, (hex) 0x%lx 0x%lx 0x%lx\n\n",
-						chs.c, chs.h, chs.s, chs.c, chs.h, chs.s);
-				else
+
+				if (lba2chs(optarg + 1, &chs)) {
+					fprintf(stdout,
+						"\tCHS: (dec) %lu %lu %lu, ",
+						chs.c, chs.h, chs.s);
+					fprintf(stdout,
+						"(hex) 0x%lx 0x%lx 0x%lx\n\n",
+						chs.c, chs.h, chs.s);
+				} else
 					fprintf(stderr, "Invalid input\n");
 			} else
 				fprintf(stderr, "Invalid input\n");
@@ -1167,7 +1222,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "sector size must be +ve\n");
 				return 1;
 			}
-			sectorsize = strtoul_b(optarg);
+			sectorsz = strtoul_b(optarg);
 			break;
 		case 'h':
 			usage();
@@ -1185,7 +1240,8 @@ int main(int argc, char **argv)
 
 	/* Conversion */
 	if (argc - optind == 2)
-		if (convertunit(argv[optind], argv[optind + 1], sectorsize) == -1) {
+		if (convertunit(argv[optind], argv[optind + 1],
+				sectorsz) == -1) {
 			usage();
 			return -1;
 		}

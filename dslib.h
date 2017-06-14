@@ -24,7 +24,8 @@ typedef struct queue {
 
 void push(stack **top, Data d)
 {
-	stack *new = (stack*)malloc(sizeof(stack));
+	stack *new = (stack *)malloc(sizeof(stack));
+
 	new->d = d;
 	new->link = NULL;
 
@@ -38,8 +39,8 @@ void push(stack **top, Data d)
 
 void pop(stack **top, Data *d)
 {
-	d->p[0]='\0';
-	d->unit=0;
+	d->p[0] = '\0';
+	d->unit = 0;
 
 	if (*top != NULL) {
 		stack *tmp = *top;
@@ -51,7 +52,8 @@ void pop(stack **top, Data *d)
 
 void enqueue(queue **front, queue **rear, Data d)
 {
-	queue *new = (queue*)malloc(sizeof(queue));
+	queue *new = (queue *)malloc(sizeof(queue));
+
 	new->d = d;
 	new->link = NULL;
 
@@ -63,10 +65,10 @@ void enqueue(queue **front, queue **rear, Data d)
 	}
 }
 
-void dequeue(queue **front,queue **rear, Data *d)
+void dequeue(queue **front, queue **rear, Data *d)
 {
-	d->p[0]='\0';
-	d->unit=0;
+	d->p[0] = '\0';
+	d->unit = 0;
 
 	if (*front != NULL) {
 		queue *tmp;
@@ -93,7 +95,7 @@ int isempty(stack *top)
 	return 0;
 }
 
-char* top(stack *top)
+char *top(stack *top)
 {
 	if (top == NULL)
 		return NULL;
@@ -126,6 +128,7 @@ void cleanqueue(queue **front)
 void printstack(stack *top)
 {
 	stack *i;
+
 	printf("\nStack: ");
 
 	if (top == NULL)
@@ -140,6 +143,7 @@ void printstack(stack *top)
 void printqueue(queue *front)
 {
 	queue *i;
+
 	printf("\nQueue: ");
 
 	if (front == NULL)
