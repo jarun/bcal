@@ -7,20 +7,17 @@
 
 #define NUM_LEN 64
 
-typedef struct data
-{
+typedef struct data {
 	char p[NUM_LEN];
 	short unit;
 } Data;
 
-typedef struct stk
-{
+typedef struct stack {
 	Data d;
-	struct stk *link;
+	struct stack *link;
 } stack;
 
-typedef struct queue
-{
+typedef struct queue {
 	Data d;
 	struct queue *link;
 } queue;
