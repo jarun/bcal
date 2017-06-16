@@ -7,10 +7,13 @@ BINDIR = $(DESTDIR)$(PREFIX)/bin
 MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 
+SRC = $(wildcard src/*.c)
+INCLUDE = -I$(PWD)/inc
+
 all: bcal
 
-bcal: bcal.c log.c
-	$(CC) $(CFLAGS) -o bcal bcal.c log.c $(LDLIBS)
+bcal: $(SRC)
+	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 	strip bcal
 
 .PHONY: clean
