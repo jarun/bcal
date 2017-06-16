@@ -647,7 +647,7 @@ Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
   expression       evaluate storage arithmetic expression\n\
 		   +, -, *, / with decimal inputs supported\n\
-		   unit can be multipled or divided by +ve integer(s)\n\
+		   unit can be multiplied or divided by +ve integer(s)\n\
 		   units can be added or subtracted from each other\n\
 		   Examples:\n\
 		       bcal \"(5kb+2mb)/3\"\n\
@@ -942,9 +942,10 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				break;
 			case '/':
 				/* Check if only the dividend is unit */
-				if (raw_a.unit && !raw_b.unit) {
+				if (!(raw_a.unit && raw_b.unit)) {
 					c = a / b;
-					raw_c.unit = 1;
+					if (raw_a.unit || raw_b.unit)
+						raw_c.unit = 1;
 				} else {
 					fprintf(stderr,
 						"%s: Unit mismatch in /\n",
