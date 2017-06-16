@@ -24,6 +24,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "dslib.h"
+#include "log.h"
 
 #define TRUE 1
 #define FALSE !TRUE
@@ -59,6 +60,8 @@ char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
 char uint_buf[UINT_BUF_LEN];
 char float_buf[FLOAT_BUF_LEN];
+
+int current_log_level = INFO;
 
 void binprint(maxuint_t n)
 {
@@ -530,32 +533,32 @@ bool chs2lba(char *chs, maxuint_t *lba)
 
 	/* Fail if CHS is omitted */
 	if (token_no < 3) {
-		fprintf(stderr, "CHS2LBA: CHS missing\n");
+		log(ERROR, "CHS missing\n");
 		return FALSE;
 	}
 
 	if (!param[3]) {
-		fprintf(stderr, "CHS2LBA: MAX_HEAD = 0\n");
+		log(ERROR, "MAX_HEAD = 0\n");
 		return FALSE;
 	}
 
 	if (!param[4]) {
-		fprintf(stderr, "CHS2LBA: MAX_SECTOR = 0\n");
+		log(ERROR, "MAX_SECTOR = 0\n");
 		return FALSE;
 	}
 
 	if (!param[2]) {
-		fprintf(stderr, "CHS2LBA: S = 0\n");
+		log(ERROR, "S = 0\n");
 		return FALSE;
 	}
 
 	if (param[1] > param[3]) {
-		fprintf(stderr, "CHS2LBA: H > MAX_HEAD\n");
+		log(ERROR, "H > MAX_HEAD\n");
 		return FALSE;
 	}
 
 	if (param[2] > param[4]) {
-		fprintf(stderr, "CHS2LBA: S > MAX_SECTOR\n");
+		log(ERROR, "S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
@@ -601,17 +604,17 @@ bool lba2chs(char *lba, t_chs *p_chs)
 
 	/* Fail if LBA is omitted */
 	if (!token_no) {
-		fprintf(stderr, "LBA2CHS: LBA missing\n");
+		log(ERROR, "LBA missing\n");
 		return FALSE;
 	}
 
 	if (!param[1]) {
-		fprintf(stderr, "LBA2CHS: MAX_HEAD = 0\n");
+		log(ERROR, "MAX_HEAD = 0\n");
 		return FALSE;
 	}
 
 	if (!param[2]) {
-		fprintf(stderr, "LBA2CHS: MAX_SECTOR = 0\n");
+		log(ERROR, "MAX_SECTOR = 0\n");
 		return FALSE;
 	}
 
@@ -620,14 +623,14 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	/* (L / MS) % MH */
 	p_chs->h = (ulong)((param[0] / param[2]) % param[1]);
 	if (p_chs->h > MAX_HEAD) {
-		fprintf(stderr, "LBA2CHS: H > MAX_HEAD\n");
+		log(ERROR, "H > MAX_HEAD\n");
 		return FALSE;
 	}
 
 	/* (L % MS) + 1 */
 	p_chs->s = (ulong)((param[0] % param[2]) + 1);
 	if (p_chs->s > MAX_SECTOR) {
-		fprintf(stderr, "LBA2CHS: S > MAX_SECTOR\n");
+		log(ERROR, "S > MAX_SECTOR\n");
 		return FALSE;
 	}
 
@@ -705,7 +708,7 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	*out = 0;
 
 	if (numstr == NULL || *numstr == '\0') {
-		fprintf(stderr, "%s: Invalid token\n", __func__);
+		log(ERROR, "Invalid token\n");
 		*out = -1;
 		return 0;
 	}
@@ -729,7 +732,7 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 			break;
 
 	if (count == -1) {
-		fprintf(stderr, "%s: No matching unit\n", __func__);
+		log(ERROR, "No matching unit\n");
 		*out = -1;
 		return 0;
 	}
@@ -765,7 +768,7 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 		byte_metric = strtod(numstr, NULL);
 		return (__uint128_t)(byte_metric * 1000000000000);
 	default:
-		fprintf(stderr, "%s: Unknown unit\n", __func__);
+		log(ERROR, "Unknown unit\n");
 		*out = -1;
 		return 0;
 	}
@@ -802,9 +805,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '*':
 		case '/':
 			if (token[1] != '\0') {
-				fprintf(stderr,
-					"%s: Invalid token terminator\n",
-					__func__);
+				log(ERROR, "Invalid token terminator\n");
 				return -1;
 			}
 
@@ -846,7 +847,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 	}
 
 	if (balanced != 0) {
-		fprintf(stderr, "%s: Unbalanced expression\n", __func__);
+		log(ERROR, "Unbalanced expression\n");
 		return -1;
 	}
 
@@ -900,9 +901,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					c = a + b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr,
-						"%s: Unit mismatch in +\n",
-						__func__);
+					log(ERROR, "Unit mismatch in +\n");
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -915,9 +914,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					c = a - b;
 					raw_c.unit = 1;
 				} else {
-					fprintf(stderr,
-						"%s: Unit mismatch in -\n",
-						__func__);
+					log(ERROR, "Unit mismatch in -\n");
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -931,9 +928,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					if (raw_a.unit || raw_b.unit)
 						raw_c.unit = 1;
 				} else {
-					fprintf(stderr,
-						"%s: Unit mismatch in *\n",
-						__func__);
+					log(ERROR, "Unit mismatch in *\n");
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -947,9 +942,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 					if (raw_a.unit || raw_b.unit)
 						raw_c.unit = 1;
 				} else {
-					fprintf(stderr,
-						"%s: Unit mismatch in /\n",
-						__func__);
+					log(ERROR, "Unit mismatch in /\n");
 					*out = -1;
 					emptystack(&est);
 					cleanqueue(front);
@@ -1076,7 +1069,7 @@ int convertunit(char *value, char *unit, ulong sectorsz)
 			break;
 
 	if (count == -1) {
-		fprintf(stderr, "No matching unit\n");
+		log(ERROR, "No matching unit\n");
 		return -1;
 	}
 
@@ -1111,7 +1104,7 @@ int convertunit(char *value, char *unit, ulong sectorsz)
 		bytes = converttb(value);
 		break;
 	default:
-		fprintf(stderr, "Unknown unit\n");
+		log(ERROR, "Unknown unit\n");
 		return -1;
 	}
 
@@ -1173,11 +1166,11 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt(argc, argv, "c:f:hs:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:df:hs:")) != -1) {
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
-				fprintf(stderr, "N must be >= 0\n");
+				log(ERROR, "N must be >= 0\n");
 				return 1;
 			}
 
@@ -1201,7 +1194,7 @@ int main(int argc, char **argv)
 					printhex_u128(lba);
 					printf("\n\n");
 				} else
-					fprintf(stderr, "Invalid input\n");
+					log(ERROR, "Invalid input\n");
 			} else if (tolower(*optarg) == 'l') {
 				t_chs chs;
 
@@ -1211,16 +1204,20 @@ int main(int argc, char **argv)
 					printf("(hex) 0x%lx 0x%lx 0x%lx\n\n",
 						chs.c, chs.h, chs.s);
 				} else
-					fprintf(stderr, "Invalid input\n");
+					log(ERROR, "Invalid input\n");
 			} else
-				fprintf(stderr, "Invalid input\n");
+				log(ERROR, "Invalid input\n");
 			break;
 		case 's':
 			if (*optarg == '-') {
-				fprintf(stderr, "sector size must be +ve\n");
+				log(ERROR, "sector size must be +ve\n");
 				return 1;
 			}
 			sectorsz = strtoul_b(optarg);
+			break;
+		case 'd':
+			current_log_level = DEBUG;
+			log(DEBUG, "bcal v%s\n", VERSION);
 			break;
 		case 'h':
 			usage();
