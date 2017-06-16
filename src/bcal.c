@@ -897,9 +897,10 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 			switch (arg.p[0]) {
 			case '+':
 				/* Check if both are units */
-				if (raw_a.unit && raw_b.unit) {
+				if (raw_a.unit == raw_b.unit) {
 					c = a + b;
-					raw_c.unit = 1;
+					if (raw_a.unit)
+						raw_c.unit = 1;
 				} else {
 					log(ERROR, "Unit mismatch in +\n");
 					*out = -1;
@@ -910,9 +911,10 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 				break;
 			case '-':
 				/* Check if both are units */
-				if (raw_a.unit && raw_b.unit) {
+				if (raw_a.unit == raw_b.unit) {
 					c = a - b;
-					raw_c.unit = 1;
+					if (raw_a.unit)
+						raw_c.unit = 1;
 				} else {
 					log(ERROR, "Unit mismatch in -\n");
 					*out = -1;
