@@ -8,7 +8,7 @@ MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 
 SRC = $(wildcard src/*.c)
-INCLUDE = -I$(PWD)/inc
+INCLUDE = -Iinc
 
 all: bcal
 
@@ -27,8 +27,8 @@ install: bcal
 	install -m755 -d $(BINDIR)
 	install -m755 -d $(MANDIR)
 	install -m755 -d $(DOCDIR)
-	gzip -c bcal.1 > bcal.1.gz
 	install -m755 bcal $(BINDIR)
+	gzip -c bcal.1 > bcal.1.gz
 	install -m644 bcal.1.gz $(MANDIR)
 	install -m644 README.md $(DOCDIR)
 	rm -f bcal.1.gz
