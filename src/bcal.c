@@ -920,7 +920,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 static maxuint_t eval(queue **front, queue **rear, int *out)
 {
 	stack *est = NULL;
-	Data ansdata, arg, raw_a, raw_b;
+	Data ansdata, arg, raw_a, raw_b, raw_c;
 	*out = 0;
 	maxuint_t a, b, c;
 
@@ -952,7 +952,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				return 0;
 
 			c = 0;
-			Data raw_c;
+			raw_c.unit = 0;
 
 			switch (arg.p[0]) {
 			case '+':
@@ -961,56 +961,44 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					c = a + b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
-				} else {
-					log(ERROR, "Unit mismatch in +\n");
-					*out = -1;
-					emptystack(&est);
-					cleanqueue(front);
-					return 0;
+					break;
 				}
-				break;
+
+				log(ERROR, "Unit mismatch in +\n");
+				goto error;
 			case '-':
 				/* Check if both are units */
 				if (raw_a.unit == raw_b.unit) {
 					c = a - b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
-				} else {
-					log(ERROR, "Unit mismatch in -\n");
-					*out = -1;
-					emptystack(&est);
-					cleanqueue(front);
-					return 0;
+					break;
 				}
-				break;
+
+				log(ERROR, "Unit mismatch in -\n");
+				goto error;
 			case '*':
 				/* Check if only one is unit */
 				if (!(raw_a.unit && raw_b.unit)) {
 					c = a * b;
 					if (raw_a.unit || raw_b.unit)
 						raw_c.unit = 1;
-				} else {
-					log(ERROR, "Unit mismatch in *\n");
-					*out = -1;
-					emptystack(&est);
-					cleanqueue(front);
-					return 0;
+					break;
 				}
-				break;
+
+				log(ERROR, "Unit mismatch in *\n");
+				goto error;
 			case '/':
 				/* Check if only the dividend is unit */
 				if (!(raw_a.unit && raw_b.unit)) {
 					c = a / b;
 					if (raw_a.unit || raw_b.unit)
 						raw_c.unit = 1;
-				} else {
-					log(ERROR, "Unit mismatch in /\n");
-					*out = -1;
-					emptystack(&est);
-					cleanqueue(front);
-					return 0;
+					break;
 				}
-				break;
+
+				log(ERROR, "Unit mismatch in /\n");
+				goto error;
 			}
 
 			/* Convert to string */
@@ -1025,6 +1013,12 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 	pop(&est, &ansdata);
 	/* Convert string to integer */
 	return strtoull(ansdata.p, NULL, 0);
+
+error:
+	*out = -1;
+	emptystack(&est);
+	cleanqueue(front);
+	return 0;
 }
 
 /* Check if a char is operator or not */
@@ -1222,6 +1216,11 @@ static int evaluate(char *exp)
 	if (ret == -1)
 		return -1;
 
+	if (lightmode) {
+		convertbyte(getstr_u128(bytes, uint_buf));
+		return 0;
+	}
+
 	printf("\033[1mRESULT\033[0m\n");
 
 	convertbyte(getstr_u128(bytes, uint_buf));
@@ -1319,7 +1318,7 @@ int main(int argc, char **argv)
 
 	/*Arithmetic Operation*/
 	if (argc - optind == 1)
-		if (evaluate(argv[1]) == -1) {
+		if (evaluate(argv[optind]) == -1) {
 			usage();
 			return -1;
 		}
