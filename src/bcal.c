@@ -61,6 +61,7 @@ static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"}
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
+static int lightmode;
 int current_log_level = INFO;
 
 static void binprint(maxuint_t n)
@@ -179,6 +180,11 @@ static maxuint_t convertbyte(char *buf)
 	/* Convert and print in bytes */
 	maxuint_t bytes = strtoull(buf, NULL, 0);
 
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
+
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
 	/* Convert and print in IEC standard units */
@@ -220,6 +226,11 @@ static maxuint_t convertkib(char *buf)
 	maxfloat_t kib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
+
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
 	printf("\n            IEC standard (base 2)\n\n");
@@ -255,6 +266,11 @@ static maxuint_t convertmib(char *buf)
 	maxfloat_t val;
 	maxfloat_t mib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
+
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
 
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
@@ -292,6 +308,11 @@ static maxuint_t convertgib(char *buf)
 	maxfloat_t gib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
+
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
 	printf("\n            IEC standard (base 2)\n\n");
@@ -327,6 +348,11 @@ static maxuint_t converttib(char *buf)
 	maxfloat_t val;
 	maxfloat_t tib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
+
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
 
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
@@ -364,6 +390,11 @@ static maxuint_t convertkb(char *buf)
 	maxfloat_t kb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
+
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
 	printf("\n            IEC standard (base 2)\n\n");
@@ -399,6 +430,11 @@ static maxuint_t convertmb(char *buf)
 	maxfloat_t val;
 	maxfloat_t mb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
+
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
 
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
@@ -436,6 +472,11 @@ static maxuint_t convertgb(char *buf)
 	maxfloat_t gb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
+
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
 	printf("\n            IEC standard (base 2)\n\n");
@@ -471,6 +512,11 @@ static maxuint_t converttb(char *buf)
 	maxfloat_t val;
 	maxfloat_t tb = strtod(buf, NULL);
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
+
+	if (lightmode) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return bytes;
+	}
 
 	printf("%40s B\n", getstr_u128(bytes, uint_buf));
 
@@ -1098,7 +1144,8 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		return -1;
 	}
 
-	printf("\033[1mUNIT CONVERSION\033[0m\n");
+	if (!lightmode)
+		printf("\033[1mUNIT CONVERSION\033[0m\n");
 
 	switch (count) {
 	case 0:
@@ -1132,6 +1179,9 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		log(ERROR, "Unknown unit\n");
 		return -1;
 	}
+
+	if (lightmode)
+		return 0;
 
 	printf("\n    ADDRESS\n\tdec: %s\n\thex: ",
 		getstr_u128(bytes, uint_buf));
@@ -1191,7 +1241,7 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt(argc, argv, "c:df:hs:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:df:hls:")) != -1) {
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
@@ -1218,8 +1268,7 @@ int main(int argc, char **argv)
 						getstr_u128(lba, uint_buf));
 					printhex_u128(lba);
 					printf("\n\n");
-				} else
-					log(ERROR, "Invalid input\n");
+				}
 			} else if (tolower(*optarg) == 'l') {
 				t_chs chs;
 
@@ -1228,10 +1277,12 @@ int main(int argc, char **argv)
 						chs.c, chs.h, chs.s);
 					printf("(hex) 0x%lx 0x%lx 0x%lx\n\n",
 						chs.c, chs.h, chs.s);
-				} else
-					log(ERROR, "Invalid input\n");
+				}
 			} else
 				log(ERROR, "Invalid input\n");
+			break;
+		case 'l':
+			lightmode = 1;
 			break;
 		case 's':
 			if (*optarg == '-') {
