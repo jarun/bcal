@@ -657,13 +657,13 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 
 static void usage(void)
 {
-	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
+	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]\n\
 	    [expression] [N unit] \n\n\
 Perform storage conversions and calculations.\n\n\
 positional arguments:\n\
   expression       evaluate storage arithmetic expression\n\
 		   +, -, *, / with decimal inputs supported\n\
-		   unit can be multiplied or divided by +ve integer(s)\n\
+		   unit can be multiplied or divided by +ve integers\n\
 		   units can be added or subtracted from each other\n\
 		   Examples:\n\
 		       bcal \"(5kb+2mb)/3\"\n\
@@ -690,6 +690,7 @@ optional arguments:\n\
 		     LBA = 50, MH = 0x12, MS = 0\n\
 		   default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
   -s bytes         sector size [default 512]\n\
+  -d               enable debug information and logs\n\
   -h               show this help and exit\n\n\
 Version %s\n\
 Copyright © 2016-2017 Arun Prakash Jana <engineerarun@gmail.com>\n\

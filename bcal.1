@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Perform storage conversions and calculations.
 .SH SYNOPSIS
-.B bcal [-c N] [-f FORMAT] [-s bytes] [-h]
+.B bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
 .br
 .B "    "[expression] [N unit]
 .SH DESCRIPTION
@@ -28,7 +28,7 @@ Refer to:
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be divided or multiplied by plain integers. Only storage units can be used for addition and subtraction.
+\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be multiplied or divided by positive integers. Only storage units can be used for addition and subtraction.
 .PP
 .IP 2. 4
 \fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
@@ -73,6 +73,9 @@ Omitted values, (other than MAX_HEAD and MAX_SECTOR) are considered 0. Default M
 .TP
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.
+.TP
+.BI "-d"
+Enable debug information and logs.
 .TP
 .BI "-h"
 Show program help and exit.

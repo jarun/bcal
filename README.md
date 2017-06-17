@@ -88,7 +88,7 @@ To uninstall, run:
 
 #### cmdline options
 
-    usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]
+    usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
                 [expression] [N unit]
 
     Perform storage conversions and calculations.
@@ -96,7 +96,7 @@ To uninstall, run:
     positional arguments:
       expression       evaluate storage arithmetic expression
                        +, -, *, / with decimal inputs supported
-                       unit can be multipled or divided by +ve integer(s)
+                       unit can be multiplied or divided by +ve integers
                        units can be added or subtracted from each other
                        Examples:
                            bcal "(5kb+2mb)/3"
@@ -124,6 +124,7 @@ To uninstall, run:
                          LBA = 50, MH = 0x12, MS = 0
                        default MAX_HEAD: 16, default MAX_SECTOR: 63
       -s bytes         sector size [default 512]
+      -d               enable debug information and logs
       -h               show this help and exit
 
 #### Operational notes
