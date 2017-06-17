@@ -10,11 +10,14 @@ DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
 
-all: bcal
-
 bcal: $(SRC)
 	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 	strip bcal
+
+all: bcal
+
+test: all
+	$(shell pwd)/test.py
 
 .PHONY: clean
 clean:

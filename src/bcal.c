@@ -1312,6 +1312,7 @@ int main(int argc, char **argv)
 	if (argc - optind == 2)
 		if (convertunit(argv[optind], argv[optind + 1],
 				sectorsz) == -1) {
+			printf("\n");
 			usage();
 			return -1;
 		}
@@ -1319,6 +1320,7 @@ int main(int argc, char **argv)
 	/*Arithmetic Operation*/
 	if (argc - optind == 1)
 		if (evaluate(argv[optind]) == -1) {
+			printf("\n");
 			usage();
 			return -1;
 		}
