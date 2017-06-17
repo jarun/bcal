@@ -1,9 +1,8 @@
+#pragma once
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
-
-#ifndef DSLIB_H
-#define DSLIB_H
 
 #define NUM_LEN 64
 
@@ -22,7 +21,7 @@ typedef struct queue {
 	struct queue *link;
 } queue;
 
-void push(stack **top, Data d)
+static void push(stack **top, Data d)
 {
 	stack *new = (stack *)malloc(sizeof(stack));
 
@@ -37,7 +36,7 @@ void push(stack **top, Data d)
 	}
 }
 
-void pop(stack **top, Data *d)
+static void pop(stack **top, Data *d)
 {
 	d->p[0] = '\0';
 	d->unit = 0;
@@ -50,7 +49,7 @@ void pop(stack **top, Data *d)
 	}
 }
 
-void enqueue(queue **front, queue **rear, Data d)
+static void enqueue(queue **front, queue **rear, Data d)
 {
 	queue *new = (queue *)malloc(sizeof(queue));
 
@@ -65,7 +64,7 @@ void enqueue(queue **front, queue **rear, Data d)
 	}
 }
 
-void dequeue(queue **front, queue **rear, Data *d)
+static void dequeue(queue **front, queue **rear, Data *d)
 {
 	d->p[0] = '\0';
 	d->unit = 0;
@@ -87,7 +86,7 @@ void dequeue(queue **front, queue **rear, Data *d)
 	}
 }
 
-int isempty(stack *top)
+static int isempty(stack *top)
 {
 	if (top == NULL)
 		return 1;
@@ -95,7 +94,7 @@ int isempty(stack *top)
 	return 0;
 }
 
-char *top(stack *top)
+static char *top(stack *top)
 {
 	if (top == NULL)
 		return NULL;
@@ -103,7 +102,7 @@ char *top(stack *top)
 	return top->d.p;
 }
 
-void emptystack(stack **top)
+static void emptystack(stack **top)
 {
 	stack *tmp;
 
@@ -114,7 +113,7 @@ void emptystack(stack **top)
 	}
 }
 
-void cleanqueue(queue **front)
+static void cleanqueue(queue **front)
 {
 	queue *tmp;
 
@@ -125,7 +124,8 @@ void cleanqueue(queue **front)
 	}
 }
 
-void printstack(stack *top)
+#ifdef SUPPORT_DS_PRINT
+static void printstack(stack *top)
 {
 	stack *i;
 
@@ -140,7 +140,7 @@ void printstack(stack *top)
 	printf("\n");
 }
 
-void printqueue(queue *front)
+static void printqueue(queue *front)
 {
 	queue *i;
 
@@ -154,5 +154,4 @@ void printqueue(queue *front)
 
 	printf("\n");
 }
-
 #endif

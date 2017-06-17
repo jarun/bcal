@@ -55,15 +55,15 @@ typedef struct {
 	ulong s;
 } t_chs;
 
-char *VERSION = "1.5";
-char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
+static char *VERSION = "1.5";
+static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
-char uint_buf[UINT_BUF_LEN];
-char float_buf[FLOAT_BUF_LEN];
+static char uint_buf[UINT_BUF_LEN];
+static char float_buf[FLOAT_BUF_LEN];
 
 int current_log_level = INFO;
 
-void binprint(maxuint_t n)
+static void binprint(maxuint_t n)
 {
 	int count = 127;
 	char binstr[129] = {0};
@@ -74,16 +74,17 @@ void binprint(maxuint_t n)
 	}
 
 	while (n && count >= 0) {
-		binstr[count--] = "01"[n & 1];
+		binstr[count] = "01"[n & 1];
+		--count;
 		n >>= 1;
 	}
 
-	count++;
+	++count;
 
 	printf("0b%s", binstr + count);
 }
 
-char *getstr_u128(maxuint_t n, char *buf)
+static char *getstr_u128(maxuint_t n, char *buf)
 {
 	if (n == 0) {
 		buf[0] = '0';
@@ -105,7 +106,7 @@ char *getstr_u128(maxuint_t n, char *buf)
 	return loc;
 }
 
-char *getstr_f128(maxfloat_t val, char *buf)
+static char *getstr_f128(maxfloat_t val, char *buf)
 {
 	int n = quadmath_snprintf(buf, FLOAT_BUF_LEN,
 				  "%#*.10Qe", FLOAT_WIDTH, val);
@@ -114,7 +115,7 @@ char *getstr_f128(maxfloat_t val, char *buf)
 	return buf;
 }
 
-void printval(maxfloat_t val, char *unit)
+static void printval(maxfloat_t val, char *unit)
 {
 	if (val - (maxuint_t)val == 0)
 		printf("%40s %s\n", getstr_u128((maxuint_t)val, uint_buf), unit);
@@ -122,7 +123,7 @@ void printval(maxfloat_t val, char *unit)
 		printf("%s %s\n", getstr_f128(val, float_buf), unit);
 }
 
-void printhex_u128(maxuint_t n)
+static void printhex_u128(maxuint_t n)
 {
 	ull high = (ull)(n >> (sizeof(maxuint_t) << 2));
 
@@ -132,7 +133,7 @@ void printhex_u128(maxuint_t n)
 		printf("0x%llx", (ull)n);
 }
 
-char *strtolower(char *buf)
+static char *strtolower(char *buf)
 {
 	char *p = buf;
 
@@ -143,7 +144,7 @@ char *strtolower(char *buf)
 }
 
 /* This function adds check for binary input to strtoul() */
-ulong strtoul_b(char *token)
+static ulong strtoul_b(char *token)
 {
 	int base = 0;
 
@@ -158,7 +159,7 @@ ulong strtoul_b(char *token)
 }
 
 /* This function adds check for binary input to strtoull() */
-ull strtoull_b(char *token)
+static ull strtoull_b(char *token)
 {
 	int base = 0;
 
@@ -172,7 +173,7 @@ ull strtoull_b(char *token)
 	return strtoull(token + base, NULL, base);
 }
 
-maxuint_t convertbyte(char *buf)
+static maxuint_t convertbyte(char *buf)
 {
 	maxfloat_t val;
 	/* Convert and print in bytes */
@@ -213,7 +214,7 @@ maxuint_t convertbyte(char *buf)
 	return bytes;
 }
 
-maxuint_t convertkib(char *buf)
+static maxuint_t convertkib(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t kib = strtod(buf, NULL);
@@ -249,7 +250,7 @@ maxuint_t convertkib(char *buf)
 	return bytes;
 }
 
-maxuint_t convertmib(char *buf)
+static maxuint_t convertmib(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t mib = strtod(buf, NULL);
@@ -285,7 +286,7 @@ maxuint_t convertmib(char *buf)
 	return bytes;
 }
 
-maxuint_t convertgib(char *buf)
+static maxuint_t convertgib(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t gib = strtod(buf, NULL);
@@ -321,7 +322,7 @@ maxuint_t convertgib(char *buf)
 	return bytes;
 }
 
-maxuint_t converttib(char *buf)
+static maxuint_t converttib(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t tib = strtod(buf, NULL);
@@ -357,7 +358,7 @@ maxuint_t converttib(char *buf)
 	return bytes;
 }
 
-maxuint_t convertkb(char *buf)
+static maxuint_t convertkb(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t kb = strtod(buf, NULL);
@@ -393,7 +394,7 @@ maxuint_t convertkb(char *buf)
 	return bytes;
 }
 
-maxuint_t convertmb(char *buf)
+static maxuint_t convertmb(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t mb = strtod(buf, NULL);
@@ -429,7 +430,7 @@ maxuint_t convertmb(char *buf)
 	return bytes;
 }
 
-maxuint_t convertgb(char *buf)
+static maxuint_t convertgb(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t gb = strtod(buf, NULL);
@@ -465,7 +466,7 @@ maxuint_t convertgb(char *buf)
 	return bytes;
 }
 
-maxuint_t converttb(char *buf)
+static maxuint_t converttb(char *buf)
 {
 	maxfloat_t val;
 	maxfloat_t tb = strtod(buf, NULL);
@@ -501,7 +502,7 @@ maxuint_t converttb(char *buf)
 	return bytes;
 }
 
-bool chs2lba(char *chs, maxuint_t *lba)
+static bool chs2lba(char *chs, maxuint_t *lba)
 {
 	int token_no = 0;
 	char *ptr, *token;
@@ -513,22 +514,28 @@ bool chs2lba(char *chs, maxuint_t *lba)
 		if (*ptr == '-') {
 			/* Replace '-' with NULL and get the token */
 			*ptr = '\0';
-			param[token_no++] = strtoul_b(token);
+			param[token_no] = strtoul_b(token);
+			++token_no;
 			/* Restore the '-' */
-			*ptr++ = '-';
+			*ptr = '-';
+			++ptr;
 			/* Point to start of next token */
 			token = ptr;
 
-			if (*ptr == '\0' && token_no < 5)
-				param[token_no++] = strtoul_b(token);
+			if (*ptr == '\0' && token_no < 5) {
+				param[token_no] = strtoul_b(token);
+				++token_no;
+			}
 
 			continue;
 		}
 
-		ptr++;
+		++ptr;
 
-		if (*ptr == '\0' && token_no < 5)
-			param[token_no++] = strtoul_b(token);
+		if (*ptr == '\0' && token_no < 5) {
+			param[token_no] = strtoul_b(token);
+			++token_no;
+		}
 	}
 
 	/* Fail if CHS is omitted */
@@ -575,7 +582,7 @@ bool chs2lba(char *chs, maxuint_t *lba)
 	return TRUE;
 }
 
-bool lba2chs(char *lba, t_chs *p_chs)
+static bool lba2chs(char *lba, t_chs *p_chs)
 {
 	int token_no = 0;
 	char *ptr, *token;
@@ -586,20 +593,26 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	while (*ptr && token_no < 3) {
 		if (*ptr == '-') {
 			*ptr = '\0';
-			param[token_no++] = strtoull_b(token);
-			*ptr++ = '-';
+			param[token_no] = strtoull_b(token);
+			++token_no;
+			*ptr = '-';
+			++ptr;
 			token = ptr;
 
-			if (*ptr == '\0' && token_no < 3)
-				param[token_no++] = strtoull_b(token);
+			if (*ptr == '\0' && token_no < 3) {
+				param[token_no] = strtoull_b(token);
+				++token_no;
+			}
 
 			continue;
 		}
 
-		ptr++;
+		++ptr;
 
-		if (*ptr == '\0' && token_no < 3)
-			param[token_no++] = strtoull_b(token);
+		if (*ptr == '\0' && token_no < 3) {
+			param[token_no] = strtoull_b(token);
+			++token_no;
+		}
 	}
 
 	/* Fail if LBA is omitted */
@@ -642,7 +655,7 @@ bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
-void usage(void)
+static void usage(void)
 {
 	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-h]\n\
 	    [expression] [N unit] \n\n\
@@ -684,11 +697,11 @@ License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
-int xstricmp(const char *s1, const char *s2)
+static int xstricmp(const char *s1, const char *s2)
 {
 	while (*s1 && (tolower(*s1) == tolower(*s2))) {
-		s1++;
-		s2++;
+		++s1;
+		++s2;
 	}
 	return *(const unsigned char *)s1 - *(const unsigned char *)s2;
 }
@@ -696,7 +709,7 @@ int xstricmp(const char *s1, const char *s2)
 /* Convert any unit in bytes
  * Failure if out parameter holds -1
  */
-maxuint_t unitconv(Data bunit, short *isunit, int *out)
+static maxuint_t unitconv(Data bunit, short *isunit, int *out)
 {
 	/* Data is a C structure containing a string p and a short
 	 * indicating if the string is a unit or a plain number
@@ -722,7 +735,7 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	}
 
 	while (isalpha(numstr[len]))
-		len--;
+		--len;
 
 	punit = numstr + len + 1;
 
@@ -774,7 +787,7 @@ maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	}
 }
 
-int priority(char sign) /* Get the priority of operators */
+static int priority(char sign) /* Get the priority of operators */
 {
 	switch (sign) {
 	case '-': return 1;
@@ -787,7 +800,7 @@ int priority(char sign) /* Get the priority of operators */
 }
 
 /* Convert Infix mathematical expression to Postfix */
-int infix2postfix(char *exp, queue **resf, queue **resr)
+static int infix2postfix(char *exp, queue **resf, queue **resr)
 {
 	stack *op = NULL;  /* Operator Stack */
 	char *token = strtok(exp, " ");
@@ -820,7 +833,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 			push(&op, tokenData);
 			break;
 		case '(':
-			balanced++;
+			++balanced;
 			push(&op, tokenData);
 			break;
 		case ')':
@@ -830,7 +843,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 			}
 
 			pop(&op, &ct);
-			balanced--;
+			--balanced;
 			break;
 		default:
 			/* Enqueue operands */
@@ -857,7 +870,7 @@ int infix2postfix(char *exp, queue **resf, queue **resr)
 /* Evaluates Postfix Expression
  * Failure if out parameter holds -1
  */
-maxuint_t eval(queue **front, queue **rear, int *out)
+static maxuint_t eval(queue **front, queue **rear, int *out)
 {
 	stack *est = NULL;
 	Data ansdata, arg, raw_a, raw_b;
@@ -968,7 +981,7 @@ maxuint_t eval(queue **front, queue **rear, int *out)
 }
 
 /* Check if a char is operator or not */
-int isoperator(char c)
+static int isoperator(char c)
 {
 	switch (c) {
 	case '+':
@@ -982,20 +995,20 @@ int isoperator(char c)
 }
 
 /* Check if valid storage arithmetic expression */
-int checkexp(char *exp)
+static int checkexp(char *exp)
 {
 	while (*exp) {
 		if (*exp == 'b' || *exp == 'B')
 			return 1;
 
-		exp++;
+		++exp;
 	}
 
 	return 0;
 }
 
 /* Trim all whitespace from both ends */
-char *strstrip(char *s)
+static char *strstrip(char *s)
 {
 	if (!s || !*s)
 		return s;
@@ -1003,25 +1016,27 @@ char *strstrip(char *s)
 	size_t len = strlen(s) - 1;
 
 	while (len != 0 && isspace(s[len]))
-		len--;
+		--len;
 	s[len + 1] = '\0';
 
 	while (*s && isspace(*s))
-		s++;
+		++s;
 
 	return s;
 }
 
 /* Replace consecutive inner whitespaces with a single space */
-void removeinnerspaces(char *s)
+static void removeinnerspaces(char *s)
 {
 	char *p = s;
 
 	while (*s != '\0') {
-		if (!isspace(*s))
-			*p++ = *s;
+		if (!isspace(*s)) {
+			*p = *s;
+			++p;
+		}
 
-		s++;
+		++s;
 	}
 
 	*p = '\0';
@@ -1030,7 +1045,7 @@ void removeinnerspaces(char *s)
 /* Make the expression compatible with parsing by
  * inserting/removing space between arguments
  */
-char *fixexpr(char *exp)
+static char *fixexpr(char *exp)
 {
 	strstrip(exp);
 	removeinnerspaces(exp);
@@ -1046,13 +1061,17 @@ char *fixexpr(char *exp)
 		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
 		     isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
-			parsed[j++] = exp[i];
-			parsed[j++] = ' ';
+			parsed[j] = exp[i];
+			++j;
+			parsed[j] = ' ';
+			++j;
 			parsed[j] = exp[i + 1];
-		} else
-			parsed[j++] = exp[i];
+		} else {
+			parsed[j] = exp[i];
+			++j;
+		}
 
-		i++;
+		++i;
 	}
 
 	if (parsed[j])
@@ -1061,14 +1080,17 @@ char *fixexpr(char *exp)
 	return parsed;
 }
 
-int convertunit(char *value, char *unit, ulong sectorsz)
+static int convertunit(char *value, char *unit, ulong sectorsz)
 {
 	int count = sizeof(units)/sizeof(*units);
 	maxuint_t bytes = 0, lba = 0, offset = 0;
 
-	while (count-- > 0)
+	while (count > 0) {
+		--count;
+
 		if (!strcmp(units[count], strtolower(unit)))
 			break;
+	}
 
 	if (count == -1) {
 		log(ERROR, "No matching unit\n");
@@ -1130,7 +1152,7 @@ int convertunit(char *value, char *unit, ulong sectorsz)
 	return 0;
 }
 
-int evaluate(char *exp)
+static int evaluate(char *exp)
 {
 	int ret = 0;
 	maxuint_t bytes = 0;
