@@ -29,10 +29,10 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - [Installation](#installation)
   - [Dependencies](#dependencies)
   - [Installing with a package manager](#installing-with-a-package-manager)
+    - [Generated RPMs](#generated-rpms)
   - [Installing from this repository](#installing-from-this-repository)
     - [Get the source code](#get-the-source-code)
     - [Compile and install](#compile-and-install)
-    - [Generated RPMs](#generated-rpms)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
@@ -64,6 +64,10 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
  - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
  - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
+##### Generated RPMs
+
+If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://github.com/jarun/bcal/releases/latest) and download the `.rpm` package for your OS.
+
 #### Installing from this repository
 
 ##### Get the source code
@@ -79,10 +83,6 @@ In the source directory, run:
 To uninstall, run:
 
     $ sudo make uninstall
-
-##### Generated RPMs
-
-If you are on Fedora 24 or CentOS 7, visit [the latest stable release](https://github.com/jarun/bcal/releases/latest) and download the `.rpm` package for your OS.
 
 ### Usage
 
