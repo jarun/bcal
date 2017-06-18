@@ -877,6 +877,8 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '/':
 			if (token[1] != '\0') {
 				log(ERROR, "invalid token terminator\n");
+				emptystack(&op);
+				cleanqueue(resf);
 				return -1;
 			}
 
@@ -919,6 +921,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 
 	if (balanced != 0) {
 		log(ERROR, "unbalanced expression\n");
+		cleanqueue(resf);
 		return -1;
 	}
 
@@ -1091,13 +1094,24 @@ static char *strstrip(char *s)
 		return s;
 
 	size_t len = strlen(s) - 1;
+	char *p = s;
 
 	while (len != 0 && isspace(s[len]))
 		--len;
 	s[len + 1] = '\0';
 
-	while (*s && isspace(*s))
-		++s;
+	while (*p && isspace(*p))
+		++p;
+
+	if (s != p) {
+		while (*p) {
+			*s = *p;
+			++s;
+			++p;
+		}
+
+		*s = '\0';
+	}
 
 	return s;
 }
@@ -1178,6 +1192,8 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 {
 	int count = ARRAY_SIZE(units);
 	maxuint_t bytes = 0, lba = 0, offset = 0;
+
+	strstrip(unit);
 
 	while (--count >= 0)
 		if (!xstricmp(units[count], unit))
