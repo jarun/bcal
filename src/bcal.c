@@ -969,6 +969,11 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			case '-':
 				/* Check if both are units */
 				if (raw_a.unit == raw_b.unit) {
+					if (b > a) {
+						log(ERROR, "Negative result\n");
+						goto error;
+					}
+
 					c = a - b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
@@ -1312,16 +1317,20 @@ int main(int argc, char **argv)
 	if (argc - optind == 2)
 		if (convertunit(argv[optind], argv[optind + 1],
 				sectorsz) == -1) {
-			printf("\n");
-			usage();
+			if (!lightmode) {
+				printf("\n");
+				usage();
+			}
 			return -1;
 		}
 
 	/*Arithmetic Operation*/
 	if (argc - optind == 1)
 		if (evaluate(argv[optind]) == -1) {
-			printf("\n");
-			usage();
+			if (!lightmode) {
+				printf("\n");
+				usage();
+			}
 			return -1;
 		}
 
