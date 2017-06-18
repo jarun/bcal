@@ -1274,7 +1274,7 @@ int main(int argc, char **argv)
 		case 'c':
 			if (*optarg == '-') {
 				log(ERROR, "N must be >= 0\n");
-				return 1;
+				return -1;
 			}
 
 			printf("\033[1mBASE CONVERSION\033[0m\n");
@@ -1315,7 +1315,7 @@ int main(int argc, char **argv)
 		case 's':
 			if (*optarg == '-') {
 				log(ERROR, "sector size must be +ve\n");
-				return 1;
+				return -1;
 			}
 			sectorsz = strtoul_b(optarg);
 			break;
