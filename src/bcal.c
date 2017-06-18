@@ -759,9 +759,9 @@ static int xstricmp(const char *s1, const char *s2)
 /* Convert any unit in bytes
  * Failure if out parameter holds -1
  */
-static maxuint_t unitconv(Data bunit, short *isunit, int *out)
+static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 {
-	/* Data is a C structure containing a string p and a short
+	/* Data is a C structure containing a string p and a char
 	 * indicating if the string is a unit or a plain number
 	 */
 	char *numstr = bunit.p, *punit;
@@ -923,7 +923,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 static maxuint_t eval(queue **front, queue **rear, int *out)
 {
 	stack *est = NULL;
-	Data ansdata, arg, raw_a, raw_b, raw_c;
+	Data res, arg, raw_a, raw_b, raw_c;
 	*out = 0;
 	maxuint_t a, b, c;
 
@@ -933,10 +933,10 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 
 	/* Check if only one element in the queue */
 	if (*front == *rear) {
-		short s = 0;
+		char unit = 0;
 
-		dequeue(front, rear, &ansdata);
-		return unitconv(ansdata, &s, out);
+		dequeue(front, rear, &res);
+		return unitconv(res, &unit, out);
 	}
 
 	while (*front != NULL && *rear != NULL) {
@@ -1023,9 +1023,9 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		}
 	}
 
-	pop(&est, &ansdata);
+	pop(&est, &res);
 	/* Convert string to integer */
-	return strtoull(ansdata.p, NULL, 0);
+	return strtoull(res.p, NULL, 0);
 
 error:
 	*out = -1;

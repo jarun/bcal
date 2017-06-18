@@ -4,11 +4,11 @@
 #include<stdlib.h>
 #include<string.h>
 
-#define NUM_LEN 64
+#define NUM_LEN 63
 
 typedef struct data {
 	char p[NUM_LEN];
-	short unit;
+	char unit;
 } Data;
 
 typedef struct stack {
