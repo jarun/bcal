@@ -632,7 +632,7 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 	*lba += param[2] - 1; /* S - 1 */
 
 	printf("\033[1mCHS2LBA\033[0m\n");
-	printf("\tC %lu H %lu S %lu MAX_HEAD %lu MAX_SECTOR %lu\n",
+	printf("  C:%lu  H:%lu  S:%lu  MAX_HEAD:%lu  MAX_SECTOR:%lu\n",
 		param[0], param[1], param[2], param[3], param[4]);
 
 	return TRUE;
@@ -703,10 +703,10 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 		return FALSE;
 	}
 
-	printf("\033[1mLBA2CHS\033[0m\n\tLBA %s ",
+	printf("\033[1mLBA2CHS\033[0m\n  LBA:%s  ",
 		getstr_u128(param[0], uint_buf));
-	printf("MAX_HEAD %s ", getstr_u128(param[1], uint_buf));
-	printf("MAX_SECTOR %s\n", getstr_u128(param[2], uint_buf));
+	printf("MAX_HEAD:%s  ", getstr_u128(param[1], uint_buf));
+	printf("MAX_SECTOR:%s\n", getstr_u128(param[2], uint_buf));
 
 	return TRUE;
 }
@@ -1216,7 +1216,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	if (minimal)
 		return 0;
 
-	printf("\n    ADDRESS\n\tdec: %s\n\thex: ",
+	printf("\nADDRESS\n (d) %s\n (h) ",
 		getstr_u128(bytes, uint_buf));
 	printhex_u128(bytes);
 
@@ -1224,10 +1224,10 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	lba = bytes / sectorsz;
 	offset = bytes % sectorsz;
 
-	printf("\n\n    LBA:OFFSET\n\tsector size: 0x%lx\n", sectorsz);
+	printf("\n\nLBA:OFFSET (sector size: 0x%lx)\n", sectorsz);
 	/* We use a global buffer, so print decimal lba first, then offset */
-	printf("\n\tdec: %s:", getstr_u128(lba, uint_buf));
-	printf("%s\n\thex: ", getstr_u128(offset, uint_buf));
+	printf(" (d) %s:", getstr_u128(lba, uint_buf));
+	printf("%s\n (h) ", getstr_u128(offset, uint_buf));
 	printhex_u128(lba);
 	printf(":");
 	printhex_u128(offset);
@@ -1264,7 +1264,7 @@ static int evaluate(char *exp)
 
 	convertbyte(getstr_u128(bytes, uint_buf));
 
-	printf("\n    ADDRESS\n\tdec: %s\n\thex: ",
+	printf("\nADDRESS\n (d) %s\n (h) ",
 		getstr_u128(bytes, uint_buf));
 	printhex_u128(bytes);
 	printf("\n");
@@ -1290,9 +1290,9 @@ int main(int argc, char **argv)
 			printf("\033[1mBASE CONVERSION\033[0m\n");
 			maxuint_t val = strtoull_b(optarg);
 
-			printf("\tbin: ");
+			printf(" (b) ");
 			binprint(val);
-			printf("\n\tdec: %s\n\thex: ",
+			printf("\n (d) %s\n (h) ",
 				getstr_u128(val, uint_buf));
 			printhex_u128(val);
 			printf("\n\n");
@@ -1302,7 +1302,7 @@ int main(int argc, char **argv)
 				maxuint_t lba = 0;
 
 				if (chs2lba(optarg + 1, &lba)) {
-					printf("\tLBA: (dec) %s, (hex) ",
+					printf("  LBA: (d) %s, (h) ",
 						getstr_u128(lba, uint_buf));
 					printhex_u128(lba);
 					printf("\n\n");
@@ -1311,9 +1311,9 @@ int main(int argc, char **argv)
 				t_chs chs;
 
 				if (lba2chs(optarg + 1, &chs)) {
-					printf("\tCHS: (dec) %lu %lu %lu, ",
+					printf("  CHS: (d) %lu %lu %lu, ",
 						chs.c, chs.h, chs.s);
-					printf("(hex) 0x%lx 0x%lx 0x%lx\n\n",
+					printf("(h) 0x%lx 0x%lx 0x%lx\n\n",
 						chs.c, chs.h, chs.s);
 				}
 			} else
