@@ -43,32 +43,34 @@ cases = [
     ('./bcal', '-m', "((2giB)*1)/(2/2))"),                           # 21
     ('./bcal', '-m', "((2giB)*1)/(2/2)"),                            # 22
     ('./bcal', '-m', "(((2giB)*)2/2)"),                              # 23
+    ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),     # 24
 ]
 
 results = [
-    b'10000000\n',                                # 1
-    b'10995116277760\n',                          # 2
-    b'ERROR: unknown unit\n',                     # 3
-    b'5250880\n',                                 # 4
-    b'655360000\n',                               # 5
-    b'625000000\n',                               # 6
-    b'416666666666\n',                            # 7
-    b'283752000\n',                               # 8
-    b'420\n',                                     # 9
-    b'644\n',                                     # 10
-    b'1540\n',                                    # 11
-    b'10485760\n',                                # 12
-    b'902848\n',                                  # 13
-    b'ERROR: negative result\n',                  # 14
-    b'ERROR: negative token\n',                   # 15
-    b'ERROR: negative token\n',                   # 16
-    b'2147483648\n',                              # 17
-    b'ERROR: unknown unit\n',                     # 18
-    b'2147483648\n',                              # 19
-    b'ERROR: unbalanced expression\n',            # 20
-    b'ERROR: unbalanced expression\n',            # 21
-    b'2147483648\n',                              # 22
-    b'ERROR: invalid token\n',                    # 23
+    b'10000000\n',                                 # 1
+    b'10995116277760\n',                           # 2
+    b'ERROR: unknown unit\n',                      # 3
+    b'5250880\n',                                  # 4
+    b'655360000\n',                                # 5
+    b'625000000\n',                                # 6
+    b'416666666666\n',                             # 7
+    b'283752000\n',                                # 8
+    b'420\n',                                      # 9
+    b'644\n',                                      # 10
+    b'1540\n',                                     # 11
+    b'10485760\n',                                 # 12
+    b'902848\n',                                   # 13
+    b'ERROR: negative result\n',                   # 14
+    b'ERROR: negative token\n',                    # 15
+    b'ERROR: negative token\n',                    # 16
+    b'2147483648\n',                               # 17
+    b'ERROR: unknown unit\n',                      # 18
+    b'2147483648\n',                               # 19
+    b'ERROR: unbalanced expression\n',             # 20
+    b'ERROR: unbalanced expression\n',             # 21
+    b'2147483648\n',                               # 22
+    b'ERROR: invalid token\n',                     # 23
+    b'340282366920938463463374607431768211455\n',  # 24
 ]
 
 print()

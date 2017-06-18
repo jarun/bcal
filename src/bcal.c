@@ -176,11 +176,19 @@ static ull strtoull_b(char *token)
 	return strtoull(token + base, NULL, base);
 }
 
+#if 0
+/* This function adds check for binary input to strtoull() */
+static maxuint_t strtoval_b(char *token)
+{
+	return 0;
+}
+#endif
+
 static maxuint_t convertbyte(char *buf)
 {
 	maxfloat_t val;
 	/* Convert and print in bytes */
-	maxuint_t bytes = strtoull(buf, NULL, 0);
+	maxuint_t bytes = (maxuint_t)strtoflt128(buf, NULL);
 
 	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
@@ -1166,6 +1174,8 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		log(ERROR, "unknown unit\n");
 		return -1;
 	}
+
+	log(DEBUG, "%s %s\n", value, units[count]);
 
 	if (!minimal)
 		printf("\033[1mUNIT CONVERSION\033[0m\n");
