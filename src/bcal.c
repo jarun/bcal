@@ -947,7 +947,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		return unitconv(res, &unit, out);
 	}
 
-	while (*front != NULL && *rear != NULL) {
+	while (*front) {
 		dequeue(front, rear, &arg);
 
 		/* Check if arg is an operator */
@@ -1032,6 +1032,13 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 	}
 
 	pop(&est, &res);
+
+	/* Stack must be empty at this point */
+	if (!isempty(est)) {
+		log(ERROR, "invalid expression\n");
+		goto error;
+	}
+
 	/* Convert string to integer */
 	return strtoull(res.p, NULL, 0);
 
@@ -1132,6 +1139,12 @@ static char *fixexpr(char *exp)
 	while (exp[i] != '\0') {
 		if (exp[i] == '-' && (issign(prev) || prev == '(')) {
 			log(ERROR, "negative token\n");
+			free(parsed);
+			return NULL;
+		}
+
+		if (isoperator(exp[i]) && isalpha(exp[i + 1])) {
+			log(ERROR, "invalid expression\n");
 			free(parsed);
 			return NULL;
 		}
@@ -1353,7 +1366,7 @@ int main(int argc, char **argv)
 				sectorsz) == -1)
 			return -1;
 
-	/*Arithmetic Operation*/
+	/*Arithmetic operation*/
 	if (argc - optind == 1)
 		if (evaluate(argv[optind]) == -1)
 			return -1;

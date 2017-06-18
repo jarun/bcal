@@ -19,7 +19,7 @@ NOTES:
 
 import subprocess
 
-cases = [
+test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
     ('./bcal', '-m', '10', 'TiB'),                                   # 2
     ('./bcal', '-m', '10', 'lb'),                                    # 3
@@ -44,9 +44,15 @@ cases = [
     ('./bcal', '-m', "((2giB)*1)/(2/2)"),                            # 22
     ('./bcal', '-m', "(((2giB)*)2/2)"),                              # 23
     ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),     # 24
+    ('./bcal', '-m', "2b / 3"),                                      # 25
+    ('./bcal', '-m', "2 kIb/((3 ) )"),                               # 26
+    ('./bcal', '-m', "2 gIb/ - 3"),                                  # 27
+    ('./bcal', '-m', "(2) kIb/((3))"),                               # 28
+    ('./bcal', '-m', "(2) 4 kIb/((3))"),                             # 29
+    ('./bcal', '-m', "(2) 4 kIb/((3))(2)"),                          # 30
 ]
 
-results = [
+res = [
     b'10000000\n',                                 # 1
     b'10995116277760\n',                           # 2
     b'ERROR: unknown unit\n',                      # 3
@@ -71,19 +77,25 @@ results = [
     b'2147483648\n',                               # 22
     b'ERROR: invalid token\n',                     # 23
     b'340282366920938463463374607431768211455\n',  # 24
+    b'0\n',                                        # 25
+    b'682\n',                                      # 26
+    b'ERROR: negative token\n',                    # 27
+    b'ERROR: invalid expression\n',                # 28
+    b'ERROR: invalid expression\n',                # 29
+    b'ERROR: invalid expression\n',                # 30
 ]
 
 print()
 
-for index, item in enumerate(cases):
+for index, item in enumerate(test):
     print('Executing test %d' % (int)(index + 1))
 
     try:
         out = subprocess.check_output(item, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        #print(e.output)
-        assert e.output == results[index]
+        # print(e.output)
+        assert e.output == res[index]
     else:
-        assert out == results[index]
+        assert out == res[index]
 
 print('\nAll good! :)')
