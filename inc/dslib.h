@@ -124,7 +124,7 @@ static void cleanqueue(queue **front)
 	}
 }
 
-#ifdef SUPPORT_DS_PRINT
+#if 0
 static void printstack(stack *top)
 {
 	stack *i;

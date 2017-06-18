@@ -61,8 +61,8 @@ static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"}
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
-static int lightmode;
-int current_log_level = INFO;
+static int minimal;
+int cur_loglevel = INFO;
 
 static void binprint(maxuint_t n)
 {
@@ -134,6 +134,7 @@ static void printhex_u128(maxuint_t n)
 		printf("0x%llx", (ull)n);
 }
 
+#if 0
 static char *strtolower(char *buf)
 {
 	char *p = buf;
@@ -143,6 +144,7 @@ static char *strtolower(char *buf)
 
 	return buf;
 }
+#endif
 
 /* This function adds check for binary input to strtoul() */
 static ulong strtoul_b(char *token)
@@ -180,7 +182,7 @@ static maxuint_t convertbyte(char *buf)
 	/* Convert and print in bytes */
 	maxuint_t bytes = strtoull(buf, NULL, 0);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -226,7 +228,7 @@ static maxuint_t convertkib(char *buf)
 	maxfloat_t kib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -267,7 +269,7 @@ static maxuint_t convertmib(char *buf)
 	maxfloat_t mib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -308,7 +310,7 @@ static maxuint_t convertgib(char *buf)
 	maxfloat_t gib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -349,7 +351,7 @@ static maxuint_t converttib(char *buf)
 	maxfloat_t tib = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -390,7 +392,7 @@ static maxuint_t convertkb(char *buf)
 	maxfloat_t kb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -431,7 +433,7 @@ static maxuint_t convertmb(char *buf)
 	maxfloat_t mb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -472,7 +474,7 @@ static maxuint_t convertgb(char *buf)
 	maxfloat_t gb = strtod(buf, NULL);
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -513,7 +515,7 @@ static maxuint_t converttb(char *buf)
 	maxfloat_t tb = strtod(buf, NULL);
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
 
-	if (lightmode) {
+	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -736,6 +738,7 @@ optional arguments:\n\
 		     LBA = 50, MH = 0x12, MS = 0\n\
 		   default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
   -s bytes         sector size [default 512]\n\
+  -m               show minimal output (e.g. decimal bytes)\n\
   -d               enable debug information and logs\n\
   -h               show this help and exit\n\n\
 Version %s\n\
@@ -768,7 +771,7 @@ static maxuint_t unitconv(Data bunit, short *isunit, int *out)
 	*out = 0;
 
 	if (numstr == NULL || *numstr == '\0') {
-		log(ERROR, "Invalid token\n");
+		log(ERROR, "invalid token\n");
 		*out = -1;
 		return 0;
 	}
@@ -792,7 +795,7 @@ static maxuint_t unitconv(Data bunit, short *isunit, int *out)
 			break;
 
 	if (count == -1) {
-		log(ERROR, "No matching unit\n");
+		log(ERROR, "unknown unit\n");
 		*out = -1;
 		return 0;
 	}
@@ -828,7 +831,7 @@ static maxuint_t unitconv(Data bunit, short *isunit, int *out)
 		byte_metric = strtod(numstr, NULL);
 		return (__uint128_t)(byte_metric * 1000000000000);
 	default:
-		log(ERROR, "Unknown unit\n");
+		log(ERROR, "unknown unit\n");
 		*out = -1;
 		return 0;
 	}
@@ -865,7 +868,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '*':
 		case '/':
 			if (token[1] != '\0') {
-				log(ERROR, "Invalid token terminator\n");
+				log(ERROR, "invalid token terminator\n");
 				return -1;
 			}
 
@@ -907,7 +910,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 	}
 
 	if (balanced != 0) {
-		log(ERROR, "Unbalanced expression\n");
+		log(ERROR, "unbalanced expression\n");
 		return -1;
 	}
 
@@ -951,6 +954,9 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			if (*out == -1)
 				return 0;
 
+			log(DEBUG, "(%s, %d) %c (%s, %d)\n",
+			    raw_a.p, raw_a.unit, arg.p[0], raw_b.p, raw_b.unit);
+
 			c = 0;
 			raw_c.unit = 0;
 
@@ -964,13 +970,13 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "Unit mismatch in +\n");
+				log(ERROR, "unit mismatch in +\n");
 				goto error;
 			case '-':
 				/* Check if both are units */
 				if (raw_a.unit == raw_b.unit) {
 					if (b > a) {
-						log(ERROR, "Negative result\n");
+						log(ERROR, "negative result\n");
 						goto error;
 					}
 
@@ -980,7 +986,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "Unit mismatch in -\n");
+				log(ERROR, "unit mismatch in -\n");
 				goto error;
 			case '*':
 				/* Check if only one is unit */
@@ -991,7 +997,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "Unit mismatch in *\n");
+				log(ERROR, "unit mismatch in *\n");
 				goto error;
 			case '/':
 				/* Check if only the dividend is unit */
@@ -1002,7 +1008,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "Unit mismatch in /\n");
+				log(ERROR, "unit mismatch in /\n");
 				goto error;
 			}
 
@@ -1011,8 +1017,10 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			/* Push to stack */
 			push(&est, raw_c);
 
-		} else
+		} else {
+			log(DEBUG, "in else (%s)\n", arg.p);
 			push(&est, arg);
+		}
 	}
 
 	pop(&est, &ansdata);
@@ -1023,6 +1031,14 @@ error:
 	*out = -1;
 	emptystack(&est);
 	cleanqueue(front);
+	return 0;
+}
+
+static int issign(char c)
+{
+	if (c == '+' || c == '-' || c == '*' || c == '/')
+		return 1;
+
 	return 0;
 }
 
@@ -1101,8 +1117,17 @@ static char *fixexpr(char *exp)
 
 	int i = 0, j = 0;
 	char *parsed = (char *)malloc(2 * strlen(exp) * sizeof(char));
+	char prev = '(';
+
+	log(DEBUG, "exp (%s)\n", exp);
 
 	while (exp[i] != '\0') {
+		if (exp[i] == '-' && (issign(prev) || prev == '(')) {
+			log(ERROR, "negative token\n");
+			free(parsed);
+			return NULL;
+		}
+
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
 		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
 		     isoperator(exp[i + 1]))) ||
@@ -1117,33 +1142,32 @@ static char *fixexpr(char *exp)
 			++j;
 		}
 
+		prev = exp[i];
 		++i;
 	}
 
 	if (parsed[j])
 		parsed[++j] = '\0';
 
+	log(DEBUG, "parsed (%s)\n", parsed);
 	return parsed;
 }
 
 static int convertunit(char *value, char *unit, ulong sectorsz)
 {
-	int count = sizeof(units)/sizeof(*units);
+	int count = ARRAY_SIZE(units);
 	maxuint_t bytes = 0, lba = 0, offset = 0;
 
-	while (count > 0) {
-		--count;
-
-		if (!strcmp(units[count], strtolower(unit)))
+	while (--count >= 0)
+		if (!xstricmp(units[count], unit))
 			break;
-	}
 
 	if (count == -1) {
-		log(ERROR, "No matching unit\n");
+		log(ERROR, "unknown unit\n");
 		return -1;
 	}
 
-	if (!lightmode)
+	if (!minimal)
 		printf("\033[1mUNIT CONVERSION\033[0m\n");
 
 	switch (count) {
@@ -1175,11 +1199,11 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		bytes = converttb(value);
 		break;
 	default:
-		log(ERROR, "Unknown unit\n");
+		log(ERROR, "unknown unit\n");
 		return -1;
 	}
 
-	if (lightmode)
+	if (minimal)
 		return 0;
 
 	printf("\n    ADDRESS\n\tdec: %s\n\thex: ",
@@ -1221,7 +1245,7 @@ static int evaluate(char *exp)
 	if (ret == -1)
 		return -1;
 
-	if (lightmode) {
+	if (minimal) {
 		convertbyte(getstr_u128(bytes, uint_buf));
 		return 0;
 	}
@@ -1245,7 +1269,7 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt(argc, argv, "c:df:hls:")) != -1) {
+	while ((opt = getopt(argc, argv, "c:df:hms:")) != -1) {
 		switch (opt) {
 		case 'c':
 			if (*optarg == '-') {
@@ -1283,10 +1307,10 @@ int main(int argc, char **argv)
 						chs.c, chs.h, chs.s);
 				}
 			} else
-				log(ERROR, "Invalid input\n");
+				log(ERROR, "invalid input\n");
 			break;
-		case 'l':
-			lightmode = 1;
+		case 'm':
+			minimal = 1;
 			break;
 		case 's':
 			if (*optarg == '-') {
@@ -1296,7 +1320,7 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'd':
-			current_log_level = DEBUG;
+			cur_loglevel = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
 			break;
 		case 'h':
@@ -1316,23 +1340,13 @@ int main(int argc, char **argv)
 	/* Conversion */
 	if (argc - optind == 2)
 		if (convertunit(argv[optind], argv[optind + 1],
-				sectorsz) == -1) {
-			if (!lightmode) {
-				printf("\n");
-				usage();
-			}
+				sectorsz) == -1)
 			return -1;
-		}
 
 	/*Arithmetic Operation*/
 	if (argc - optind == 1)
-		if (evaluate(argv[optind]) == -1) {
-			if (!lightmode) {
-				printf("\n");
-				usage();
-			}
+		if (evaluate(argv[optind]) == -1)
 			return -1;
-		}
 
 	return 0;
 }

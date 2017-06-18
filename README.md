@@ -124,6 +124,7 @@ To uninstall, run:
                          LBA = 50, MH = 0x12, MS = 0
                        default MAX_HEAD: 16, default MAX_SECTOR: 63
       -s bytes         sector size [default 512]
+      -m               show minimal output (e.g. decimal bytes)
       -d               enable debug information and logs
       -h               show this help and exit
 

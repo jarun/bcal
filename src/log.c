@@ -20,7 +20,7 @@
 
 #include "log.h"
 
-extern int current_log_level;
+extern int cur_loglevel;
 char *logarr[] = {"ERROR", "INFO", "DEBUG"};
 
 void debug_log(const char *func, int level, const char *format, ...)
@@ -32,9 +32,14 @@ void debug_log(const char *func, int level, const char *format, ...)
 	if (level < 0 || level > DEBUG)
 		return;
 
-	if (level <= current_log_level) {
-		fprintf(stderr, "%s(), %s: ", func, logarr[level]);
-		vfprintf(stderr, format, ap);
+	if (level <= cur_loglevel) {
+		if (cur_loglevel == DEBUG) {
+			fprintf(stderr, "%s(), %s: ", func, logarr[level]);
+			vfprintf(stderr, format, ap);
+		} else {
+			fprintf(stderr, "%s: ", logarr[level]);
+			vfprintf(stderr, format, ap);
+		}
 	}
 
 	va_end(ap);

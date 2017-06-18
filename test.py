@@ -20,35 +20,55 @@ NOTES:
 import subprocess
 
 cases = [
-    ('./bcal', '-l', '10', 'mb'),                                    # 1
-    ('./bcal', '-l', '10', 'mib'),                                   # 2
-    ('./bcal', '-l', "0x4         kb   *  2     +   5        mib"),  # 3
-    ('./bcal', '-l', "5*5*5*5mib"),                                  # 4
-    ('./bcal', '-l', "5mb*5*5*5"),                                   # 5
-    ('./bcal', '-l', "5 tb / 12"),                                   # 6
-    ('./bcal', '-l', "2kb+3mb/4*5+5*56mb"),                          # 7
-    ('./bcal', '-l', "( 5 * 3) * (4 * 7 b)"),                        # 8
-    ('./bcal', '-l', "( 5 * 3 + 8) * (4 * 7 b)"),                    # 9
-    ('./bcal', '-l', "( 5 * (3 + 8 )) * (4 * 7 b )"),                # 10
-    ('./bcal', '-l', "( 5 ) * 2 mib"),                               # 11
-    ('./bcal', '-l', "3   mb -  2    mib"),                          # 12
-    ('./bcal', '-l', "2mb-3mib"),                                    # 13
+    ('./bcal', '-m', '10', 'mb'),                                    # 1
+    ('./bcal', '-m', '10', 'TiB'),                                   # 2
+    ('./bcal', '-m', '10', 'lb'),                                    # 3
+    ('./bcal', '-m', "0x4         kb   *  2     +   5        mib"),  # 4
+    ('./bcal', '-m', "5*5*5*5mib"),                                  # 5
+    ('./bcal', '-m', "5mb*5*5*5"),                                   # 6
+    ('./bcal', '-m', "5 tb / 12"),                                   # 7
+    ('./bcal', '-m', "2kb+3mb/4*5+5*56mb"),                          # 8
+    ('./bcal', '-m', "( 5 * 3) * (4 * 7 b)"),                        # 9
+    ('./bcal', '-m', "( 5 * 3 + 8) * (4 * 7 b)"),                    # 10
+    ('./bcal', '-m', "( 5 * (3 + 8 )) * (4 * 7 b )"),                # 11
+    ('./bcal', '-m', "( 5 ) * 2 mib"),                               # 12
+    ('./bcal', '-m', "3   mb -  2    mib"),                          # 13
+    ('./bcal', '-m', "2mb-3mib"),                                    # 14
+    ('./bcal', '-m', "2 mib * -2"),                                  # 15
+    ('./bcal', '-m', "2mib*-2"),                                     # 16
+    ('./bcal', '-m', "2giB*2/2"),                                    # 17
+    ('./bcal', '-m', "2qB*2"),                                       # 18
+    ('./bcal', '-m', "((2giB)*2/2)"),                                # 19
+    ('./bcal', '-m', "((2giB)*(2/2)"),                               # 20
+    ('./bcal', '-m', "((2giB)*1)/(2/2))"),                           # 21
+    ('./bcal', '-m', "((2giB)*1)/(2/2)"),                            # 22
+    ('./bcal', '-m', "(((2giB)*)2/2)"),                              # 23
 ]
 
 results = [
     b'10000000\n',                                # 1
-    b'10485760\n',                                # 2
-    b'5250880\n',                                 # 3
-    b'655360000\n',                               # 4
-    b'625000000\n',                               # 5
-    b'416666666666\n',                            # 6
-    b'283752000\n',                               # 7
-    b'420\n',                                     # 8
-    b'644\n',                                     # 9
-    b'1540\n',                                    # 10
-    b'10485760\n',                                # 11
-    b'902848\n',                                  # 12
-    b'eval(), ERROR: Negative result\n',          # 13
+    b'10995116277760\n',                          # 2
+    b'ERROR: unknown unit\n',                     # 3
+    b'5250880\n',                                 # 4
+    b'655360000\n',                               # 5
+    b'625000000\n',                               # 6
+    b'416666666666\n',                            # 7
+    b'283752000\n',                               # 8
+    b'420\n',                                     # 9
+    b'644\n',                                     # 10
+    b'1540\n',                                    # 11
+    b'10485760\n',                                # 12
+    b'902848\n',                                  # 13
+    b'ERROR: negative result\n',                  # 14
+    b'ERROR: negative token\n',                   # 15
+    b'ERROR: negative token\n',                   # 16
+    b'2147483648\n',                              # 17
+    b'ERROR: unknown unit\n',                     # 18
+    b'2147483648\n',                              # 19
+    b'ERROR: unbalanced expression\n',            # 20
+    b'ERROR: unbalanced expression\n',            # 21
+    b'2147483648\n',                              # 22
+    b'ERROR: invalid token\n',                    # 23
 ]
 
 print()
@@ -59,6 +79,7 @@ for index, item in enumerate(cases):
     try:
         out = subprocess.check_output(item, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
+        #print(e.output)
         assert e.output == results[index]
     else:
         assert out == results[index]
