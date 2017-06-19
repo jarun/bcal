@@ -22,7 +22,7 @@ import subprocess
 test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
     ('./bcal', '-m', '10', 'TiB'),                                   # 2
-    ('./bcal', '-m', '.1', '  KIb'),                                 # 3
+    ('./bcal', '-m', '.1', '   KIb    '),                            # 3
     ('./bcal', '-m', '.1', 'KB  '),                                  # 4
     ('./bcal', '-m', '10', 'lb'),                                    # 5
     ('./bcal', '-m', "0x4         kb   *  2     +   5        mib"),  # 6

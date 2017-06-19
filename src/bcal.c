@@ -1087,33 +1087,30 @@ static int checkexp(char *exp)
 	return 0;
 }
 
-/* Trim all whitespace from both ends */
-static char *strstrip(char *s)
+/* Trim all whitespace from both ends, in place */
+static void strstrip(char *s)
 {
 	if (!s || !*s)
-		return s;
+		return;
 
-	size_t len = strlen(s) - 1;
-	char *p = s;
+	int len = strlen(s) - 1;
 
-	while (len != 0 && isspace(s[len]))
+	while (len >= 0 && isspace(s[len]))
 		--len;
 	s[len + 1] = '\0';
 
-	while (*p && isspace(*p))
-		++p;
+	len = 0;
+	while (s[len] && isspace(s[len]))
+		++len;
 
-	if (s != p) {
-		while (*p) {
-			*s = *p;
+	if (len) {
+		while (s[len]) {
+			*s = s[len];
 			++s;
-			++p;
 		}
 
 		*s = '\0';
 	}
-
-	return s;
 }
 
 /* Replace consecutive inner whitespaces with a single space */
