@@ -1011,10 +1011,10 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				log(ERROR, "unit mismatch in *\n");
 				goto error;
 			case '/':
-				/* Check if only the dividend is unit */
-				if (!(raw_a.unit && raw_b.unit)) {
+				/* Divisor must be a non-unit */
+				if (!raw_b.unit) {
 					c = a / b;
-					if (raw_a.unit || raw_b.unit)
+					if (raw_a.unit)
 						raw_c.unit = 1;
 					break;
 				}
