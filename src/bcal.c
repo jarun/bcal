@@ -60,6 +60,7 @@ static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"}
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
+static int unitless;
 
 static int minimal;
 int cur_loglevel = INFO;
@@ -725,9 +726,9 @@ positional arguments:\n\
 		       bcal \"(5kb+2mb)/3\"\n\
 		       bcal \"5 tb / 12\"\n\
 		       bcal \"2.5mb*3\"\n\
-  N unit           capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
+  N [unit]         capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
 		   see https://wiki.ubuntu.com/UnitsPolicy\n\
-		   must be space-separated, case is ignored\n\
+		   default unit is B (byte), case is ignored\n\
 		   N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
   -c N             show N in binary, decimal and hex\n\
@@ -1138,8 +1139,10 @@ static char *fixexpr(char *exp)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
-	if (!checkexp(exp))
+	if (!checkexp(exp)) {
+		unitless = 1;
 		return NULL;
+	}
 
 	int i = 0, j = 0;
 	char *parsed = (char *)malloc(2 * strlen(exp) * sizeof(char));
@@ -1182,6 +1185,21 @@ static char *fixexpr(char *exp)
 		parsed[++j] = '\0';
 
 	log(DEBUG, "parsed (%s)\n", parsed);
+
+	/* If there's no space, this is either
+	 * a number or malformed expression
+	 */
+	i = 0;
+	while (parsed[i] && parsed[i] != ' ')
+		++i;
+
+	if (!parsed[i]) {
+		log(DEBUG, "noop expression\n");
+		free(parsed);
+		unitless = 1;
+		return NULL;
+	}
+
 	return parsed;
 }
 
@@ -1190,15 +1208,45 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	int count = ARRAY_SIZE(units);
 	maxuint_t bytes = 0, lba = 0, offset = 0;
 
-	strstrip(unit);
-
-	while (--count >= 0)
-		if (!xstricmp(units[count], unit))
-			break;
-
-	if (count == -1) {
-		log(ERROR, "unknown unit\n");
+	strstrip(value);
+	if (value[0] == '\0') {
+		log(ERROR, "invalid value\n");
 		return -1;
+	}
+
+	if (!unit) {
+		int unitchars = 0, len = strlen(value);
+
+		while (len) {
+			if (!isalpha(value[len - 1]))
+				break;
+
+			++unitchars;
+			--len;
+		}
+
+		if (unitchars) {
+			while (--count >= 0)
+				if (!xstricmp(units[count], value + len))
+					break;
+
+			if (count == -1) {
+				log(ERROR, "unknown unit\n");
+				return -1;
+			}
+		} else
+			count = 0;
+	} else {
+		strstrip(unit);
+
+		while (--count >= 0)
+			if (!xstricmp(units[count], unit))
+				break;
+
+		if (count == -1) {
+			log(ERROR, "unknown unit\n");
+			return -1;
+		}
 	}
 
 	log(DEBUG, "%s %s\n", value, units[count]);
@@ -1375,13 +1423,17 @@ int main(int argc, char **argv)
 
 	/* Conversion */
 	if (argc - optind == 2)
-		if (convertunit(argv[optind], argv[optind + 1],
-				sectorsz) == -1)
+		if (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1)
 			return -1;
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1)
-		if (evaluate(argv[optind]) == -1)
+		if ((evaluate(argv[optind]) == -1) && !unitless)
+			return -1;
+
+	/* Possibly a unitless byte */
+	if (unitless)
+		if (convertunit(argv[optind], NULL, sectorsz) == -1)
 			return -1;
 
 	return 0;

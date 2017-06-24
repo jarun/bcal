@@ -53,6 +53,9 @@ test = [
     ('./bcal', '-m', "(2) 4 kIb/((3))"),                             # 31
     ('./bcal', '-m', "(2) 4 kIb/((3))(2)"),                          # 32
     ('./bcal', '-m', "2 / 3 tib   "),                                # 33
+    ('./bcal', '-m', " 1000 "),                                      # 34
+    ('./bcal', '-m', " 0x1234mib  "),                                # 35
+    ('./bcal', '-m', "        "),                                    # 36
 ]
 
 res = [
@@ -89,6 +92,9 @@ res = [
     b'ERROR: invalid expression\n',                # 31
     b'ERROR: invalid expression\n',                # 32
     b'ERROR: unit mismatch in /\n',                # 33
+    b'1000\n',                                     # 34
+    b'4886364160\n',                               # 35
+    b'ERROR: invalid value\n',                     # 36
 ]
 
 print()

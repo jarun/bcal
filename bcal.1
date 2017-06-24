@@ -4,7 +4,7 @@ bcal \- Perform storage conversions and calculations.
 .SH SYNOPSIS
 .B bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
 .br
-.B "    "[expression] [N unit]
+.B "    "[expression] [N [unit]]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations involving data storage units, addressing, base conversions etc.
@@ -31,7 +31,7 @@ Refer to:
 \fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be multiplied or divided by positive integers. Only storage units can be used for addition and subtraction.
 .PP
 .IP 2. 4
-\fBN unit\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. As all of these tokens are unique, \fIunit\fR is case-insensitive. \fIN\fR and \fIunit\fR must be space-separated.
+\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
 .PP
 .IP 3. 4
 Only decimal is recognized in expressions. Decimal and hex \fBnumeric representations\fR are recognized for unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
