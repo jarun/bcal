@@ -185,11 +185,17 @@ static maxuint_t strtoval_b(char *token)
 }
 #endif
 
-static maxuint_t convertbyte(char *buf)
+static maxuint_t convertbyte(char *buf, int *ret)
 {
 	maxfloat_t val;
+	char *pch;
 	/* Convert and print in bytes */
-	maxuint_t bytes = (maxuint_t)strtoflt128(buf, NULL);
+	maxuint_t bytes = (maxuint_t)strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
 
 	if (minimal) {
 		printf("%s\n", getstr_u128(bytes, uint_buf));
@@ -231,10 +237,16 @@ static maxuint_t convertbyte(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertkib(char *buf)
+static maxuint_t convertkib(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t kib = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, kib = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
 	if (minimal) {
@@ -272,10 +284,16 @@ static maxuint_t convertkib(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertmib(char *buf)
+static maxuint_t convertmib(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t mib = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, mib = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
 
 	if (minimal) {
@@ -313,10 +331,16 @@ static maxuint_t convertmib(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertgib(char *buf)
+static maxuint_t convertgib(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t gib = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, gib = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
 	if (minimal) {
@@ -354,10 +378,16 @@ static maxuint_t convertgib(char *buf)
 	return bytes;
 }
 
-static maxuint_t converttib(char *buf)
+static maxuint_t converttib(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t tib = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, tib = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
 
 	if (minimal) {
@@ -395,10 +425,16 @@ static maxuint_t converttib(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertkb(char *buf)
+static maxuint_t convertkb(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t kb = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, kb = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
 	if (minimal) {
@@ -436,10 +472,16 @@ static maxuint_t convertkb(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertmb(char *buf)
+static maxuint_t convertmb(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t mb = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, mb = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
 
 	if (minimal) {
@@ -477,10 +519,16 @@ static maxuint_t convertmb(char *buf)
 	return bytes;
 }
 
-static maxuint_t convertgb(char *buf)
+static maxuint_t convertgb(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t gb = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, gb = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
 	if (minimal) {
@@ -518,10 +566,16 @@ static maxuint_t convertgb(char *buf)
 	return bytes;
 }
 
-static maxuint_t converttb(char *buf)
+static maxuint_t converttb(char *buf, int *ret)
 {
-	maxfloat_t val;
-	maxfloat_t tb = strtoflt128(buf, NULL);
+	char *pch;
+	maxfloat_t val, tb = strtoflt128(buf, &pch);
+	if (*pch) {
+		*ret = -1;
+		return 0;
+	} else
+		*ret = 0;
+
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
 
 	if (minimal) {
@@ -777,13 +831,12 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	int len, count;
 	maxfloat_t byte_metric = 0;
 
-	*out = 0;
-
 	if (numstr == NULL || *numstr == '\0') {
 		log(ERROR, "invalid token\n");
 		*out = -1;
 		return 0;
-	}
+	} else
+		*out = 0;
 
 	len = strlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
@@ -813,37 +866,63 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	*punit = '\0';
 
 	switch (count) {
-	case 0:
-		return (maxuint_t)strtoflt128(numstr, NULL);
+	case 0: {
+		maxuint_t bytes;
+		bytes = (maxuint_t)strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
+		return bytes;
+		}
 	case 1: /* Kibibyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * 1024);
 	case 2: /* Mebibyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * (1 << 20));
 	case 3: /* Gibibyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * (1 << 30));
 	case 4: /* Tebibyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40));
 	case 5: /* Kilobyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * 1000);
 	case 6: /* Megabyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * 1000000);
 	case 7: /* Gigabyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * 1000000000);
 	case 8: /* Terabyte */
-		byte_metric = strtoflt128(numstr, NULL);
+		byte_metric = strtoflt128(numstr, &punit);
+		if (*punit)
+			goto error;
 		return (maxuint_t)(byte_metric * 1000000000000);
 	default:
 		log(ERROR, "unknown unit\n");
 		*out = -1;
 		return 0;
 	}
+
+error:
+	log(ERROR, "malformed input\n");
+	*out = -1;
+	return 0;
 }
 
 static int priority(char sign) /* Get the priority of operators */
@@ -1205,7 +1284,7 @@ static char *fixexpr(char *exp)
 
 static int convertunit(char *value, char *unit, ulong sectorsz)
 {
-	int count = ARRAY_SIZE(units);
+	int count = ARRAY_SIZE(units), ret;
 	maxuint_t bytes = 0, lba = 0, offset = 0;
 
 	strstrip(value);
@@ -1234,6 +1313,8 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 				log(ERROR, "unknown unit\n");
 				return -1;
 			}
+
+			value[len] = '\0';
 		} else
 			count = 0;
 	} else {
@@ -1256,34 +1337,39 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 
 	switch (count) {
 	case 0:
-		bytes = convertbyte(value);
+		bytes = convertbyte(value, &ret);
 		break;
 	case 1:
-		bytes = convertkib(value);
+		bytes = convertkib(value, &ret);
 		break;
 	case 2:
-		bytes = convertmib(value);
+		bytes = convertmib(value, &ret);
 		break;
 	case 3:
-		bytes = convertgib(value);
+		bytes = convertgib(value, &ret);
 		break;
 	case 4:
-		bytes = converttib(value);
+		bytes = converttib(value, &ret);
 		break;
 	case 5:
-		bytes = convertkb(value);
+		bytes = convertkb(value, &ret);
 		break;
 	case 6:
-		bytes = convertmb(value);
+		bytes = convertmb(value, &ret);
 		break;
 	case 7:
-		bytes = convertgb(value);
+		bytes = convertgb(value, &ret);
 		break;
 	case 8:
-		bytes = converttb(value);
+		bytes = converttb(value, &ret);
 		break;
 	default:
 		log(ERROR, "unknown unit\n");
+		return -1;
+	}
+
+	if (ret == -1) {
+		log(ERROR, "malformed input\n");
 		return -1;
 	}
 
@@ -1330,13 +1416,22 @@ static int evaluate(char *exp)
 		return -1;
 
 	if (minimal) {
-		convertbyte(getstr_u128(bytes, uint_buf));
+		convertbyte(getstr_u128(bytes, uint_buf), &ret);
+		if (ret == -1) {
+			log(ERROR, "malformed input\n");
+			return -1;
+		}
+
 		return 0;
 	}
 
 	printf("\033[1mRESULT\033[0m\n");
 
-	convertbyte(getstr_u128(bytes, uint_buf));
+	convertbyte(getstr_u128(bytes, uint_buf), &ret);
+	if (ret == -1) {
+		log(ERROR, "malformed input\n");
+		return -1;
+	}
 
 	printf("\nADDRESS\n (d) %s\n (h) ",
 		getstr_u128(bytes, uint_buf));

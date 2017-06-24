@@ -56,6 +56,12 @@ test = [
     ('./bcal', '-m', " 1000 "),                                      # 34
     ('./bcal', '-m', " 0x1234mib  "),                                # 35
     ('./bcal', '-m', "        "),                                    # 36
+    ('./bcal', '-m', "0x18mb"),                                      # 37
+    ('./bcal', '-m', "0x18mb", "kb"),                                # 38
+    ('./bcal', '-m', "0x18mb82"),                                    # 39
+    ('./bcal', '-m', "0x18mbc4"),                                    # 40
+    ('./bcal', '-m', "0x18mb 82"),                                   # 41
+    ('./bcal', '-m', "0x18mb", "82"),                                # 42
 ]
 
 res = [
@@ -95,6 +101,12 @@ res = [
     b'1000\n',                                     # 34
     b'4886364160\n',                               # 35
     b'ERROR: invalid value\n',                     # 36
+    b'24000000\n',                                 # 37
+    b'ERROR: malformed input\n',                   # 38
+    b'ERROR: malformed input\n',                   # 39
+    b'ERROR: malformed input\n',                   # 40
+    b'ERROR: malformed input\n',                   # 41
+    b'ERROR: unknown unit\n',                      # 42
 ]
 
 print()
