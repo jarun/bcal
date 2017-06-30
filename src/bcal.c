@@ -55,7 +55,7 @@ typedef struct {
 	ulong s;
 } t_chs;
 
-static char *VERSION = "1.5";
+static char *VERSION = "1.6";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
 static char uint_buf[UINT_BUF_LEN];

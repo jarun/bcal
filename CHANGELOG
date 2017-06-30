@@ -1,3 +1,15 @@
+bcal 1.6
+2017-06-30
+
+What's in?
+- Evaluate storage arithmetic expressions involving +, -, *, /
+- A minimal mode (option `-m`) to show result in bytes
+- Assume byte if unit is omitted for a conversion
+- A Python3 test framework with multiple test cases
+- Several fixes and additional sanity checks on input
+
+-------------------------------------------------------------------------------
+
 bcal 1.5
 2017-04-10
 
