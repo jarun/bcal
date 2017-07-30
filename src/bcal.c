@@ -785,7 +785,7 @@ positional arguments:\n\
 		   default unit is B (byte), case is ignored\n\
 		   N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
-  -c N             show N in binary, decimal and hex\n\
+  -c N             show +ve integer N in binary, decimal and hex\n\
   -f FORMAT        convert CHS to LBA or LBA to CHS\n\
 		   formats are hyphen-separated\n\
 		   LBA format:\n\

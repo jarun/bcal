@@ -108,7 +108,7 @@ To uninstall, run:
                        N can be decimal or '0x' prefixed hex value
 
     optional arguments:
-      -c N             show N in binary, decimal and hex
+      -c N             show +ve integer N in binary, decimal and hex
       -f FORMAT        convert CHS to LBA or LBA to CHS
                        formats are hyphen-separated
                        LBA format:

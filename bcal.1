@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Perform storage conversions and calculations.
 .SH SYNOPSIS
-.B bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
+.B bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]
 .br
 .B "    "[expression] [N [unit]]
 .SH DESCRIPTION
@@ -60,7 +60,7 @@ Only decimal is recognized in expressions. Decimal and hex \fBnumeric representa
 .SH OPTIONS
 .TP
 .BI "-c=" N
-Show decimal, binary and hex representation of \fIN\fR. \fIN\fR must be non-negative.
+Show decimal, binary and hex representation of positive integer \fIN\fR.
 .TP
 .BI "-f=" FORMAT
 Convert CHS to LBA or LBA to CHS. \fIFORMAT\fR is hyphen-separated representation of LBA or CHS.
