@@ -28,11 +28,9 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - [Features](#features)
 - [Installation](#installation)
   - [Dependencies](#dependencies)
-  - [Installing with a package manager](#installing-with-a-package-manager)
-  - [Installing from this repository](#installing-from-this-repository)
-    - [Get the source code](#get-the-source-code)
-    - [Compile and install](#compile-and-install)
-    - [Release packages](#release-packages)
+  - [From a package manager](#from-a-package-manager)
+  - [Release packages](#release-packages)
+  - [From source](#from-source)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
@@ -56,23 +54,22 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 `bcal` is written in C and depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
 
-#### Installing with a package manager
+#### From a package manager
 
-`bcal` is also available on
  - [AUR](https://aur.archlinux.org/packages/bcal/)
  - [Debian Sid](https://packages.debian.org/sid/bcal)
  - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
  - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
-#### Installing from this repository
+#### Release packages
 
-##### Get the source code
+Packages for Arch Linux, CentOS, Fedora and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
+
+#### From source
 
 If you have git installed, clone this repository. Otherwise, download the [latest stable release](https://github.com/jarun/bcal/releases/latest) or [development version](https://github.com/jarun/bcal/archive/master.zip) (*risky*).
 
-##### Compile and install
-
-In the source directory, run:
+Install to default location (`/usr/local`):
 
     $ make
     $ sudo make install
@@ -80,9 +77,7 @@ To uninstall, run:
 
     $ sudo make uninstall
 
-#### Release packages
-
-Packages for Arch Linux, CentOS, Fedora and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
+`PREFIX` is supported, in case you want to install to a different location.
 
 ### Usage
 
