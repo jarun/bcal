@@ -15,7 +15,7 @@ git archive --prefix=bcal-$vers/ --format=tar.gz -o $rpmdir/SOURCES/bcal-$vers.t
 # do the build
 ( cd $rpmdir/SPECS && rpmbuild --define="%_topdir $rpmdir" -ba bcal.spec )
 
-# retreive the artifacts
+# retrieve the artifacts
 mkdir -p dist
 cp $rpmdir/{SRPMS,RPMS/*}/*.rpm dist/
 
