@@ -18,6 +18,7 @@ NOTES:
 '''
 
 import subprocess
+import sys
 
 test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
@@ -45,7 +46,8 @@ test = [
     ('./bcal', '-m', "((2giB)*1)/(2/2))"),                           # 23
     ('./bcal', '-m', "((2giB)*1)/(2/2)"),                            # 24
     ('./bcal', '-m', "(((2giB)*)2/2)"),                              # 25
-    ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),     # 26
+    #  ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),     # 26
+    ('./bcal', '-m', '0xffffffffffffffff', 'b'),                     # 26
     ('./bcal', '-m', "2b / 3"),                                      # 27
     ('./bcal', '-m', "2 kIb/((3 ) )"),                               # 28
     ('./bcal', '-m', "2 gIb/ - 3"),                                  # 29
@@ -90,7 +92,8 @@ res = [
     b'ERROR: unbalanced expression\n',             # 23
     b'2147483648\n',                               # 24
     b'ERROR: invalid token\n',                     # 25
-    b'340282366920938463463374607431768211455\n',  # 26
+    #  b'340282366920938463463374607431768211455\n',  # 26
+    b'18446744073709551615\n',                     # 26
     b'0\n',                                        # 27
     b'682\n',                                      # 28
     b'ERROR: negative token\n',                    # 29
@@ -123,3 +126,4 @@ for index, item in enumerate(test):
         assert out == res[index]
 
 print('\nAll good! :)')
+sys.exit(0)
