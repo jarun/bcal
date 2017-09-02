@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O3 -m64 -Wall -Wextra -Werror
+CFLAGS = -O3 -m64 -Wall -Wextra -Wno-unused-parameter -Werror
 LDLIBS = -lquadmath
 
 PREFIX ?= /usr/local

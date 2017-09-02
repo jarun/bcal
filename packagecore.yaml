@@ -1,0 +1,43 @@
+name: bcal
+metadata:
+  maintainer: Arun Prakash Jana <engineerarun@gmail.com>
+  license: GPLv3
+  summary: Byte CALculator for storage conversions and calculations.
+  homepage: https://github.com/jarun/bcal
+commands:
+  install:
+    - make PREFIX="/usr" install DESTDIR="${BP_DESTDIR}"
+packages:
+  archlinux:
+    builddeps:
+      - make
+      - gcc
+  fedora26:
+    builddeps:
+      - make
+      - gcc
+      - libquadmath-devel
+  centos7.3:
+    builddeps:
+      - make
+      - gcc
+      - libquadmath-devel
+    commands:
+      pre:
+        - yum install epel-release
+  ubuntu16.04:
+    builddeps:
+      - make
+      - gcc
+    deps:
+      - libquadmath0
+  ubuntu17.10:
+    builddeps:
+      - make
+      - gcc
+    deps:
+      - libquadmath0
+  debian9:
+    builddeps:
+      - make
+      - gcc
