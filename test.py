@@ -115,6 +115,7 @@ res = [
 
 @pytest.mark.parametrize('item, res', zip(test, res))
 def test_output(item, res):
+    try:
         out = subprocess.check_output(item, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         # print(e.output)
