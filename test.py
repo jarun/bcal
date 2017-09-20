@@ -112,18 +112,12 @@ res = [
     b'ERROR: unknown unit\n',                      # 42
 ]
 
-print()
 
-for index, item in enumerate(test):
-    print('Executing test %d' % (int)(index + 1))
-
-    try:
+@pytest.mark.parametrize('item, res', zip(test, res))
+def test_output(item, res):
         out = subprocess.check_output(item, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         # print(e.output)
-        assert e.output == res[index]
+        assert e.output == res
     else:
-        assert out == res[index]
-
-print('\nAll good! :)')
-sys.exit(0)
+        assert out == res
