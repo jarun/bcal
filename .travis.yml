@@ -9,16 +9,15 @@ matrix:
       compiler: gcc
 
 script:
-  make clean;
-  make;
-  pytest ./test.py;
-  make clean;
+  - make clean; make;
+  - pytest ./test.py;
+  - make clean;
 
 before_deploy:
   - sudo apt-get update -qy
   - sudo apt-get install -qy python3 python3-pip
+  - sudo apt-get install -qy  python-logilab-common
   - python3 -m pip install packagecore
-  - python3 -m pip install python-logilab-common
   - python3 -m pip install pytest
   - packagecore -o dist/ "${TRAVIS_TAG#v}"
 
