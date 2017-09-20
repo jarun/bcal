@@ -20,6 +20,8 @@ NOTES:
 import subprocess
 import sys
 
+import pytest
+
 test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
     ('./bcal', '-m', '10', 'TiB'),                                   # 2
