@@ -20,6 +20,8 @@ NOTES:
 import subprocess
 import sys
 
+import pytest
+
 test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
     ('./bcal', '-m', '10', 'TiB'),                                   # 2
@@ -112,18 +114,13 @@ res = [
     b'ERROR: unknown unit\n',                      # 42
 ]
 
-print()
 
-for index, item in enumerate(test):
-    print('Executing test %d' % (int)(index + 1))
-
+@pytest.mark.parametrize('item, res', zip(test, res))
+def test_output(item, res):
     try:
         out = subprocess.check_output(item, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
         # print(e.output)
-        assert e.output == res[index]
+        assert e.output == res
     else:
-        assert out == res[index]
-
-print('\nAll good! :)')
-sys.exit(0)
+        assert out == res
