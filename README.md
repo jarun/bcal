@@ -4,7 +4,8 @@
 <a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg?maxAge=600" alt="Latest release" /></a>
 <a href="https://aur.archlinux.org/packages/bcal"><img src="https://img.shields.io/aur/version/bcal.svg?maxAge=600" alt="AUR" /></a>
 <a href="https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/debian-9+-blue.svg?maxAge=2592000" alt="Debian Strech+" /></a>
-<a href="http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
+<a href="https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
+<a href="https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/"><img src="https://img.shields.io/badge/ubuntu-PPA-blue.svg?maxAge=2592000" alt="Ubuntu PPA" /></a>
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
 <a href="https://travis-ci.org/jarun/bcal"><img src="https://travis-ci.org/jarun/bcal.svg?branch=master" alt="Build Status" /></a>
 </p>
