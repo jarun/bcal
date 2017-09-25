@@ -37,6 +37,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
 - [Examples](#examples)
+- [Testing](#testing)
 - [Copyright](#copyright)
 
 ### Features
@@ -181,6 +182,13 @@ To uninstall, run:
 
         $ man bcal
         $ bcal -h
+
+### Testing
+
+Due to the nature of the project, it's extremely important to test existing functionality before raising any PR. `bcal` has several test cases written in [`test.py`](test.py). To execute the test cases locally, install `pytest` and run:
+
+    $ make
+    $ python3 -m pytest test.py
 
 ### Copyright
 
