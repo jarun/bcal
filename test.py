@@ -17,10 +17,8 @@ NOTES:
    b. run `make test`
 '''
 
-import subprocess
-import sys
-
 import pytest
+import subprocess
 
 test = [
     ('./bcal', '-m', '10', 'mb'),                                    # 1
