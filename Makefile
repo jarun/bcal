@@ -16,9 +16,6 @@ bcal: $(SRC)
 
 all: bcal
 
-test: all
-	$(shell pwd)/test.py
-
 .PHONY: clean
 clean:
 	-rm -f bcal
