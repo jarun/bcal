@@ -1,3 +1,12 @@
+bcal 1.7
+2016-10-10
+
+What's in?
+- PackageCore integration
+- Automated testing in Travis CI
+
+-------------------------------------------------------------------------------
+
 bcal 1.6
 2017-06-30
 

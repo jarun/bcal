@@ -88,44 +88,44 @@ To uninstall, run:
 
 ```
 usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
-	    [expression] [N unit]
+            [expression] [N unit]
 
 Perform storage conversions and calculations.
 
 positional arguments:
-  expression       evaluate storage arithmetic expression
-		   +, -, *, / with decimal inputs supported
-		   unit can be multiplied or divided by +ve integers
-		   units can be added or subtracted from each other
-		   Examples:
-		       bcal "(5kb+2mb)/3"
-		       bcal "5 tb / 12"
-		       bcal "2.5mb*3"
-  N [unit]         capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
-		   see https://wiki.ubuntu.com/UnitsPolicy
-		   default unit is B (byte), case is ignored
-		   N can be decimal or '0x' prefixed hex value
+ expression  evaluate storage arithmetic expression
+             +, -, *, / with decimal inputs supported
+             unit can be multiplied or divided by +ve integers
+             units can be added or subtracted from each other
+             Examples:
+               bcal "(5kb+2mb)/3"
+               bcal "5 tb / 12"
+               bcal "2.5mb*3"
+ N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
+             see https://wiki.ubuntu.com/UnitsPolicy
+             default unit is B (byte), case is ignored
+             N can be decimal or '0x' prefixed hex value
 
 optional arguments:
-  -c N             show +ve integer N in binary, decimal and hex
-  -f FORMAT        convert CHS to LBA or LBA to CHS
-		   formats are hyphen-separated
-		   LBA format:
-		       starts with 'l':
-		       lLBA-MAX_HEAD-MAX_SECTOR
-		   CHS format:
-		       starts with 'c':
-		       cC-H-S-MAX_HEAD-MAX_SECTOR
-		   omitted values are considered 0
-		   FORMAT 'c-50--0x12-' denotes:
-		     C = 0, H = 50, S = 0, MH = 0x12, MS = 0
-		   FORMAT 'l50-0x12' denotes:
-		     LBA = 50, MH = 0x12, MS = 0
-		   default MAX_HEAD: 16, default MAX_SECTOR: 63
-  -s bytes         sector size [default 512]
-  -m               show minimal output (e.g. decimal bytes)
-  -d               enable debug information and logs
-  -h               show this help and exit
+ -c N        show +ve integer N in binary, decimal and hex
+ -f FORMAT   convert CHS to LBA or LBA to CHS
+             formats are hyphen-separated
+             LBA format:
+               starts with 'l':
+               lLBA-MAX_HEAD-MAX_SECTOR
+             CHS format:
+               starts with 'c':
+               cC-H-S-MAX_HEAD-MAX_SECTOR
+             omitted values are considered 0
+             FORMAT 'c-50--0x12-' denotes:
+               C = 0, H = 50, S = 0, MH = 0x12, MS = 0
+             FORMAT 'l50-0x12' denotes:
+               LBA = 50, MH = 0x12, MS = 0
+             default MAX_HEAD: 16, default MAX_SECTOR: 63
+ -s bytes    sector size [default 512]
+ -m          show minimal output (e.g. decimal bytes)
+ -d          enable debug information and logs
+ -h          show this help and exit
 ```
 
 #### Operational notes
