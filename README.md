@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-<a href="https://asciinema.org/a/96309"><img src="https://asciinema.org/a/96309.png" alt="bcal_asciicast" width="650"/></a>
+<a href="https://asciinema.org/a/96309"><img src="https://asciinema.org/a/96309.png" alt="bcal_asciicast" width="600"/></a>
 </p>
 
 `bcal` (*Byte CALculator*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
