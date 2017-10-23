@@ -58,6 +58,9 @@ typedef struct {
 static char *VERSION = "1.7";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
+static char *FAILED = "1";
+static char *PASSED = "\0";
+
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 static int unitless;
@@ -155,7 +158,7 @@ static ulong strtoul_b(char *token)
 	/* NOTE: no NULL check here! */
 
 	if (strlen(token) > 2 && token[0] == '0' &&
-			(token[1] == 'b' || token[1] == 'B')) {
+	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
 
@@ -170,20 +173,64 @@ static ull strtoull_b(char *token)
 	/* NOTE: no NULL check here! */
 
 	if (strlen(token) > 2 && token[0] == '0' &&
-			(token[1] == 'b' || token[1] == 'B')) {
+	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
 
 	return strtoull(token + base, NULL, base);
 }
 
-#if 0
-/* This function adds check for binary input to strtoull() */
-static maxuint_t strtoval_b(char *token)
+/*
+ * This function adds check for binary to strtoflt128.
+ * Note that binary input returns maxuint_t always.
+ */
+static maxfloat_t strtoflt128_b(char *token, char **pch)
 {
-	return 0;
+	/* NOTE: no NULL check here! */
+
+	uint len = strlen(token);
+
+	if (len > 2 && token[0] == '0' &&
+	    (token[1] == 'b' || token[1] == 'B')) {
+		uint digits = 0;
+		char *ptr = token + 2;
+		char *iter = token + len;
+		maxuint_t val = 0;
+		maxuint_t multiplier = 1;
+
+		*pch = PASSED;
+
+		if (len == 2) {
+			*pch = FAILED;
+			return 0;
+		}
+
+		while (*ptr && *ptr == '0')
+			++ptr;
+
+		if (!*ptr)
+			return 0;
+
+		--ptr;
+		len = sizeof(maxuint_t) << 3;
+
+		while (--iter != ptr) {
+			if (digits == len || !(*iter == '1' || *iter == '0')) {
+				*pch = FAILED;
+				return 0;
+			}
+
+			val += (*iter - '0') * multiplier;
+
+			multiplier <<= 1;
+			++digits;
+		}
+
+		return val;
+	}
+
+	return strtoflt128(token, pch);
 }
-#endif
 
 static maxuint_t convertbyte(char *buf, int *ret)
 {
@@ -1451,13 +1498,20 @@ int main(int argc, char **argv)
 	while ((opt = getopt(argc, argv, "c:df:hms:")) != -1) {
 		switch (opt) {
 		case 'c':
+		{
+			char *pch;
+
 			if (*optarg == '-') {
 				log(ERROR, "N must be >= 0\n");
 				return -1;
 			}
 
 			printf("\033[1mBASE CONVERSION\033[0m\n");
-			maxuint_t val = strtoull_b(optarg);
+			maxuint_t val = strtoflt128_b(optarg, &pch);
+			if (*pch) {
+				log(ERROR, "invalid input\n");
+				return -1;
+			}
 
 			printf(" (b) ");
 			binprint(val);
@@ -1466,6 +1520,7 @@ int main(int argc, char **argv)
 			printhex_u128(val);
 			printf("\n\n");
 			break;
+		}
 		case 'f':
 			if (tolower(*optarg) == 'c') {
 				maxuint_t lba = 0;
@@ -1501,6 +1556,8 @@ int main(int argc, char **argv)
 		case 'd':
 			cur_loglevel = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
+			log(DEBUG, "maxuint_t is %lu bytes\n", sizeof(maxuint_t));
+
 			break;
 		case 'h':
 			usage();
