@@ -132,8 +132,8 @@ optional arguments:
 
 - **Expression**: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be divided or multiplied by plain integers. Only storage units can be used for addition and subtraction.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
-- Only decimal is recognized in expressions. Decimal and hex **numeric representations** are recognized in unit conversions. Decimal, hex, binary and octal are recognized for all other operations.
-- **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`, octal inputs with `0`.
+- Only decimal is recognized in expressions. Decimal and hex **numeric representations** are recognized in unit conversions. Decimal, hex, and binary are recognized for all other operations.
+- **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - **No negative arguments** allowed. Input limits for base and unit conversions are 128 bit. Input limits for other operations are `unsigned long long` and `double`.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
 - **CHS and LBA syntax**:
