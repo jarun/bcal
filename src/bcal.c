@@ -1506,13 +1506,13 @@ int main(int argc, char **argv)
 				return -1;
 			}
 
-			printf("\033[1mBASE CONVERSION\033[0m\n");
 			maxuint_t val = strtoflt128_b(optarg, &pch);
 			if (*pch) {
 				log(ERROR, "invalid input\n");
 				return -1;
 			}
 
+			printf("\033[1mBASE CONVERSION\033[0m\n");
 			printf(" (b) ");
 			binprint(val);
 			printf("\n (d) %s\n (h) ",
