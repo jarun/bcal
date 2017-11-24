@@ -59,14 +59,14 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### From a package manager
 
- - [AUR](https://aur.archlinux.org/packages/bcal/)
- - [Debian Sid](https://packages.debian.org/sid/bcal)
- - [Ubuntu](http://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
- - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
+- [AUR](https://aur.archlinux.org/packages/bcal/)
+- [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1)
+- [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
+- [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 
 #### Release packages
 
-Packages for Arch Linux, CentOS, Fedora and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
+Packages for Arch Linux, CentOS, Debian, Fedora and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
 
 #### From source
 
