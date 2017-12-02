@@ -66,7 +66,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### Release packages
 
-Packages for Arch Linux, CentOS, Debian, Fedora and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
+Packages for Arch Linux, CentOS, Debian, Fedora, OpenSUSE Leap and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
 
 #### From source
 

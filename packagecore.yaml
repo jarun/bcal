@@ -11,19 +11,34 @@ packages:
     builddeps:
       - make
       - gcc
-  fedora26:
-    builddeps:
-      - make
-      - gcc
-      - libquadmath-devel
   centos7.3:
     builddeps:
       - make
       - gcc
       - libquadmath-devel
+    deps:
+      - libquadmath
     commands:
       pre:
         - yum install epel-release
+  debian9:
+    builddeps:
+      - make
+      - gcc
+  fedora26:
+    builddeps:
+      - make
+      - gcc
+      - libquadmath-devel
+    deps:
+      - libquadmath
+  opensuse42.3:
+    builddeps:
+      - make
+      - gcc
+      - gcc-fortran
+    deps:
+      - libquadmath0
   ubuntu16.04:
     builddeps:
       - make
@@ -36,7 +51,3 @@ packages:
       - gcc
     deps:
       - libquadmath0
-  debian9:
-    builddeps:
-      - make
-      - gcc
