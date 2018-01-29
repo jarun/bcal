@@ -65,6 +65,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
 - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
+- [Void Linux](https://github.com/voidlinux/void-packages/tree/master/srcpkgs/bcal) (`sudo xbps-install -S bcal`)
 
 #### Release packages
 
