@@ -93,7 +93,7 @@ To uninstall, run:
 usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
             [expression] [N unit]
 
-Perform storage conversions and calculations.
+Storage conversion and expression calculator.
 
 positional arguments:
  expression  evaluate storage arithmetic expression
