@@ -63,6 +63,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 - [AUR](https://aur.archlinux.org/packages/bcal/)
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1)
+- [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`sudo nix-env -i bcal`)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
 - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
 - [Void Linux](https://github.com/voidlinux/void-packages/tree/master/srcpkgs/bcal) (`sudo xbps-install -S bcal`)
