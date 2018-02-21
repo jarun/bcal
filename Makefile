@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -O3 -m64 -Wall -Wextra -Wno-unused-parameter -Werror
+CFLAGS = -O3 -Wall -Wextra -Wno-unused-parameter -Werror
 LDLIBS = -lquadmath
 
 PREFIX ?= /usr/local
@@ -15,6 +15,10 @@ bcal: $(SRC)
 	strip bcal
 
 all: bcal
+
+x86: $(SRC)
+	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	strip bcal
 
 .PHONY: clean
 clean:
