@@ -35,6 +35,7 @@
 #define FLOAT_BUF_LEN 128
 #define FLOAT_WIDTH 40
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define MAX_BITS 128
 
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
@@ -69,8 +70,8 @@ int cur_loglevel = INFO;
 
 static void binprint(maxuint_t n)
 {
-	int count = 127;
-	char binstr[129] = {0};
+	int count = MAX_BITS - 1;
+	char binstr[MAX_BITS + 1] = {0};
 
 	if (!n) {
 		printf("0b0");
@@ -809,7 +810,7 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 {
 	int token_no = 0;
 	char *ptr, *token;
-	maxuint_t param[3] = {0, MAX_HEAD, MAX_SECTOR};
+	ull param[3] = {0, MAX_HEAD, MAX_SECTOR};
 
 	ptr = token = lba;
 
