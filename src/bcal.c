@@ -40,6 +40,7 @@
 #ifdef __SIZEOF_INT128__
 typedef __uint128_t maxuint_t;
 #ifdef __APPLE__
+typedef unsigned int uint;
 typedef long double maxfloat_t;
 #else
 typedef __float128 maxfloat_t;
