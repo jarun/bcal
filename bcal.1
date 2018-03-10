@@ -40,7 +40,7 @@ Only decimal is recognized in expressions. Decimal and hex \fBnumeric representa
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 5. 4
-\fBNo negative arguments\fR allowed. Input limit is 64 bit.
+\fBPrecision\fR: 128 bits for numerical conversions. Other operations are limited to 64 bits. Negative arguments are unsupported.
 .PP
 .IP 6. 4
 \fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer bytes.

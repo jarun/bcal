@@ -178,27 +178,71 @@ static ull strtoull_b(char *token)
 	return strtoull(token + base, NULL, base);
 }
 
-/*
- * This function adds check for binary to strtold.
- * Note that binary input returns maxuint_t always.
- */
-static maxfloat_t strtold_b(char *token, char **pch)
+/* Converts a char to unsigned int according to base */
+static bool ischarvalid(char ch, uint base, uint *val)
 {
-	/* NOTE: no NULL check here! */
+	if (base == 2)
+	{
+		if (ch == '0' || ch == '1') {
+			*val = ch - '0';
+			return TRUE;
+		}
+	} else if (base == 16) {
+		if (ch >= '0' && ch <= '9') {
+			*val = ch - '0';
+			return TRUE;
+		}
 
-	uint len = strlen(token);
+		if (ch >= 'a' && ch <= 'f') {
+			*val = (ch - 'a') + 10;
+			return TRUE;
+		}
 
-	if (len > 2 && token[0] == '0' &&
-	    (token[1] == 'b' || token[1] == 'B')) {
-		uint digits = 0;
-		char *ptr = token + 2;
-		char *iter = token + len;
-		maxuint_t val = 0;
-		maxuint_t multiplier = 1;
+		if (ch >= 'A' && ch <= 'F') {
+			*val = (ch - 'A') + 10;
+			return TRUE;
+		}
+	} else if (base == 10) {
+		if (ch >= '0' && ch <= '9') {
+			*val = ch - '0';
+			return TRUE;
+		}
+	}
 
-		*pch = PASSED;
+	return FALSE;
+}
 
-		if (len == 2) {
+/*
+ * Converts a non-floating representing string to maxuint_t
+ */
+static maxuint_t strtouquad(char *token, char **pch)
+{
+	*pch = PASSED;
+
+	if (!token || !*token) {
+		*pch = FAILED;
+		return 0;
+	}
+
+	char *ptr;
+	maxuint_t val = 0, prevval = 0;
+	uint base = 10, multiplier, digit, bits_used = 0;
+	uint max_bit_len = sizeof(maxuint_t) << 3;
+
+	if (token[0] == '0') {
+		if (token[1] == 'b' || token[1] == 'B') { /* binary */
+			base = 2;
+			multiplier = 1;
+		} else if (token[1] == 'x' || token[1] == 'X') { /* hex */
+			base = 16;
+			multiplier = 4;
+		}
+	}
+
+	if (base == 2 || base == 16) {
+		ptr = token + 2;
+
+		if (!*ptr) {
 			*pch = FAILED;
 			return 0;
 		}
@@ -209,33 +253,56 @@ static maxfloat_t strtold_b(char *token, char **pch)
 		if (!*ptr)
 			return 0;
 
-		--ptr;
-		len = sizeof(maxuint_t) << 3;
-
-		while (--iter != ptr) {
-			if (digits == len || !(*iter == '1' || *iter == '0')) {
+		while (*ptr) {
+			if (bits_used == max_bit_len || !ischarvalid(*ptr, base, &digit)) {
 				*pch = FAILED;
 				return 0;
 			}
 
-			val += (*iter - '0') * multiplier;
+			val = (val << multiplier) + digit;
 
-			multiplier <<= 1;
-			++digits;
+			++bits_used;
+			++ptr;
 		}
 
 		return val;
 	}
 
-	return (maxfloat_t)strtold(token, pch);
+	/* Try base 10 for any other pattern */
+	ptr = token;
+	while (*ptr && *ptr == '0')
+		++ptr;
+
+	if (!*ptr)
+		return 0;
+
+	while (*ptr) {
+		if (!ischarvalid(*ptr, base, &digit)) {
+			*pch = FAILED;
+			return 0;
+		}
+
+		val = (val * 10) + digit;
+
+		/* Try to to detect overflow */
+		if (val < prevval) {
+			*pch = FAILED;
+			return 0;
+		}
+
+		prevval = val;
+		++ptr;
+	}
+
+	return val;
 }
 
 static maxuint_t convertbyte(char *buf, int *ret)
 {
 	maxfloat_t val;
 	char *pch;
-	/* Convert and print in bytes */
-	maxuint_t bytes = (maxuint_t)strtold(buf, &pch);
+	/* Convert and print in bytes (cannot be in float) */
+	maxuint_t bytes = strtouquad(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -1504,7 +1571,7 @@ int main(int argc, char **argv)
 				return -1;
 			}
 
-			maxuint_t val = strtold_b(optarg, &pch);
+			maxuint_t val = strtouquad(optarg, &pch);
 			if (*pch) {
 				log(ERROR, "invalid input\n");
 				return -1;
