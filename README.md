@@ -6,6 +6,9 @@
 <a href="https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/debian-9+-blue.svg?maxAge=2592000" alt="Debian Stretch+" /></a>
 <a href="https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
 <a href="https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/"><img src="https://img.shields.io/badge/ubuntu-PPA-blue.svg?maxAge=2592000" alt="Ubuntu PPA" /></a>
+<p>
+
+<p align="center">
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
 <a href="https://travis-ci.org/jarun/bcal"><img src="https://travis-ci.org/jarun/bcal.svg?branch=master" alt="Build Status" /></a>
 </p>
@@ -24,7 +27,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 <p align="center">
 <a href="https://saythanks.io/to/jarun"><img src="https://img.shields.io/badge/say-thanks!-ff69b4.svg" /></a>
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/Donate-$5-green.svg" alt="Donate via PayPal!" /></a>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/PayPal-donate-green.svg" alt="Donate via PayPal!" /></a>
 </p>
 
 ### Table of Contents
@@ -57,7 +60,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and [GCC libquadmath](https://gcc.gnu.org/onlinedocs/libquadmath/).
+`bcal` is written in C and depends on standard libc.
 
 #### From a package manager
 
@@ -138,7 +141,7 @@ optional arguments:
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - Only decimal is recognized in expressions. Decimal and hex **numeric representations** are recognized in unit conversions. Decimal, hex, and binary are recognized for all other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
-- **No negative arguments** allowed. Input limits for base and unit conversions are 128 bit. Input limits for other operations are `unsigned long long` and `double`.
+- **No negative arguments** allowed. Input limit is 64 bit.
 - **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]

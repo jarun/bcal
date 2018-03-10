@@ -1,6 +1,5 @@
 CC = gcc
 CFLAGS = -O3 -Wall -Wextra -Wno-unused-parameter -Werror
-LDLIBS = -lquadmath
 
 PREFIX ?= /usr/local
 BINDIR = $(DESTDIR)$(PREFIX)/bin
@@ -11,13 +10,13 @@ SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
 
 bcal: $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC)
 	strip bcal
 
 all: bcal
 
 x86: $(SRC)
-	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC)
 	strip bcal
 
 .PHONY: clean

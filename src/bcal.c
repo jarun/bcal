@@ -19,7 +19,6 @@
  */
 
 #include <ctype.h>
-#include <quadmath.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -113,8 +112,7 @@ static char *getstr_u128(maxuint_t n, char *buf)
 
 static char *getstr_f128(maxfloat_t val, char *buf)
 {
-	int n = quadmath_snprintf(buf, FLOAT_BUF_LEN,
-				  "%#*.10Qe", FLOAT_WIDTH, val);
+	int n = snprintf(buf, FLOAT_BUF_LEN, "%#*.10Le", FLOAT_WIDTH, (long double)val);
 
 	buf[n] = '\0';
 	return buf;
@@ -181,10 +179,10 @@ static ull strtoull_b(char *token)
 }
 
 /*
- * This function adds check for binary to strtoflt128.
+ * This function adds check for binary to strtold.
  * Note that binary input returns maxuint_t always.
  */
-static maxfloat_t strtoflt128_b(char *token, char **pch)
+static maxfloat_t strtold_b(char *token, char **pch)
 {
 	/* NOTE: no NULL check here! */
 
@@ -229,7 +227,7 @@ static maxfloat_t strtoflt128_b(char *token, char **pch)
 		return val;
 	}
 
-	return strtoflt128(token, pch);
+	return (maxfloat_t)strtold(token, pch);
 }
 
 static maxuint_t convertbyte(char *buf, int *ret)
@@ -237,7 +235,7 @@ static maxuint_t convertbyte(char *buf, int *ret)
 	maxfloat_t val;
 	char *pch;
 	/* Convert and print in bytes */
-	maxuint_t bytes = (maxuint_t)strtoflt128(buf, &pch);
+	maxuint_t bytes = (maxuint_t)strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -287,7 +285,7 @@ static maxuint_t convertbyte(char *buf, int *ret)
 static maxuint_t convertkib(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, kib = strtoflt128(buf, &pch);
+	maxfloat_t val, kib = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -334,7 +332,7 @@ static maxuint_t convertkib(char *buf, int *ret)
 static maxuint_t convertmib(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, mib = strtoflt128(buf, &pch);
+	maxfloat_t val, mib = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -381,7 +379,7 @@ static maxuint_t convertmib(char *buf, int *ret)
 static maxuint_t convertgib(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, gib = strtoflt128(buf, &pch);
+	maxfloat_t val, gib = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -428,7 +426,7 @@ static maxuint_t convertgib(char *buf, int *ret)
 static maxuint_t converttib(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, tib = strtoflt128(buf, &pch);
+	maxfloat_t val, tib = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -475,7 +473,7 @@ static maxuint_t converttib(char *buf, int *ret)
 static maxuint_t convertkb(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, kb = strtoflt128(buf, &pch);
+	maxfloat_t val, kb = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -522,7 +520,7 @@ static maxuint_t convertkb(char *buf, int *ret)
 static maxuint_t convertmb(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, mb = strtoflt128(buf, &pch);
+	maxfloat_t val, mb = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -569,7 +567,7 @@ static maxuint_t convertmb(char *buf, int *ret)
 static maxuint_t convertgb(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, gb = strtoflt128(buf, &pch);
+	maxfloat_t val, gb = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -616,7 +614,7 @@ static maxuint_t convertgb(char *buf, int *ret)
 static maxuint_t converttb(char *buf, int *ret)
 {
 	char *pch;
-	maxfloat_t val, tb = strtoflt128(buf, &pch);
+	maxfloat_t val, tb = strtold(buf, &pch);
 	if (*pch) {
 		*ret = -1;
 		return 0;
@@ -915,48 +913,48 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	switch (count) {
 	case 0: {
 		maxuint_t bytes;
-		bytes = (maxuint_t)strtoflt128(numstr, &punit);
+		bytes = (maxuint_t)strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return bytes;
 		}
 	case 1: /* Kibibyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * 1024);
 	case 2: /* Mebibyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * (1 << 20));
 	case 3: /* Gibibyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * (1 << 30));
 	case 4: /* Tebibyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40));
 	case 5: /* Kilobyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * 1000);
 	case 6: /* Megabyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * 1000000);
 	case 7: /* Gigabyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * 1000000000);
 	case 8: /* Terabyte */
-		byte_metric = strtoflt128(numstr, &punit);
+		byte_metric = strtold(numstr, &punit);
 		if (*punit)
 			goto error;
 		return (maxuint_t)(byte_metric * 1000000000000);
@@ -1506,7 +1504,7 @@ int main(int argc, char **argv)
 				return -1;
 			}
 
-			maxuint_t val = strtoflt128_b(optarg, &pch);
+			maxuint_t val = strtold_b(optarg, &pch);
 			if (*pch) {
 				log(ERROR, "invalid input\n");
 				return -1;
