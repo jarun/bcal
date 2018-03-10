@@ -24,8 +24,8 @@ install:
     fi
   - if [ $TRAVIS_OS_NAME = osx ]; then
         brew upgrade python;
-        pip3 install logilab-common --user;
-        pip3 install pytest --user;
+        pip3 install logilab-common;
+        pip3 install pytest;
     fi
 
 script:
