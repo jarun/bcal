@@ -19,7 +19,7 @@
 
 `bcal` (*Byte CALculator*) is a command-line utility for storage conversions and calculations. Storage, hardware and firmware developers work with numerical calculations regularly e.g., storage unit conversions, address calculations etc. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
 
-Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **engineer's utility**.
+Though it started with storage, the scope of `bcal` isn't limited to the storage domain. Feel free to raise PRs to simplify other domain-specific numerical calculations so it can evolve into an **_engineer's utility_**.
 
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
@@ -94,14 +94,14 @@ To uninstall, run:
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]
-            [expression] [N unit]
+usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]
+            [expression] [N [unit]]
 
 Storage conversion and expression calculator.
 
 positional arguments:
  expression  evaluate storage arithmetic expression
-             +, -, *, / with decimal inputs supported
+             +, -, *, / operators with decimal or hex operands
              unit can be multiplied or divided by +ve integers
              units can be added or subtracted from each other
              Examples:
@@ -139,10 +139,10 @@ optional arguments:
 
 - **Expression**: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be divided or multiplied by plain integers. Only storage units can be used for addition and subtraction.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
-- Only decimal is recognized in expressions. Decimal and hex **numeric representations** are recognized in unit conversions. Decimal, hex, and binary are recognized for all other operations.
+- **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - **Precision**: 128 bits for numerical conversions. Other operations are limited to 64 bits. Negative arguments are unsupported.
-- **Fractional bytes do not exist**, because they can't be addressed. `bcal` shows the floor value of non-integer bytes.
+- **Fractional bytes do not exist** because they can't be addressed. `bcal` shows the floor value of non-integer _bytes_.
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
   - CHS: `cC-H-S-MAX_HEAD-MAX_SECTOR` [NOTE: CHS starts with `c` (case ignored)]

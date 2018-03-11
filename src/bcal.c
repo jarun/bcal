@@ -886,12 +886,12 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 
 static void usage(void)
 {
-	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-d] [-h]\n\
-            [expression] [N unit] \n\n\
+	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]\n\
+            [expression] [N [unit]] \n\n\
 Storage conversion and expression calculator.\n\n\
 positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
-             +, -, *, / with decimal inputs supported\n\
+             +, -, *, / operators with decimal or hex operands\n\
              unit can be multiplied or divided by +ve integers\n\
              units can be added or subtracted from each other\n\
              Examples:\n\
