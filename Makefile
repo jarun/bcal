@@ -4,7 +4,6 @@ MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 
 CFLAGS ?= -O3 -Wall -Wextra -Wno-unused-parameter -Werror
-CFLAGS += -flto
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
