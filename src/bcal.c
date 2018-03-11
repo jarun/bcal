@@ -1342,7 +1342,7 @@ static char *fixexpr(char *exp)
 	}
 
 	int i = 0, j = 0;
-	char *parsed = (char *)malloc(2 * strlen(exp) * sizeof(char));
+	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
 	char prev = '(';
 
 	log(DEBUG, "exp (%s)\n", exp);
