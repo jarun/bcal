@@ -1533,23 +1533,17 @@ static int evaluate(char *exp)
 	if (ret == -1)
 		return -1;
 
-	if (minimal) {
-		convertbyte(getstr_u128(bytes, uint_buf), &ret);
-		if (ret == -1) {
-			log(ERROR, "malformed input\n");
-			return -1;
-		}
-
-		return 0;
-	}
-
-	printf("\033[1mRESULT\033[0m\n");
+	if (!minimal)
+		printf("\033[1mRESULT\033[0m\n");
 
 	convertbyte(getstr_u128(bytes, uint_buf), &ret);
 	if (ret == -1) {
 		log(ERROR, "malformed input\n");
 		return -1;
 	}
+
+	if (minimal)
+		return 0;
 
 	printf("\nADDRESS\n (d) %s\n (h) ",
 		getstr_u128(bytes, uint_buf));
