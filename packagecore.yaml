@@ -1,13 +1,21 @@
 name: bcal
 maintainer: Arun Prakash Jana <engineerarun@gmail.com>
 license: GPLv3
-summary: Byte CALculator for storage conversions and calculations.
+summary: Storage conversion and expression calculator.
 homepage: https://github.com/jarun/bcal
 commands:
   install:
     - make PREFIX="/usr" install DESTDIR="${BP_DESTDIR}"
 packages:
   archlinux:
+    builddeps:
+      - make
+      - gcc
+  centos7.1
+    builddeps:
+      - make
+      - gcc
+  centos7.2
     builddeps:
       - make
       - gcc
@@ -19,7 +27,23 @@ packages:
     builddeps:
       - make
       - gcc
+  fedora25:
+    builddeps:
+      - make
+      - gcc
   fedora26:
+    builddeps:
+      - make
+      - gcc
+  fedora27:
+    builddeps:
+      - make
+      - gcc
+  opensuse42.1:
+    builddeps:
+      - make
+      - gcc
+  opensuse42.2:
     builddeps:
       - make
       - gcc
