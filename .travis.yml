@@ -4,16 +4,16 @@ services:
   - docker
 matrix:
   include:
-#    - os: linux
-#      dist: trusty
-#      compiler: gcc
-#    - os: linux
-#      dist: trusty
-#      compiler: clang
+    - os: linux
+      dist: trusty
+      compiler: gcc
+    - os: linux
+      dist: trusty
+      compiler: clang
     - os: osx
       compiler: gcc
-#    - os: osx
-#      compiler: clang
+    - os: osx
+      compiler: clang
 
 install:
   - if [ $TRAVIS_OS_NAME = linux ]; then
@@ -22,16 +22,15 @@ install:
         python -m pip install logilab-common --user;
         python -m pip install pytest --user;
     fi
-#  - if [ $TRAVIS_OS_NAME = osx ]; then
-#        brew upgrade python;
-#        pip3 install logilab-common;
-#        pip3 install pytest;
-#    fi
+  - if [ $TRAVIS_OS_NAME = osx ]; then
+        brew upgrade python;
+        pip3 install logilab-common;
+        pip3 install pytest;
+    fi
 
 script:
   - make clean; make;
-  - ./bcal -d -m "0x4         kb   *  2     +   5        mib";
-#  - pytest ./test.py;
+  - pytest ./test.py;
   - make clean;
 
 before_deploy:
