@@ -37,22 +37,17 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX_BITS 128
 
-#ifdef __SIZEOF_INT128__
-typedef __uint128_t maxuint_t;
-#ifdef __APPLE__
-typedef unsigned int uint;
-typedef long double maxfloat_t;
-#else
-typedef __float128 maxfloat_t;
-#endif
-#else
-typedef __uint64_t maxuint_t;
-typedef long double maxfloat_t;
-#endif
-
 typedef unsigned char bool;
+typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned long long ull;
+typedef long double maxfloat_t;
+
+#ifdef __SIZEOF_INT128__
+typedef __uint128_t maxuint_t;
+#else
+typedef __uint64_t maxuint_t;
+#endif
 
 typedef struct {
 	ulong c;
@@ -118,7 +113,7 @@ static char *getstr_u128(maxuint_t n, char *buf)
 
 static char *getstr_f128(maxfloat_t val, char *buf)
 {
-	int n = snprintf(buf, FLOAT_BUF_LEN, "%#*.10Le", FLOAT_WIDTH, (long double)val);
+	int n = snprintf(buf, FLOAT_BUF_LEN, "%#*.10Le", FLOAT_WIDTH, val);
 
 	buf[n] = '\0';
 	return buf;

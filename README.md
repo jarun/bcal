@@ -141,7 +141,7 @@ optional arguments:
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
-- **Precision**: 128 bits for numerical conversions. Other operations are limited to 64 bits. Negative arguments are unsupported.
+- **Precision**: 128 bits for numerical conversions. Floating point operations use `long double`. Negative arguments are unsupported.
 - **Fractional bytes do not exist** because they can't be addressed. `bcal` shows the floor value of non-integer _bytes_.
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
