@@ -879,9 +879,35 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	return TRUE;
 }
 
-static void usage(void)
+static void show_basic_sizes()
 {
-	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]\n\
+	printf("char       : %lu\n"
+		"short      : %lu\n"
+		"int        : %lu\n"
+		"long       : %lu\n"
+		"long long  : %lu\n"
+#ifdef __SIZEOF_INT128__
+		"__int128_t : %lu\n"
+#else
+		"__int64_t  : %lu\n"
+#endif
+		"float      : %lu\n"
+		"double     : %lu\n"
+		"long double: %lu\n",
+		sizeof(unsigned char),
+		sizeof(unsigned short),
+		sizeof(unsigned int),
+		sizeof(unsigned long),
+		sizeof(unsigned long long),
+		sizeof(maxuint_t),
+		sizeof(float),
+		sizeof(double),
+		sizeof(long double));
+}
+
+static void usage()
+{
+	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]\n\
             [expression] [N [unit]] \n\n\
 Storage conversion and expression calculator.\n\n\
 positional arguments:\n\
@@ -915,6 +941,7 @@ optional arguments:\n\
              default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
  -s bytes    sector size [default 512]\n\
  -m          show minimal output (e.g. decimal bytes)\n\
+ -b          list sizes of basic data types in bytes\n\
  -d          enable debug information and logs\n\
  -h          show this help and exit\n\n\
 Version %s\n\
@@ -1555,7 +1582,7 @@ int main(int argc, char **argv)
 
 	opterr = 0;
 
-	while ((opt = getopt(argc, argv, "c:df:hms:")) != -1) {
+	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
 		switch (opt) {
 		case 'c':
 		{
@@ -1612,6 +1639,9 @@ int main(int argc, char **argv)
 				return -1;
 			}
 			sectorsz = strtoul_b(optarg);
+			break;
+		case 'b':
+			show_basic_sizes();
 			break;
 		case 'd':
 			cur_loglevel = DEBUG;

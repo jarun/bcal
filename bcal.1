@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Storage conversion and expression calculator.
 .SH SYNOPSIS
-.B bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]
+.B bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]
 .br
 .B "    "[expression] [N [unit]]
 .SH DESCRIPTION
@@ -76,6 +76,9 @@ Sector size in bytes. Default value is 512.
 .TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
+.TP
+.BI "-b"
+Show sizes of basic data types on the system in bytes.
 .TP
 .BI "-d"
 Enable debug information and logs.

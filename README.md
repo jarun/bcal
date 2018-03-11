@@ -94,7 +94,7 @@ To uninstall, run:
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-d] [-h]
+usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]
             [expression] [N [unit]]
 
 Storage conversion and expression calculator.
@@ -131,6 +131,7 @@ optional arguments:
              default MAX_HEAD: 16, default MAX_SECTOR: 63
  -s bytes    sector size [default 512]
  -m          show minimal output (e.g. decimal bytes)
+ -b          list sizes of basic data types in bytes
  -d          enable debug information and logs
  -h          show this help and exit
 ```
