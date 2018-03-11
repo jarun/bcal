@@ -29,8 +29,8 @@ install:
     fi
 
 script:
-  - make clean; make;
-  - pytest ./test.py;
+  - make clean; make strip;
+  - pytest -p no:cacheprovider ./test.py;
   - make clean;
 
 before_deploy:
