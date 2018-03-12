@@ -55,7 +55,7 @@ typedef struct {
 	ulong s;
 } t_chs;
 
-static char *VERSION = "1.7";
+static char *VERSION = "1.8";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
 static char *FAILED = "1";
@@ -945,7 +945,7 @@ optional arguments:\n\
  -d          enable debug information and logs\n\
  -h          show this help and exit\n\n\
 Version %s\n\
-Copyright © 2016-2017 Arun Prakash Jana <engineerarun@gmail.com>\n\
+Copyright © 2016-2018 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }

@@ -11,11 +11,11 @@ packages:
     builddeps:
       - make
       - gcc
-  centos7.1
+  centos7.1:
     builddeps:
       - make
       - gcc
-  centos7.2
+  centos7.2:
     builddeps:
       - make
       - gcc
