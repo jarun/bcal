@@ -5,6 +5,7 @@
 <a href="https://aur.archlinux.org/packages/bcal"><img src="https://img.shields.io/aur/version/bcal.svg?maxAge=600" alt="AUR" /></a>
 <a href="http://formulae.brew.sh/formula/bcal"><img src="https://img.shields.io/homebrew/v/bcal.svg?maxAge=600" alt="Homebrew" /></a>
 <a href="https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/debian-9+-blue.svg?maxAge=2592000" alt="Debian Stretch+" /></a>
+<a href="https://apps.fedoraproject.org/packages/bcal"><img src="https://img.shields.io/badge/fedora-27+-blue.svg?maxAge=2592000" alt="Fedora 27+" /></a>
 <a href="https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
 <a href="https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/"><img src="https://img.shields.io/badge/ubuntu-PPA-blue.svg?maxAge=2592000" alt="Ubuntu PPA" /></a>
 <p>
@@ -67,6 +68,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 - [AUR](https://aur.archlinux.org/packages/bcal/)
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1)
+- [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
 - [Homebrew](http://formulae.brew.sh/formula/bcal)
 - [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`sudo nix-env -i bcal`)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
