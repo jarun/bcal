@@ -66,14 +66,14 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### From a package manager
 
-- [AUR](https://aur.archlinux.org/packages/bcal/)
-- [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1)
+- [AUR](https://aur.archlinux.org/packages/bcal/) (`pacman -S bcal`)
+- [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
-- [Homebrew](http://formulae.brew.sh/formula/bcal)
-- [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`sudo nix-env -i bcal`)
-- [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1)
-- [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/)
-- [Void Linux](https://github.com/voidlinux/void-packages/tree/master/srcpkgs/bcal) (`sudo xbps-install -S bcal`)
+- [Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
+- [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
+- [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
+- [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
+- [Void Linux](https://github.com/voidlinux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
 
 #### Release packages
 
