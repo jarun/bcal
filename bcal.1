@@ -14,7 +14,6 @@ bcal \- Storage conversion and expression calculator.
   * evaluate arithmetic expressions involving storage units
   * convert to IEC/SI standard data storage units
   * show the address in bytes
-  * evaluate arithmetic expression of storage units
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
   * show binary, decimal and hex representation of a number
@@ -28,7 +27,7 @@ Refer to:
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A storage unit can only be multiplied or divided by positive integers. Only storage units can be used for addition and subtraction.
+\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be multiplied or divided by positive integers.
 .PP
 .IP 2. 4
 \fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
@@ -95,6 +94,7 @@ Evaluate arithmetic expression of storage units
 .B $ bcal """(5kb+2mb)/3"""
 .B $ bcal """5 tb / 12"""
 .B $ bcal """2.5mb*3"""
+.B $ bcal """(2giB * 2) / 2kib"""
 .EE
 .PP
 .IP 2. 4

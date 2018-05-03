@@ -914,11 +914,12 @@ positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
              +, -, *, / operators with decimal or hex operands\n\
              unit can be multiplied or divided by +ve integers\n\
-             units can be added or subtracted from each other\n\
+             +, -, / work with two unit operands\n\
              Examples:\n\
                bcal \"(5kb+2mb)/3\"\n\
                bcal \"5 tb / 12\"\n\
                bcal \"2.5mb*3\"\n\
+               bcal \"(2giB * 2) / 2kib\"\n\
  N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
              see https://wiki.ubuntu.com/UnitsPolicy\n\
              default unit is B (byte), case is ignored\n\
@@ -1149,6 +1150,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 }
 
 /* Evaluates Postfix Expression
+ * Numeric result if out parameter holds 1
  * Failure if out parameter holds -1
  */
 static maxuint_t eval(queue **front, queue **rear, int *out)
@@ -1231,8 +1233,16 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				log(ERROR, "unit mismatch in *\n");
 				goto error;
 			case '/':
-				/* Divisor must be a non-unit */
-				if (!raw_b.unit) {
+				if (b == 0) {
+					log(ERROR, "division by 0\n");
+					goto error;
+				}
+
+				if (raw_a.unit && raw_b.unit) {
+					c = a / b;
+					raw_c.unit = 0;
+					break;
+				} else if (!raw_b.unit) {
 					c = a / b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
@@ -1261,6 +1271,9 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		log(ERROR, "invalid expression\n");
 		goto error;
 	}
+
+	if (res.unit == 0)
+		*out = 1;
 
 	/* Convert string to integer */
 	return strtoull(res.p, NULL, 0);
@@ -1554,6 +1567,10 @@ static int evaluate(char *exp)
 	bytes = eval(&front, &rear, &ret);  /* Evaluate Expression */
 	if (ret == -1)
 		return -1;
+	else if (ret == 1) {
+		printf("%s\n", getstr_u128(bytes, uint_buf));
+		return 0;
+	}
 
 	if (!minimal)
 		printf("\033[1mRESULT\033[0m\n");
