@@ -1149,6 +1149,32 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 	return 0;
 }
 
+/*
+ * Checks for underflow in division
+ * Returns:
+ *  0 - no issues
+ * -1 - underflow
+ */
+static int validate_div(maxuint_t dividend, maxuint_t divisor, maxuint_t quotient)
+{
+	if (divisor * quotient < dividend) {
+		log(WARNING, "result truncated\n");
+
+		if (cur_loglevel == DEBUG) {
+			printhex_u128(dividend);
+			printf(" (dividend)\n");
+			printhex_u128(divisor);
+			printf(" (divisor)\n");
+			printhex_u128(quotient);
+			printf(" (quotient)\n");
+		}
+
+		return -1;
+	}
+
+	return 0;
+}
+
 /* Evaluates Postfix Expression
  * Numeric result if out parameter holds 1
  * Failure if out parameter holds -1
@@ -1241,11 +1267,15 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				if (raw_a.unit && raw_b.unit) {
 					c = a / b;
 					raw_c.unit = 0;
+
+					validate_div(a, b, c);
 					break;
 				} else if (!raw_b.unit) {
 					c = a / b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
+
+					validate_div(a, b, c);
 					break;
 				}
 

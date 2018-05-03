@@ -24,8 +24,9 @@
 #include <stdarg.h>
 
 #define ERROR 0
-#define INFO 1
-#define DEBUG 2
+#define WARNING 1
+#define INFO 2
+#define DEBUG 3
 
 #define log(level, format, ...) \
 	    debug_log(__func__, level, format, ##__VA_ARGS__)

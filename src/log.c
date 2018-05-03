@@ -21,7 +21,7 @@
 #include "log.h"
 
 extern int cur_loglevel;
-char *logarr[] = {"ERROR", "INFO", "DEBUG"};
+char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 
 void debug_log(const char *func, int level, const char *format, ...)
 {

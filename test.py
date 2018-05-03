@@ -78,6 +78,8 @@ test = [
     ('./bcal', "-c", "340282366920938463463374607431768211455"),       # 54
     ('./bcal', "-c", "0b1111111111111111111111111111111111111111111111111111111111111111"),                                                                   # 55
     ('./bcal', "-c", "0b111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),  # 56
+    ('./bcal', '-m', "1kib /4kb"),                                     # 57
+    ('./bcal', '-m', "0kib /4kb"),                                     # 58
 ]
 
 res = [
@@ -89,7 +91,7 @@ res = [
     b'5250880\n',                                  # 6
     b'655360000\n',                                # 7
     b'625000000\n',                                # 8
-    b'416666666666\n',                             # 9
+    b'WARNING: result truncated\n416666666666\n',  # 9
     b'283752000\n',                                # 10
     b'420\n',                                      # 11
     b'644\n',                                      # 12
@@ -113,12 +115,12 @@ res = [
     b'340282366920938463463374607431768211455\n',  # 30
     b'340282366920938463463374607431768211455\n',  # 31
     b'18446744073709551615\n',                     # 32
-    b'0\n',                                        # 33
-    b'682\n',                                      # 34
+    b'WARNING: result truncated\n0\n',             # 33
+    b'WARNING: result truncated\n682\n',           # 34
     b'ERROR: negative token\n',                    # 35
     b'ERROR: invalid expression\n',                # 36
-    b'ERROR: invalid expression\n',                # 37
-    b'ERROR: invalid expression\n',                # 38
+    b'WARNING: result truncated\nERROR: invalid expression\n',  # 37
+    b'WARNING: result truncated\nERROR: invalid expression\n',  # 38
     b'ERROR: unit mismatch in /\n',                # 39
     b'1000\n',                                     # 40
     b'4886364160\n',                               # 41
@@ -137,7 +139,9 @@ res = [
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 53
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 54
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b1111111111111111111111111111111111111111111111111111111111111111\n (d) 18446744073709551615\n (h) 0xffffffffffffffff\n\n',  # 55
-    b'ERROR: invalid input\n',  # 56
+    b'ERROR: invalid input\n',                     # 56
+    b'WARNING: result truncated\n0\n',             # 57
+    b'0\n',                                        # 58
 ]
 
 
