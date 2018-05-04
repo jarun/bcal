@@ -1603,7 +1603,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (ret == -1) {
-		if (minimal) /* For running python test cases */
+		if (minimal || !repl) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else {
 			log(DEBUG, "not a storage expression? trying bc...\n");
@@ -1688,6 +1688,7 @@ int main(int argc, char **argv)
 	ulong sectorsz = SECTOR_SIZE;
 
 	opterr = 0;
+	rl_bind_key('\t', rl_insert);
 
 	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
 		switch (opt) {
