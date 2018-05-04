@@ -13,6 +13,7 @@ bcal \- Storage conversion and expression calculator.
 .PP
   * evaluate arithmetic expressions involving storage units
   * convert to IEC/SI standard data storage units
+  * REPL mode
   * show the address in bytes
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
@@ -27,31 +28,34 @@ Refer to:
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be multiplied or divided by positive integers.
+\fBREPL mode\fR: \fBbcal\fR enters the REPL mode if no arguments are passed to the program. Storage unit conversion and expression evaluation are supported in this mode.
 .PP
 .IP 2. 4
-\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
+\fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be multiplied or divided by positive integers.
 .PP
 .IP 3. 4
-\fBNumeric representation\fR: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
+\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
 .PP
 .IP 4. 4
-\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
+\fBNumeric representation\fR: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 .PP
 .IP 5. 4
-\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported.
+\fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 6. 4
-\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
+\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported.
 .PP
 .IP 7. 4
+\fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
+.PP
+.IP 8. 4
 \fBCHS and LBA syntax\fR:
   - LBA: 'lLBA-MAX_HEAD-MAX_SECTOR'   [NOTE: LBA starts with 'l' (case ignored)]
   - CHS: 'cC-H-S-MAX_HEAD-MAX_SECTOR' [NOTE: CHS starts with 'c' (case ignored)]
   - Format conversion arguments must be hyphen separated.
   - Any unspecified value, including the one preceding the first '-' to the one following the last '-', is considered '0' (zero).
 .PP
-.IP 8. 4
+.IP 9. 4
 \fBDefault values\fR:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)

@@ -22,6 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 #include "dslib.h"
 #include "log.h"
 
@@ -1349,7 +1351,7 @@ static int checkexp(char *exp)
 	return 0;
 }
 
-/* Trim all whitespace from both ends, in place */
+/* Trim ending newline and whitespace from both ends, in place */
 static void strstrip(char *s)
 {
 	if (!s || !*s)
@@ -1357,6 +1359,8 @@ static void strstrip(char *s)
 
 	int len = strlen(s) - 1;
 
+	if (s[len] == '\n')
+		--len;
 	while (len >= 0 && isspace(s[len]))
 		--len;
 	s[len + 1] = '\0';
@@ -1712,8 +1716,37 @@ int main(int argc, char **argv)
 	}
 
 	if (argc == 1 && optind == 1) {
-		usage();
-		return -1;
+		char *tmp = NULL;
+
+		printf("Enter an expression to evaluate, q to quit, or ? for help:\n");
+		while ((tmp = readline("\n-> ")) != NULL) {
+			if (tmp[0] == '\0')
+				break;
+
+			strstrip(tmp);
+			if (tmp[0] == '\0') {
+				free(tmp);
+				break;
+			}
+
+			add_history(tmp);
+
+			if (tmp[0] == 'q' && tmp[1] == '\0') {
+				free(tmp);
+				break;
+			} else if (tmp[0] == '?' && tmp[1] == '\0') {
+				free(tmp);
+				usage();
+				continue;
+			}
+
+			/* Evaluate the expression */
+			evaluate(tmp, sectorsz);
+
+			free(tmp);
+		}
+
+		return 0;
 	}
 
 	/* Conversion */

@@ -6,17 +6,18 @@ STRIP ?= strip
 
 CFLAGS ?= -O3
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
+LDLIBS = -lreadline
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
 
 bcal: $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC)
+	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 
 all: bcal
 
 x86: $(SRC)
-	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC)
+	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 	strip bcal
 
 distclean: clean

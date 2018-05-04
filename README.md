@@ -51,6 +51,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 - evaluate arithmetic expressions involving storage units
 - convert to IEC/SI standard data storage units
+- REPL mode
 - show the address in bytes
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
@@ -62,7 +63,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc.
+`bcal` is written in C and depends on standard libc and libreadline.
 
 #### From a package manager
 
@@ -143,6 +144,7 @@ optional arguments:
 
 #### Operational notes
 
+- **REPL mode**: `bcal` enters the REPL mode if no arguments are passed to the program. Storage unit conversion and expression evaluation are supported in this mode.
 - **Expression**: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be divided or multiplied by positive integers.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
