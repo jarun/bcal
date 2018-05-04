@@ -1566,7 +1566,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 
 	log(DEBUG, "%s %s\n", value, units[count]);
 
-	if (!(minimal || repl))
+	if (!minimal && unit)
 		printf("\033[1mUNIT CONVERSION\033[0m\n");
 
 	switch (count) {
@@ -1603,7 +1603,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (ret == -1) {
-		if (minimal || !repl) /* For running python test cases */
+		if (minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else {
 			log(DEBUG, "not a storage expression? trying bc...\n");
