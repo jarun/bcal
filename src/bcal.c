@@ -63,7 +63,6 @@ static char *PASSED = "\0";
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
-static int unitless;
 
 static int minimal;
 int cur_loglevel = INFO;
@@ -1396,13 +1395,16 @@ static void removeinnerspaces(char *s)
 /* Make the expression compatible with parsing by
  * inserting/removing space between arguments
  */
-static char *fixexpr(char *exp)
+static char *fixexpr(char *exp, int *unitless)
 {
+	*unitless = 0;
+
 	strstrip(exp);
 	removeinnerspaces(exp);
 
 	if (!checkexp(exp)) {
-		unitless = 1;
+		log(DEBUG, "no unit in expression [%s]\n", exp);
+		*unitless = 1;
 		return NULL;
 	}
 
@@ -1456,9 +1458,9 @@ static char *fixexpr(char *exp)
 		++i;
 
 	if (!parsed[i]) {
-		log(DEBUG, "noop expression\n");
+		log(DEBUG, "no operator in expression [%s]\n", parsed);
 		free(parsed);
-		unitless = 1;
+		*unitless = 1;
 		return NULL;
 	}
 
@@ -1579,15 +1581,19 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	return 0;
 }
 
-static int evaluate(char *exp)
+static int evaluate(char *exp, ulong sectorsz)
 {
 	int ret = 0;
 	maxuint_t bytes = 0;
 	queue *front = NULL, *rear = NULL;
-	char *expr = fixexpr(exp);	 /* Make parsing compatible */
+	char *expr = fixexpr(exp, &ret);  /* Make parsing compatible */
 
-	if (expr == NULL)
+	if (expr == NULL) {
+		if (ret)
+			return convertunit(exp, NULL, sectorsz);
+
 		return -1;
+	}
 
 	ret = infix2postfix(expr, &front, &rear);
 	free(expr);
@@ -1717,13 +1723,7 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1)
-		if ((evaluate(argv[optind]) == -1) && !unitless)
-			return -1;
+		return evaluate(argv[optind], sectorsz);
 
-	/* Possibly a unitless byte */
-	if (unitless)
-		if (convertunit(argv[optind], NULL, sectorsz) == -1)
-			return -1;
-
-	return 0;
+	return -1;
 }
