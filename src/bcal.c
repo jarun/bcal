@@ -67,7 +67,52 @@ static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static int minimal;
+static int repl;
 int cur_loglevel = INFO;
+
+/*
+ * Try to evaluate en expression using bc
+ */
+static void
+try_bc(char *expr)
+{
+	int pid, ret;
+	int pipe_pc[2], pipe_cp[2];
+
+	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
+		printf("Could not pipe\n");
+		exit(EXIT_FAILURE);
+	}
+
+	pid = fork();
+
+	if (pid == -1) {
+		log(ERROR, "fork() failed!\n");
+		return;
+	}
+
+	if (pid == 0) { /* child */
+		close(STDOUT_FILENO);
+		close(STDIN_FILENO);
+		close(pipe_pc[1]); // Close writing end
+		close(pipe_cp[0]); // Close reading end
+
+		dup2(pipe_pc[0], STDIN_FILENO); // Take stdin from parent
+		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
+
+		ret = execlp("bc", "bc", "-q", (char*) NULL);
+		log(ERROR, "execlp() failed!\n");
+		exit(ret);
+	} else { /* parent */
+		char buffer[128] = "";
+		ret = write(pipe_pc[1], "scale=5", 7);
+		ret = write(pipe_pc[1], "\n", 1);
+		ret = write(pipe_pc[1], expr, strlen(expr));
+		ret = write(pipe_pc[1], "\n", 1);
+		ret = read(pipe_cp[0], buffer, sizeof(buffer));
+		printf("%s", buffer);
+	}
+}
 
 static void binprint(maxuint_t n)
 {
@@ -1521,7 +1566,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 
 	log(DEBUG, "%s %s\n", value, units[count]);
 
-	if (!minimal)
+	if (!(minimal || repl))
 		printf("\033[1mUNIT CONVERSION\033[0m\n");
 
 	switch (count) {
@@ -1558,7 +1603,12 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (ret == -1) {
-		log(ERROR, "malformed input\n");
+		if (minimal) /* For running python test cases */
+			log(ERROR, "malformed input\n");
+		else {
+			log(DEBUG, "not a storage expression? trying bc...\n");
+			try_bc(value);
+		}
 		return -1;
 	}
 
@@ -1612,7 +1662,7 @@ static int evaluate(char *exp, ulong sectorsz)
 		return 0;
 	}
 
-	if (!minimal)
+	if (!(minimal || repl))
 		printf("\033[1mRESULT\033[0m\n");
 
 	convertbyte(getstr_u128(bytes, uint_buf), &ret);
@@ -1717,16 +1767,17 @@ int main(int argc, char **argv)
 
 	if (argc == 1 && optind == 1) {
 		char *tmp = NULL;
+		repl = 1;
 
 		printf("Enter an expression to evaluate, q to quit, or ? for help:\n");
-		while ((tmp = readline("\n-> ")) != NULL) {
+		while ((tmp = readline("bcal> ")) != NULL) {
 			if (tmp[0] == '\0')
-				break;
+				continue;
 
 			strstrip(tmp);
 			if (tmp[0] == '\0') {
 				free(tmp);
-				break;
+				continue;
 			}
 
 			add_history(tmp);
