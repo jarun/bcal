@@ -1769,11 +1769,19 @@ int main(int argc, char **argv)
 	if (argc == 1 && optind == 1) {
 		char *tmp = NULL;
 		repl = 1;
+		int enters = 0;
 
-		printf("Enter an expression to evaluate, q to quit, or ? for help:\n");
+		printf("Enter expression, q/double Enter to quit, ? for help:\n");
 		while ((tmp = readline("bcal> ")) != NULL) {
-			if (tmp[0] == '\0')
+			if (tmp[0] == '\0') {
+				if (enters == 1)
+					break;
+
+				++enters;
 				continue;
+			}
+
+			enters = 0;
 
 			strstrip(tmp);
 			if (tmp[0] == '\0') {
