@@ -63,7 +63,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline.
+`bcal` is written in C and depends on standard libc and libreadline. It uses GNU `bc` for purely numerical calculations.
 
 #### From a package manager
 

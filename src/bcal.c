@@ -76,8 +76,8 @@ int cur_loglevel = INFO;
 static void
 try_bc(char *expr)
 {
-	int pid, ret;
-	int pipe_pc[2], pipe_cp[2];
+	pid_t pid;
+	int pipe_pc[2], pipe_cp[2], ret;
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		printf("Could not pipe\n");
@@ -99,19 +99,20 @@ try_bc(char *expr)
 
 		dup2(pipe_pc[0], STDIN_FILENO); // Take stdin from parent
 		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
+		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
 
 		ret = execlp("bc", "bc", "-q", (char*) NULL);
 		log(ERROR, "execlp() failed!\n");
 		exit(ret);
-	} else { /* parent */
-		char buffer[128] = "";
-		ret = write(pipe_pc[1], "scale=5", 7);
-		ret = write(pipe_pc[1], "\n", 1);
-		ret = write(pipe_pc[1], expr, strlen(expr));
-		ret = write(pipe_pc[1], "\n", 1);
-		ret = read(pipe_cp[0], buffer, sizeof(buffer));
-		printf("%s", buffer);
 	}
+
+	/* parent */
+	char buffer[128] = "";
+	ret = write(pipe_pc[1], "scale=5\n", 8);
+	ret = write(pipe_pc[1], expr, strlen(expr));
+	ret = write(pipe_pc[1], "\n", 1);
+	ret = read(pipe_cp[0], buffer, sizeof(buffer));
+	printf("%s", buffer);
 }
 
 static void binprint(maxuint_t n)
