@@ -81,7 +81,7 @@ test = [
     ('./bcal', '-m', "1kib /4kb"),                                     # 57
     ('./bcal', '-m', "0kib /4kb"),                                     # 58
     ('./bcal', '-m', "{10+2"),                                         # 59
-    ('./bcal', '-m', "10 + 2}"),                                       # 60
+    ('./bcal', '-m', "10 + 2]"),                                       # 60
 ]
 
 res = [
@@ -144,8 +144,8 @@ res = [
     b'ERROR: invalid input\n',                     # 56
     b'WARNING: result truncated\n0\n',             # 57
     b'0\n',                                        # 58
-    b'ERROR: invalid token: {10\n',                # 59
-    b'ERROR: unknown unit\n',                      # 60
+    b'ERROR: first brackets only\n',               # 59
+    b'ERROR: first brackets only\n',               # 60
 ]
 
 
