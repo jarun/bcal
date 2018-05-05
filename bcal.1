@@ -13,7 +13,7 @@ bcal \- Storage conversion and expression calculator.
 .PP
   * evaluate arithmetic expressions involving storage units
   * convert to IEC/SI standard data storage units
-  * REPL mode
+  * REPL mode with the last valid result stored for reuse
   * show the address in bytes
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
@@ -28,7 +28,7 @@ Refer to:
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBREPL mode\fR: \fBbcal\fR enters the REPL mode if no arguments are passed to the program. Storage unit conversion and expression evaluation are supported in this mode.
+\fBREPL mode\fR: \fBbcal\fR enters the REPL mode if no arguments are passed to the program. Storage unit conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
 .PP
 .IP 2. 4
 \fBExpression\fR: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be multiplied or divided by positive integers.
