@@ -1587,6 +1587,12 @@ static char *fixexpr(char *exp, int *unitless)
 	log(DEBUG, "exp (%s)\n", exp);
 
 	while (exp[i] != '\0') {
+		if (exp[i] == '{' || exp[i] == '}' || exp[i] == '[' || exp[i] == ']') {
+			log(ERROR, "first brackets only\n");
+			free(parsed);
+			return NULL;
+		}
+
 		if (exp[i] == '-' && (issign(prev) || prev == '(')) {
 			log(ERROR, "negative token\n");
 			free(parsed);
