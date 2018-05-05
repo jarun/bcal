@@ -1788,7 +1788,7 @@ int main(int argc, char **argv)
 		repl = 1;
 		int enters = 0;
 
-		printf("Enter expression, q/double Enter to quit, ? for help:\n");
+		printf("q/double Enter -> quit, ? -> help\n");
 		while ((tmp = readline("bcal> ")) != NULL) {
 			if (tmp[0] == '\0') {
 				if (enters == 1)
