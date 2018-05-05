@@ -79,10 +79,10 @@ static void try_bc()
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2], ret;
 
-	log(DEBUG, "trying bc...\n");
-
 	if (!curexpr)
 		return;
+
+	log(DEBUG, "trying bc: \"%s\"\n", curexpr);
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		printf("Could not pipe\n");
@@ -1028,15 +1028,24 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		log(ERROR, "invalid token\n");
 		*out = -1;
 		return 0;
-	} else
-		*out = 0;
+	}
 
+	*out = 0;
 	len = strlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
+		char *pc = NULL;
+		maxuint_t r;
+
 		/* ensure this is not the result of a previous operation */
 		if (*isunit != 1)
 			*isunit = 0;
-		return strtoull(numstr, NULL, 0);
+		r = strtoull(numstr, &pc, 0);
+		if (*numstr != '\0' && *pc == '\0')
+			return r;
+
+		log(ERROR, "invalid token: %s\n", pc);
+		*out = -1;
+		return 0;
 	}
 
 	while (isalpha(numstr[len]))
