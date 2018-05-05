@@ -1696,7 +1696,7 @@ static int evaluate(char *exp, ulong sectorsz)
 
 int main(int argc, char **argv)
 {
-	int opt = 0;
+	int opt = 0, operation = 0;
 	ulong sectorsz = SECTOR_SIZE;
 
 	opterr = 0;
@@ -1707,6 +1707,7 @@ int main(int argc, char **argv)
 		case 'c':
 		{
 			char *pch;
+			operation = 1;
 
 			if (*optarg == '-') {
 				log(ERROR, "N must be >= 0\n");
@@ -1729,6 +1730,8 @@ int main(int argc, char **argv)
 			break;
 		}
 		case 'f':
+			operation = 1;
+
 			if (tolower(*optarg) == 'c') {
 				maxuint_t lba = 0;
 
@@ -1778,7 +1781,9 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (argc == 1 && optind == 1) {
+	log(DEBUG, "argc %d, optind %d\n", argc, optind);
+
+	if (!operation && (argc == optind)) {
 		char *tmp = NULL;
 		repl = 1;
 		int enters = 0;
