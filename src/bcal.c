@@ -62,6 +62,7 @@ static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"}
 
 static char *FAILED = "1";
 static char *PASSED = "\0";
+static char *curexpr = NULL;
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
@@ -73,11 +74,15 @@ int cur_loglevel = INFO;
 /*
  * Try to evaluate en expression using bc
  */
-static void
-try_bc(char *expr)
+static void try_bc()
 {
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2], ret;
+
+	log(DEBUG, "trying bc...\n");
+
+	if (!curexpr)
+		return;
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		printf("Could not pipe\n");
@@ -109,7 +114,7 @@ try_bc(char *expr)
 	/* parent */
 	char buffer[128] = "";
 	ret = write(pipe_pc[1], "scale=5\n", 8);
-	ret = write(pipe_pc[1], expr, strlen(expr));
+	ret = write(pipe_pc[1], curexpr, strlen(curexpr));
 	ret = write(pipe_pc[1], "\n", 1);
 	ret = read(pipe_cp[0], buffer, sizeof(buffer));
 	printf("%s", buffer);
@@ -1045,7 +1050,11 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 			break;
 
 	if (count == -1) {
-		log(ERROR, "unknown unit\n");
+		if (minimal)
+			log(ERROR, "unknown unit\n");
+		else
+			try_bc();
+
 		*out = -1;
 		return 0;
 	}
@@ -1384,6 +1393,7 @@ static int isoperator(char c)
 	}
 }
 
+#if 0
 /* Check if valid storage arithmetic expression */
 static int checkexp(char *exp)
 {
@@ -1396,6 +1406,7 @@ static int checkexp(char *exp)
 
 	return 0;
 }
+#endif
 
 /* Trim ending newline and whitespace from both ends, in place */
 static void strstrip(char *s)
@@ -1452,11 +1463,13 @@ static char *fixexpr(char *exp, int *unitless)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
+#if 0
 	if (!checkexp(exp)) {
 		log(DEBUG, "no unit in expression [%s]\n", exp);
 		*unitless = 1;
 		return NULL;
 	}
+#endif
 
 	int i = 0, j = 0;
 	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
@@ -1606,10 +1619,8 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	if (ret == -1) {
 		if (minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
-		else {
-			log(DEBUG, "not a storage expression? trying bc...\n");
-			try_bc(value);
-		}
+		else
+			try_bc();
 		return -1;
 	}
 
@@ -1790,6 +1801,7 @@ int main(int argc, char **argv)
 				continue;
 			}
 
+			curexpr = tmp;
 			add_history(tmp);
 
 			if (tmp[0] == 'q' && tmp[1] == '\0') {
@@ -1816,8 +1828,10 @@ int main(int argc, char **argv)
 			return -1;
 
 	/*Arithmetic operation*/
-	if (argc - optind == 1)
+	if (argc - optind == 1) {
+		curexpr = argv[optind];
 		return evaluate(argv[optind], sectorsz);
+	}
 
 	return -1;
 }

@@ -63,7 +63,7 @@ Though it started with storage, the scope of `bcal` isn't limited to the storage
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline. It uses GNU `bc` for purely numerical calculations.
+`bcal` is written in C and depends on standard libc and libreadline. It tries GNU `bc` for expressions it cannot resolve.
 
 #### From a package manager
 
@@ -160,6 +160,7 @@ optional arguments:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
+- **bc variables**: scale = 5, ibase = 10. `bc` is not called in minimal output mode.
 
 ### Examples
 
