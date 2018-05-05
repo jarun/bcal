@@ -20,7 +20,6 @@
 
 #include <ctype.h>
 #include <stdio.h>
-#include <string.h>
 #include <unistd.h>
 #include <readline/history.h>
 #include <readline/readline.h>
@@ -38,6 +37,7 @@
 #define FLOAT_WIDTH 40
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX_BITS 128
+#define _ALIGNMENT_MASK 0xF
 
 typedef unsigned char bool;
 typedef unsigned int uint;
@@ -71,18 +71,96 @@ static int minimal;
 static int repl;
 int cur_loglevel = INFO;
 
+static Data lastres = {"\0", 0};
+
+/*
+ * Custom strlen()
+ */
+static size_t
+bstrlen(const char *s)
+{
+	static size_t len;
+	len = 0;
+
+	if (!s)
+		return len;
+
+	while (*s)
+		++len, ++s;
+
+	return len;
+}
+
+/*
+ * Just a safe strncpy(3)
+ * Always null ('\0') terminates if both src and dest are valid pointers.
+ * Returns the number of bytes copied including terminating null byte.
+ */
+static size_t
+bstrlcpy(char *dest, const char *src, size_t n)
+{
+	static ulong *s, *d;
+	static size_t len, blocks;
+	static const uint lsize = sizeof(ulong);
+	static const uint _WSHIFT = (sizeof(ulong) == 8) ? 3 : 2;
+
+	if (!src || !dest || !n)
+		return 0;
+
+	len = bstrlen(src) + 1;
+	if (n > len)
+		n = len;
+	else if (len > n)
+		/* Save total number of bytes to copy in len */
+		len = n;
+
+	/*
+	 * To enable -O3 ensure src and dest are 16-byte aligned
+	 * More info: http://www.felixcloutier.com/x86/MOVDQA.html
+	 */
+	if ((n >= lsize) && (((ulong)src & _ALIGNMENT_MASK) == 0 && ((ulong)dest & _ALIGNMENT_MASK) == 0)) {
+		s = (ulong *)src;
+		d = (ulong *)dest;
+		blocks = n >> _WSHIFT;
+		n &= lsize - 1;
+
+		while (blocks) {
+			*d = *s;
+			++d, ++s;
+			--blocks;
+		}
+
+		if (!n) {
+			dest = (char *)d;
+			*--dest = '\0';
+			return len;
+		}
+
+		src = (char *)s;
+		dest = (char *)d;
+	}
+
+	while (--n && (*dest = *src))
+		++dest, ++src;
+
+	if (!n)
+		*dest = '\0';
+
+	return len;
+}
+
 /*
  * Try to evaluate en expression using bc
  */
-static void try_bc()
+static int try_bc()
 {
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2], ret;
 
 	if (!curexpr)
-		return;
+		return -1;
 
-	log(DEBUG, "trying bc: \"%s\"\n", curexpr);
+	log(DEBUG, "expression: \"%s\"\n", curexpr);
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		printf("Could not pipe\n");
@@ -93,7 +171,7 @@ static void try_bc()
 
 	if (pid == -1) {
 		log(ERROR, "fork() failed!\n");
-		return;
+		return -1;
 	}
 
 	if (pid == 0) { /* child */
@@ -114,10 +192,22 @@ static void try_bc()
 	/* parent */
 	char buffer[128] = "";
 	ret = write(pipe_pc[1], "scale=5\n", 8);
-	ret = write(pipe_pc[1], curexpr, strlen(curexpr));
+	ret = write(pipe_pc[1], curexpr, bstrlen(curexpr));
 	ret = write(pipe_pc[1], "\n", 1);
 	ret = read(pipe_cp[0], buffer, sizeof(buffer));
-	printf("%s", buffer);
+
+	if (buffer[0] != '(') {
+		printf("%s", buffer);
+		bstrlcpy(lastres.p, buffer, NUM_LEN);
+		/* remove newline */
+		lastres.p[bstrlen(lastres.p) - 1] = '\0';
+		lastres.unit = 0;
+		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
+		return 0;
+	}
+
+	log(ERROR, "invalid expression\n");
+	return -1;
 }
 
 static void binprint(maxuint_t n)
@@ -208,7 +298,7 @@ static ulong strtoul_b(char *token)
 
 	/* NOTE: no NULL check here! */
 
-	if (strlen(token) > 2 && token[0] == '0' &&
+	if (bstrlen(token) > 2 && token[0] == '0' &&
 	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
@@ -223,7 +313,7 @@ static ull strtoull_b(char *token)
 
 	/* NOTE: no NULL check here! */
 
-	if (strlen(token) > 2 && token[0] == '0' &&
+	if (bstrlen(token) > 2 && token[0] == '0' &&
 	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
@@ -1003,7 +1093,7 @@ License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
 
-static int xstricmp(const char *s1, const char *s2)
+static int bstricmp(const char *s1, const char *s2)
 {
 	while (*s1 && (tolower(*s1) == tolower(*s2))) {
 		++s1;
@@ -1031,7 +1121,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	}
 
 	*out = 0;
-	len = strlen(numstr) - 1;
+	len = bstrlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
 		char *pc = NULL;
 		maxuint_t r;
@@ -1055,7 +1145,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 
 	count = ARRAY_SIZE(units);
 	while (--count >= 0)
-		if (!xstricmp(units[count], punit))
+		if (!bstricmp(units[count], punit))
 			break;
 
 	if (count == -1) {
@@ -1154,7 +1244,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 
 	while (token) {
 		/* Copy argument to string part of the structure */
-		strcpy(tokenData.p, token);
+		bstrlcpy(tokenData.p, token, NUM_LEN);
 
 		switch (token[0]) {
 		case '+':
@@ -1190,6 +1280,16 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 
 			pop(&op, &ct);
 			--balanced;
+			break;
+		case 'r':
+			if (lastres.p[0] == '\0') {
+				log(ERROR, "no result stored\n");
+				emptystack(&op);
+				cleanqueue(resf);
+				return -1;
+			}
+
+			enqueue(resf, resr, lastres);
 			break;
 		default:
 			/* Enqueue operands */
@@ -1267,7 +1367,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		dequeue(front, rear, &arg);
 
 		/* Check if arg is an operator */
-		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])) {
+		if (bstrlen(arg.p) == 1 && !isdigit(arg.p[0])) {
 			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
@@ -1349,7 +1449,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			}
 
 			/* Convert to string */
-			strcpy(raw_c.p, getstr_u128(c, uint_buf));
+			bstrlcpy(raw_c.p, getstr_u128(c, uint_buf), NUM_LEN);
 			/* Push to stack */
 			push(&est, raw_c);
 
@@ -1423,7 +1523,7 @@ static void strstrip(char *s)
 	if (!s || !*s)
 		return;
 
-	int len = strlen(s) - 1;
+	int len = bstrlen(s) - 1;
 
 	if (s[len] == '\n')
 		--len;
@@ -1481,7 +1581,7 @@ static char *fixexpr(char *exp, int *unitless)
 #endif
 
 	int i = 0, j = 0;
-	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
+	char *parsed = (char *)calloc(1, 2 * bstrlen(exp) * sizeof(char));
 	char prev = '(';
 
 	log(DEBUG, "exp (%s)\n", exp);
@@ -1493,7 +1593,7 @@ static char *fixexpr(char *exp, int *unitless)
 			return NULL;
 		}
 
-		if (isoperator(exp[i]) && isalpha(exp[i + 1])) {
+		if (isoperator(exp[i]) && isalpha(exp[i + 1]) && (exp[i + 1] != 'r')) {
 			log(ERROR, "invalid expression\n");
 			free(parsed);
 			return NULL;
@@ -1502,7 +1602,8 @@ static char *fixexpr(char *exp, int *unitless)
 		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
 		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
 		     isoperator(exp[i + 1]))) ||
-		    (isalpha(exp[i]) && isoperator(exp[i + 1]))) {
+		    (isalpha(exp[i]) && isoperator(exp[i + 1])) ||
+		    (isoperator(exp[i]) && (exp[i + 1] == 'r'))) {
 			parsed[j] = exp[i];
 			++j;
 			parsed[j] = ' ';
@@ -1551,7 +1652,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (!unit) {
-		int unitchars = 0, len = strlen(value);
+		int unitchars = 0, len = bstrlen(value);
 
 		while (len) {
 			if (!isalpha(value[len - 1]))
@@ -1563,7 +1664,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 
 		if (unitchars) {
 			while (--count >= 0)
-				if (!xstricmp(units[count], value + len))
+				if (!bstricmp(units[count], value + len))
 					break;
 
 			if (count == -1) {
@@ -1578,7 +1679,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		strstrip(unit);
 
 		while (--count >= 0)
-			if (!xstricmp(units[count], unit))
+			if (!bstricmp(units[count], unit))
 				break;
 
 		if (count == -1) {
@@ -1629,9 +1730,14 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		if (minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else
-			try_bc();
+			return try_bc();
+
 		return -1;
 	}
+
+	bstrlcpy(lastres.p, getstr_u128(bytes, uint_buf), UINT_BUF_LEN);
+	lastres.unit = 1;
+	log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 
 	if (minimal)
 		return 0;
@@ -1662,6 +1768,7 @@ static int evaluate(char *exp, ulong sectorsz)
 	maxuint_t bytes = 0;
 	queue *front = NULL, *rear = NULL;
 	char *expr = fixexpr(exp, &ret);  /* Make parsing compatible */
+	char *ptr;
 
 	if (expr == NULL) {
 		if (ret)
@@ -1679,7 +1786,11 @@ static int evaluate(char *exp, ulong sectorsz)
 	if (ret == -1)
 		return -1;
 	else if (ret == 1) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		ptr = getstr_u128(bytes, uint_buf);
+		printf("%s\n", ptr);
+		bstrlcpy(lastres.p, getstr_u128(bytes, uint_buf), UINT_BUF_LEN);
+		lastres.unit = 0;
+		log(DEBUG, "result1: %s %d\n", lastres.p, lastres.unit);
 		return 0;
 	}
 
@@ -1692,11 +1803,15 @@ static int evaluate(char *exp, ulong sectorsz)
 		return -1;
 	}
 
+	ptr = getstr_u128(bytes, uint_buf);
+	bstrlcpy(lastres.p, ptr, UINT_BUF_LEN);
+	lastres.unit = 1;
+	log(DEBUG, "result2: %s %d\n", lastres.p, lastres.unit);
+
 	if (minimal)
 		return 0;
 
-	printf("\nADDRESS\n (d) %s\n (h) ",
-		getstr_u128(bytes, uint_buf));
+	printf("\nADDRESS\n (d) %s\n (h) ", ptr);
 	printhex_u128(bytes);
 	printf("\n");
 
@@ -1817,6 +1932,21 @@ int main(int argc, char **argv)
 
 			curexpr = tmp;
 			add_history(tmp);
+
+			/* Show the last stored result */
+			if (tmp[0] == 'r' && tmp[1] == '\0') {
+				if (lastres.p[0] == '\0')
+					printf("no result stored\n");
+				else {
+					printf("r = %s ", lastres.p);
+					if (lastres.unit)
+						printf("B");
+					printf("\n");
+				}
+
+				free(tmp);
+				continue;
+			}
 
 			if (tmp[0] == 'q' && tmp[1] == '\0') {
 				free(tmp);
