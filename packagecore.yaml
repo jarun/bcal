@@ -11,51 +11,96 @@ packages:
     builddeps:
       - make
       - gcc
+    deps:
+      - readline
   centos7.1:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   centos7.2:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   centos7.3:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   debian9:
     builddeps:
       - make
       - gcc
+      - libreadline-dev
+    deps:
+      - readline-common
   fedora25:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   fedora26:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   fedora27:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   opensuse42.1:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   opensuse42.2:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   opensuse42.3:
     builddeps:
       - make
       - gcc
+      - readline-devel
+    deps:
+      - readline
   ubuntu16.04:
     builddeps:
       - make
       - gcc
+      - libreadline6-dev
+    deps:
+      - libreadline6
   ubuntu17.10:
     builddeps:
       - make
       - gcc
+      - libreadline6-dev
+    deps:
+      - libreadline6
+  ubuntu18.04:
+    builddeps:
+      - make
+      - gcc
+      - libreadline-dev
+    deps:
+      - libreadline7
