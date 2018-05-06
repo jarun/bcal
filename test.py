@@ -85,67 +85,67 @@ test = [
 ]
 
 res = [
-    b'10000000\n',                                 # 1
-    b'10995116277760\n',                           # 2
-    b'102\n',                                      # 3
-    b'100\n',                                      # 4
-    b'ERROR: unknown unit\n',                      # 5
-    b'5250880\n',                                  # 6
-    b'655360000\n',                                # 7
-    b'625000000\n',                                # 8
-    b'WARNING: result truncated\n416666666666\n',  # 9
-    b'283752000\n',                                # 10
-    b'420\n',                                      # 11
-    b'644\n',                                      # 12
-    b'1540\n',                                     # 13
-    b'10485760\n',                                 # 14
-    b'902848\n',                                   # 15
-    b'ERROR: negative result\n',                   # 16
-    b'ERROR: negative token\n',                    # 17
-    b'ERROR: negative token\n',                    # 18
-    b'2147483648\n',                               # 19
-    b'256\n',                                      # 20
-    b'2097152\n',                                  # 21
-    b'ERROR: division by 0\n',                     # 22
-    b'ERROR: unknown unit\n',                      # 23
-    b'2147483648\n',                               # 24
-    b'ERROR: unbalanced expression\n',             # 25
-    b'ERROR: unbalanced expression\n',             # 26
-    b'2147483648\n',                               # 27
-    b'ERROR: invalid token\n',                     # 28
-    b'340282366920938463463374607431768211455\n',  # 29
-    b'340282366920938463463374607431768211455\n',  # 30
-    b'340282366920938463463374607431768211455\n',  # 31
-    b'18446744073709551615\n',                     # 32
-    b'WARNING: result truncated\n0\n',             # 33
-    b'WARNING: result truncated\n682\n',           # 34
-    b'ERROR: negative token\n',                    # 35
-    b'ERROR: invalid expression\n',                # 36
+    b'10000000 B\n',                                 # 1
+    b'10995116277760 B\n',                           # 2
+    b'102 B\n',                                      # 3
+    b'100 B\n',                                      # 4
+    b'ERROR: unknown unit\n',                        # 5
+    b'5250880 B\n',                                  # 6
+    b'655360000 B\n',                                # 7
+    b'625000000 B\n',                                # 8
+    b'WARNING: result truncated\n416666666666 B\n',  # 9
+    b'283752000 B\n',                                # 10
+    b'420 B\n',                                      # 11
+    b'644 B\n',                                      # 12
+    b'1540 B\n',                                     # 13
+    b'10485760 B\n',                                 # 14
+    b'902848 B\n',                                   # 15
+    b'ERROR: negative result\n',                     # 16
+    b'ERROR: negative token\n',                      # 17
+    b'ERROR: negative token\n',                      # 18
+    b'2147483648 B\n',                               # 19
+    b'256\n',                                        # 20
+    b'2097152\n',                                    # 21
+    b'ERROR: division by 0\n',                       # 22
+    b'ERROR: unknown unit\n',                        # 23
+    b'2147483648 B\n',                               # 24
+    b'ERROR: unbalanced expression\n',               # 25
+    b'ERROR: unbalanced expression\n',               # 26
+    b'2147483648 B\n',                               # 27
+    b'ERROR: invalid token\n',                       # 28
+    b'340282366920938463463374607431768211455 B\n',  # 29
+    b'340282366920938463463374607431768211455 B\n',  # 30
+    b'340282366920938463463374607431768211455 B\n',  # 31
+    b'18446744073709551615 B\n',                     # 32
+    b'WARNING: result truncated\n0 B\n',             # 33
+    b'WARNING: result truncated\n682 B\n',           # 34
+    b'ERROR: negative token\n',                      # 35
+    b'ERROR: invalid expression\n',                  # 36
     b'WARNING: result truncated\nERROR: invalid expression\n',  # 37
     b'WARNING: result truncated\nERROR: invalid expression\n',  # 38
-    b'ERROR: unit mismatch in /\n',                # 39
-    b'1000\n',                                     # 40
-    b'4886364160\n',                               # 41
-    b'ERROR: invalid value\n',                     # 42
-    b'24000000\n',                                 # 43
-    b'ERROR: malformed input\n',                   # 44
-    b'ERROR: malformed input\n',                   # 45
-    b'ERROR: malformed input\n',                   # 46
-    b'ERROR: malformed input\n',                   # 47
-    b'ERROR: unknown unit\n',                      # 48
+    b'ERROR: unit mismatch in /\n',                  # 39
+    b'1000 B\n',                                     # 40
+    b'4886364160 B\n',                               # 41
+    b'ERROR: invalid value\n',                       # 42
+    b'24000000 B\n',                                 # 43
+    b'ERROR: malformed input\n',                     # 44
+    b'ERROR: malformed input\n',                     # 45
+    b'ERROR: malformed input\n',                     # 46
+    b'ERROR: malformed input\n',                     # 47
+    b'ERROR: unknown unit\n',                        # 48
 
-    b'ERROR: invalid input\n',                     # 49
-    b'ERROR: invalid input\n',                     # 50
+    b'ERROR: invalid input\n',                       # 49
+    b'ERROR: invalid input\n',                       # 50
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b0\n (d) 0\n (h) 0x0\n\n',  # 51
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 52
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 53
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 54
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b1111111111111111111111111111111111111111111111111111111111111111\n (d) 18446744073709551615\n (h) 0xffffffffffffffff\n\n',  # 55
-    b'ERROR: invalid input\n',                     # 56
-    b'WARNING: result truncated\n0\n',             # 57
-    b'0\n',                                        # 58
-    b'ERROR: first brackets only\n',               # 59
-    b'ERROR: first brackets only\n',               # 60
+    b'ERROR: invalid input\n',                       # 56
+    b'WARNING: result truncated\n0\n',               # 57
+    b'0\n',                                          # 58
+    b'ERROR: first brackets only\n',                 # 59
+    b'ERROR: first brackets only\n',                 # 60
 ]
 
 

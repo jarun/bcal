@@ -453,7 +453,7 @@ static maxuint_t convertbyte(char *buf, int *ret)
 		*ret = 0;
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -505,7 +505,7 @@ static maxuint_t convertkib(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -552,7 +552,7 @@ static maxuint_t convertmib(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -599,7 +599,7 @@ static maxuint_t convertgib(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -646,7 +646,7 @@ static maxuint_t converttib(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -693,7 +693,7 @@ static maxuint_t convertkb(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -740,7 +740,7 @@ static maxuint_t convertmb(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -787,7 +787,7 @@ static maxuint_t convertgb(char *buf, int *ret)
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
@@ -834,7 +834,7 @@ static maxuint_t converttb(char *buf, int *ret)
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
 
 	if (minimal) {
-		printf("%s\n", getstr_u128(bytes, uint_buf));
+		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
 
