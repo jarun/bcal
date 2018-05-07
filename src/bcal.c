@@ -1051,7 +1051,7 @@ static void usage()
 {
 	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]\n\
             [expression] [N [unit]] \n\n\
-Storage conversion and expression calculator.\n\n\
+Storage expression calculator.\n\n\
 positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
              +, -, *, / operators with decimal or hex operands\n\

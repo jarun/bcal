@@ -1,7 +1,7 @@
 name: bcal
 maintainer: Arun Prakash Jana <engineerarun@gmail.com>
 license: GPLv3
-summary: Storage conversion and expression calculator.
+summary: Storage expression calculator.
 homepage: https://github.com/jarun/bcal
 commands:
   install:
