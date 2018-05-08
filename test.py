@@ -49,39 +49,40 @@ test = [
     ('./bcal', '-m', "((2giB)*1)/(2/2))"),                             # 26
     ('./bcal', '-m', "((2giB)*1)/(2/2)"),                              # 27
     ('./bcal', '-m', "(((2giB)*)2/2)"),                                # 28
-    ('./bcal', '-m', '0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111', 'b'),  # 29
-    ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),       # 30
-    ('./bcal', '-m', '340282366920938463463374607431768211455', 'b'),  # 31
-    ('./bcal', '-m', '0xffffffffffffffff', 'b'),                       # 32
-    ('./bcal', '-m', "2b / 3"),                                        # 33
-    ('./bcal', '-m', "2 kIb/((3 ) )"),                                 # 34
-    ('./bcal', '-m', "2 gIb/ - 3"),                                    # 35
-    ('./bcal', '-m', "(2) kIb/((3))"),                                 # 36
-    ('./bcal', '-m', "(2) 4 kIb/((3))"),                               # 37
-    ('./bcal', '-m', "(2) 4 kIb/((3))(2)"),                            # 38
-    ('./bcal', '-m', "2 / 3 tib   "),                                  # 39
-    ('./bcal', '-m', " 1000 "),                                        # 40
-    ('./bcal', '-m', " 0x1234mib  "),                                  # 41
-    ('./bcal', '-m', "        "),                                      # 42
-    ('./bcal', '-m', "0x18mb"),                                        # 43
-    ('./bcal', '-m', "0x18mb", "kb"),                                  # 44
-    ('./bcal', '-m', "0x18mb82"),                                      # 45
-    ('./bcal', '-m', "0x18mbc4"),                                      # 46
-    ('./bcal', '-m', "0x18mb 82"),                                     # 47
-    ('./bcal', '-m', "0x18mb", "82"),                                  # 48
+    ('./bcal', '-m', "(2giB)*2*"),                                     # 29
+    ('./bcal', '-m', '0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111', 'b'),  # 30
+    ('./bcal', '-m', '0xffffffffffffffffffffffffffffffff', 'b'),       # 31
+    ('./bcal', '-m', '340282366920938463463374607431768211455', 'b'),  # 32
+    ('./bcal', '-m', '0xffffffffffffffff', 'b'),                       # 33
+    ('./bcal', '-m', "2b / 3"),                                        # 34
+    ('./bcal', '-m', "2 kIb/((3 ) )"),                                 # 35
+    ('./bcal', '-m', "2 gIb/ - 3"),                                    # 36
+    ('./bcal', '-m', "(2) kIb/((3))"),                                 # 37
+    ('./bcal', '-m', "(2) 4 kIb/((3))"),                               # 38
+    ('./bcal', '-m', "(2) 4 kIb/((3))(2)"),                            # 39
+    ('./bcal', '-m', "2 / 3 tib   "),                                  # 40
+    ('./bcal', '-m', " 1000 "),                                        # 41
+    ('./bcal', '-m', " 0x1234mib  "),                                  # 42
+    ('./bcal', '-m', "        "),                                      # 43
+    ('./bcal', '-m', "0x18mb"),                                        # 44
+    ('./bcal', '-m', "0x18mb", "kb"),                                  # 45
+    ('./bcal', '-m', "0x18mb82"),                                      # 46
+    ('./bcal', '-m', "0x18mbc4"),                                      # 47
+    ('./bcal', '-m', "0x18mb 82"),                                     # 48
+    ('./bcal', '-m', "0x18mb", "82"),                                  # 49
 
-    ('./bcal', "-c", "0b"),                                            # 49
-    ('./bcal', "-c", "0x"),                                            # 50
-    ('./bcal', "-c", "0"),                                             # 51
-    ('./bcal', "-c", "0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),   # 52
-    ('./bcal', "-c", "0xffffffffffffffffffffffffffffffff"),            # 53
-    ('./bcal', "-c", "340282366920938463463374607431768211455"),       # 54
-    ('./bcal', "-c", "0b1111111111111111111111111111111111111111111111111111111111111111"),                                                                   # 55
-    ('./bcal', "-c", "0b111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),  # 56
-    ('./bcal', '-m', "1kib /4kb"),                                     # 57
-    ('./bcal', '-m', "0kib /4kb"),                                     # 58
-    ('./bcal', '-m', "{10+2"),                                         # 59
-    ('./bcal', '-m', "10 + 2]"),                                       # 60
+    ('./bcal', "-c", "0b"),                                            # 50
+    ('./bcal', "-c", "0x"),                                            # 51
+    ('./bcal', "-c", "0"),                                             # 52
+    ('./bcal', "-c", "0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),   # 53
+    ('./bcal', "-c", "0xffffffffffffffffffffffffffffffff"),            # 54
+    ('./bcal', "-c", "340282366920938463463374607431768211455"),       # 55
+    ('./bcal', "-c", "0b1111111111111111111111111111111111111111111111111111111111111111"),                                                                   # 56
+    ('./bcal', "-c", "0b111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),  # 57
+    ('./bcal', '-m', "1kib/ 4kb"),                                     # 58
+    ('./bcal', '-m', "0kib /4kb"),                                     # 59
+    ('./bcal', '-m', "{10+2"),                                         # 60
+    ('./bcal', '-m', "10 + 2]"),                                       # 61
 ]
 
 res = [
@@ -113,39 +114,40 @@ res = [
     b'ERROR: unbalanced expression\n',               # 26
     b'2147483648 B\n',                               # 27
     b'ERROR: invalid token\n',                       # 28
-    b'340282366920938463463374607431768211455 B\n',  # 29
+    b'ERROR: invalid token\n',                       # 29
     b'340282366920938463463374607431768211455 B\n',  # 30
     b'340282366920938463463374607431768211455 B\n',  # 31
-    b'18446744073709551615 B\n',                     # 32
-    b'WARNING: result truncated\n0 B\n',             # 33
-    b'WARNING: result truncated\n682 B\n',           # 34
-    b'ERROR: negative token\n',                      # 35
-    b'ERROR: invalid expression\n',                  # 36
-    b'WARNING: result truncated\nERROR: invalid expression\n',  # 37
+    b'340282366920938463463374607431768211455 B\n',  # 32
+    b'18446744073709551615 B\n',                     # 33
+    b'WARNING: result truncated\n0 B\n',             # 34
+    b'WARNING: result truncated\n682 B\n',           # 35
+    b'ERROR: negative token\n',                      # 36
+    b'ERROR: invalid expression\n',                  # 37
     b'WARNING: result truncated\nERROR: invalid expression\n',  # 38
-    b'ERROR: unit mismatch in /\n',                  # 39
-    b'1000 B\n',                                     # 40
-    b'4886364160 B\n',                               # 41
-    b'ERROR: invalid value\n',                       # 42
-    b'24000000 B\n',                                 # 43
-    b'ERROR: malformed input\n',                     # 44
+    b'WARNING: result truncated\nERROR: invalid expression\n',  # 39
+    b'ERROR: unit mismatch in /\n',                  # 40
+    b'1000 B\n',                                     # 41
+    b'4886364160 B\n',                               # 42
+    b'ERROR: invalid value\n',                       # 43
+    b'24000000 B\n',                                 # 44
     b'ERROR: malformed input\n',                     # 45
     b'ERROR: malformed input\n',                     # 46
     b'ERROR: malformed input\n',                     # 47
-    b'ERROR: unknown unit\n',                        # 48
+    b'ERROR: malformed input\n',                     # 48
+    b'ERROR: unknown unit\n',                        # 49
 
-    b'ERROR: invalid input\n',                       # 49
     b'ERROR: invalid input\n',                       # 50
-    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b0\n (d) 0\n (h) 0x0\n\n',  # 51
-    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 52
+    b'ERROR: invalid input\n',                       # 51
+    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b0\n (d) 0\n (h) 0x0\n\n',  # 52
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 53
     b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 54
-    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b1111111111111111111111111111111111111111111111111111111111111111\n (d) 18446744073709551615\n (h) 0xffffffffffffffff\n\n',  # 55
-    b'ERROR: invalid input\n',                       # 56
-    b'WARNING: result truncated\n0\n',               # 57
-    b'0\n',                                          # 58
-    b'ERROR: first brackets only\n',                 # 59
+    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 55
+    b'\x1b[1mBASE CONVERSION\x1b[0m\n (b) 0b1111111111111111111111111111111111111111111111111111111111111111\n (d) 18446744073709551615\n (h) 0xffffffffffffffff\n\n',  # 56
+    b'ERROR: invalid input\n',                       # 57
+    b'WARNING: result truncated\n0\n',               # 58
+    b'0\n',                                          # 59
     b'ERROR: first brackets only\n',                 # 60
+    b'ERROR: first brackets only\n',                 # 61
 ]
 
 
