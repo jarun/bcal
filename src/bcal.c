@@ -1931,28 +1931,32 @@ int main(int argc, char **argv)
 			curexpr = tmp;
 			add_history(tmp);
 
-			/* Show the last stored result */
-			if (tmp[0] == 'r' && tmp[1] == '\0') {
-				if (lastres.p[0] == '\0')
-					printf("no result stored\n");
-				else {
-					printf("r = %s ", lastres.p);
-					if (lastres.unit)
-						printf("B");
-					printf("\n");
+			if (tmp[1] == '\0') {
+				/* Show the last stored result */
+				if (tmp[0] == 'r') {
+					if (lastres.p[0] == '\0')
+						printf("no result stored\n");
+					else {
+						printf("r = %s ", lastres.p);
+						if (lastres.unit)
+							printf("B");
+						printf("\n");
+					}
+
+					free(tmp);
+					continue;
 				}
 
-				free(tmp);
-				continue;
-			}
+				if (tmp[0] == '?') {
+					free(tmp);
+					usage();
+					continue;
+				}
 
-			if (tmp[0] == 'q' && tmp[1] == '\0') {
-				free(tmp);
-				break;
-			} else if (tmp[0] == '?' && tmp[1] == '\0') {
-				free(tmp);
-				usage();
-				continue;
+				if (tmp[0] == 'q') {
+					free(tmp);
+					break;
+				}
 			}
 
 			/* Evaluate the expression */
