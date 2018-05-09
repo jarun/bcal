@@ -19,7 +19,6 @@
  */
 
 #include <ctype.h>
-#include <stdio.h>
 #include <unistd.h>
 #include <readline/history.h>
 #include <readline/readline.h>
@@ -69,26 +68,32 @@ static char float_buf[FLOAT_BUF_LEN];
 
 static int minimal;
 static int repl;
-int cur_loglevel = INFO;
 
 static Data lastres = {"\0", 0};
 
-/*
- * Custom strlen()
- */
-static size_t
-bstrlen(const char *s)
+static int cur_loglevel = INFO;
+static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
+
+static void debug_log(const char *func, int level, const char *format, ...)
 {
-	static size_t len;
-	len = 0;
+	va_list ap;
 
-	if (!s)
-		return len;
+	va_start(ap, format);
 
-	while (*s)
-		++len, ++s;
+	if (level < 0 || level > DEBUG)
+		return;
 
-	return len;
+	if (level <= cur_loglevel) {
+		if (cur_loglevel == DEBUG) {
+			fprintf(stderr, "%s(), %s: ", func, logarr[level]);
+			vfprintf(stderr, format, ap);
+		} else {
+			fprintf(stderr, "%s: ", logarr[level]);
+			vfprintf(stderr, format, ap);
+		}
+	}
+
+	va_end(ap);
 }
 
 /*
@@ -96,8 +101,7 @@ bstrlen(const char *s)
  * Always null ('\0') terminates if both src and dest are valid pointers.
  * Returns the number of bytes copied including terminating null byte.
  */
-static size_t
-bstrlcpy(char *dest, const char *src, size_t n)
+static size_t bstrlcpy(char *dest, const char *src, size_t n)
 {
 	static ulong *s, *d;
 	static size_t len, blocks;
@@ -107,7 +111,7 @@ bstrlcpy(char *dest, const char *src, size_t n)
 	if (!src || !dest || !n)
 		return 0;
 
-	len = bstrlen(src) + 1;
+	len = strlen(src) + 1;
 	if (n > len)
 		n = len;
 	else if (len > n)
@@ -192,7 +196,7 @@ static int try_bc()
 	/* parent */
 	char buffer[128] = "";
 	ret = write(pipe_pc[1], "scale=5\n", 8);
-	ret = write(pipe_pc[1], curexpr, bstrlen(curexpr));
+	ret = write(pipe_pc[1], curexpr, strlen(curexpr));
 	ret = write(pipe_pc[1], "\n", 1);
 	ret = read(pipe_cp[0], buffer, sizeof(buffer));
 
@@ -200,7 +204,7 @@ static int try_bc()
 		printf("%s", buffer);
 		bstrlcpy(lastres.p, buffer, NUM_LEN);
 		/* remove newline */
-		lastres.p[bstrlen(lastres.p) - 1] = '\0';
+		lastres.p[strlen(lastres.p) - 1] = '\0';
 		lastres.unit = 0;
 		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 		return 0;
@@ -279,18 +283,6 @@ static void printhex_u128(maxuint_t n)
 		printf("0x%llx", (ull)n);
 }
 
-#if 0
-static char *strtolower(char *buf)
-{
-	char *p = buf;
-
-	for (; *p; ++p)
-		*p = tolower(*p);
-
-	return buf;
-}
-#endif
-
 /* This function adds check for binary input to strtoul() */
 static ulong strtoul_b(char *token)
 {
@@ -298,7 +290,7 @@ static ulong strtoul_b(char *token)
 
 	/* NOTE: no NULL check here! */
 
-	if (bstrlen(token) > 2 && token[0] == '0' &&
+	if (strlen(token) > 2 && token[0] == '0' &&
 	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
@@ -313,7 +305,7 @@ static ull strtoull_b(char *token)
 
 	/* NOTE: no NULL check here! */
 
-	if (bstrlen(token) > 2 && token[0] == '0' &&
+	if (strlen(token) > 2 && token[0] == '0' &&
 	    (token[1] == 'b' || token[1] == 'B')) {
 		base = 2;
 	}
@@ -1121,7 +1113,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	}
 
 	*out = 0;
-	len = bstrlen(numstr) - 1;
+	len = strlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
 		char *pc = NULL;
 		maxuint_t r;
@@ -1367,7 +1359,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		dequeue(front, rear, &arg);
 
 		/* Check if arg is an operator */
-		if (bstrlen(arg.p) == 1 && !isdigit(arg.p[0])) {
+		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])) {
 			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
@@ -1523,7 +1515,7 @@ static void strstrip(char *s)
 	if (!s || !*s)
 		return;
 
-	int len = bstrlen(s) - 1;
+	int len = strlen(s) - 1;
 
 	if (s[len] == '\n')
 		--len;
@@ -1581,7 +1573,7 @@ static char *fixexpr(char *exp, int *unitless)
 #endif
 
 	int i = 0, j = 0;
-	char *parsed = (char *)calloc(1, 2 * bstrlen(exp) * sizeof(char));
+	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
 	char prev = '(';
 
 	log(DEBUG, "exp (%s)\n", exp);
@@ -1658,7 +1650,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (!unit) {
-		int unitchars = 0, len = bstrlen(value);
+		int unitchars = 0, len = strlen(value);
 
 		while (len) {
 			if (!isalpha(value[len - 1]))

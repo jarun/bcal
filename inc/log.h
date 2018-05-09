@@ -31,5 +31,4 @@
 #define log(level, format, ...) \
 	    debug_log(__func__, level, format, ##__VA_ARGS__)
 
-void debug_log(const char *func, int level, const char *format, ...)
-	       __attribute__((__format__(printf, 3, 4)));
+static void debug_log(const char *func, int level, const char *format, ...) __attribute__((__format__(printf, 3, 4)));
