@@ -56,7 +56,7 @@ typedef struct {
 	ulong s;
 } t_chs;
 
-static char *VERSION = "1.8";
+static char *VERSION = "1.9";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 
 static char *FAILED = "1";

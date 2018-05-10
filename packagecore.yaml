@@ -62,6 +62,13 @@ packages:
       - readline-devel
     deps:
       - readline
+  fedora28:
+    builddeps:
+      - make
+      - gcc
+      - readline-devel
+    deps:
+      - readline
   opensuse42.1:
     builddeps:
       - make

@@ -1,3 +1,15 @@
+bcal v1.9
+2018-05-10
+
+What's in?
+- REPL mode with last result stored
+- Division of an unit by another unit
+- Detect truncation due to division in expressions
+- Use `bc` to evaluate expressions that cannot be handled
+- Show storage unit (B for byte) in minimal mode
+
+-------------------------------------------------------------------------------
+
 bcal v1.8
 2018-03-12
 
