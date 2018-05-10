@@ -1519,12 +1519,12 @@ static void strstrip(char *s)
 
 	if (s[len] == '\n')
 		--len;
-	while (len >= 0 && isspace(s[len]))
+	while (len >= 0 && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
 		--len;
 	s[len + 1] = '\0';
 
 	len = 0;
-	while (s[len] && isspace(s[len]))
+	while (s[len] && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
 		++len;
 
 	if (len) {
