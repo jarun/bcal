@@ -142,7 +142,7 @@ optional arguments:
 
 #### Operational notes
 
-- **REPL mode**: `bcal` enters the REPL mode if no arguments are passed to the program. Storage unit conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
+- **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
 - **Expression**: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be divided or multiplied by positive integers.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
