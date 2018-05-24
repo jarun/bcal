@@ -362,7 +362,7 @@ static maxuint_t strtouquad(char *token, char **pch)
 
 	char *ptr;
 	maxuint_t val = 0, prevval = 0;
-	uint base = 10, multiplier, digit, bits_used = 0;
+	uint base = 10, multiplier = 0, digit, bits_used = 0;
 	uint max_bit_len = sizeof(maxuint_t) << 3;
 
 	if (token[0] == '0') {
