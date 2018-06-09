@@ -105,13 +105,12 @@ Storage expression calculator.
 positional arguments:
  expression  evaluate storage arithmetic expression
              +, -, *, / operators with decimal or hex operands
-             unit can be multiplied or divided by +ve integers
-             +, -, / work with two unit operands
+             >, < denote bitwise right and left shift operators
              Examples:
                bcal "(5kb+2mb)/3"
                bcal "5 tb / 12"
                bcal "2.5mb*3"
-               bcal "(2giB * 2) / 2kib"
+               bcal "(2giB * 2) / (2kib > 2)"
  N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
              see https://wiki.ubuntu.com/UnitsPolicy
              default unit is B (byte), case is ignored
@@ -143,7 +142,7 @@ optional arguments:
 #### Operational notes
 
 - **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
-- **Expression**: An expression must be within double quotes. Inner spaces are ignored. A unit can be added to, subtracted from or divided by another unit. A unit can be divided or multiplied by positive integers.
+- **Expression**: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
@@ -167,7 +166,7 @@ optional arguments:
        $ bcal "(5kb+2mb)/3"
        $ bcal "5 tb / 12"
        $ bcal "2.5mb*3"
-       $ bcal "(2giB * 2) / 2kib"
+       $ bcal "(2giB * 2) / (2kib > 2)"
 2. Convert storage capacity to other units and get address, LBA.
 
        $ bcal 20140115 b

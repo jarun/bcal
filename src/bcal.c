@@ -1048,13 +1048,12 @@ Storage expression calculator.\n\n\
 positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
              +, -, *, / operators with decimal or hex operands\n\
-             unit can be multiplied or divided by +ve integers\n\
-             +, -, / work with two unit operands\n\
+             >, < denote bitwise right and left shift operators\n\
              Examples:\n\
                bcal \"(5kb+2mb)/3\"\n\
                bcal \"5 tb / 12\"\n\
                bcal \"2.5mb*3\"\n\
-               bcal \"(2giB * 2) / 2kib\"\n\
+               bcal \"(2giB * 2) / (2kib > 2)\"\n\
  N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
              see https://wiki.ubuntu.com/UnitsPolicy\n\
              default unit is B (byte), case is ignored\n\
@@ -1217,10 +1216,12 @@ error:
 static int priority(char sign) /* Get the priority of operators */
 {
 	switch (sign) {
-	case '-': return 1;
-	case '+': return 2;
-	case '*': return 3;
-	case '/': return 4;
+	case '>': return 1;
+	case '<': return 2;
+	case '-': return 3;
+	case '+': return 4;
+	case '*': return 5;
+	case '/': return 6;
 	}
 
 	return 0;
@@ -1244,6 +1245,8 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '-':
 		case '*':
 		case '/':
+		case '>':
+		case '<':
 			if (token[1] != '\0') {
 				log(ERROR, "invalid token terminator\n");
 				emptystack(&op);
@@ -1378,6 +1381,24 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			raw_c.unit = 0;
 
 			switch (arg.p[0]) {
+			case '>':
+				if (raw_b.unit) {
+					log(ERROR, "unit mismatch in >\n");
+					goto error;
+				}
+
+				c = a >> b;
+				raw_c.unit = raw_a.unit;
+				break;
+			case '<':
+				if (raw_b.unit) {
+					log(ERROR, "unit mismatch in <\n");
+					goto error;
+				}
+
+				c = a << b;
+				raw_c.unit = raw_a.unit;
+				break;
 			case '+':
 				/* Check if both are units */
 				if (raw_a.unit == raw_b.unit) {
@@ -1475,16 +1496,25 @@ error:
 
 static int issign(char c)
 {
-	if (c == '+' || c == '-' || c == '*' || c == '/')
+	switch (c) {
+	case '>':
+	case '<':
+	case '+':
+	case '-':
+	case '*':
+	case '/':
 		return 1;
-
-	return 0;
+	default:
+		return 0;
+	}
 }
 
 /* Check if a char is operator or not */
 static int isoperator(char c)
 {
 	switch (c) {
+	case '>':
+	case '<':
 	case '+':
 	case '-':
 	case '*':
