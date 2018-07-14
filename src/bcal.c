@@ -1847,6 +1847,33 @@ static int evaluate(char *exp, ulong sectorsz)
 	return 0;
 }
 
+int convertbase(char *arg)
+{
+	char *pch;
+
+	strstrip(arg);
+
+	if (*arg == '-') {
+		log(ERROR, "N must be >= 0\n");
+		return -1;
+	}
+
+	maxuint_t val = strtouquad(arg, &pch);
+	if (*pch) {
+		log(ERROR, "invalid input\n");
+		return -1;
+	}
+
+	printf(" (b) ");
+	binprint(val);
+	printf("\n (d) %s\n (h) ",
+		getstr_u128(val, uint_buf));
+	printhex_u128(val);
+	printf("\n");
+
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	int opt = 0, operation = 0;
@@ -1859,27 +1886,10 @@ int main(int argc, char **argv)
 		switch (opt) {
 		case 'c':
 		{
-			char *pch;
 			operation = 1;
-
-			if (*optarg == '-') {
-				log(ERROR, "N must be >= 0\n");
-				return -1;
-			}
-
-			maxuint_t val = strtouquad(optarg, &pch);
-			if (*pch) {
-				log(ERROR, "invalid input\n");
-				return -1;
-			}
-
 			printf("\033[1mBASE CONVERSION\033[0m\n");
-			printf(" (b) ");
-			binprint(val);
-			printf("\n (d) %s\n (h) ",
-				getstr_u128(val, uint_buf));
-			printhex_u128(val);
-			printf("\n\n");
+			convertbase(optarg);
+			printf("\n");
 			break;
 		}
 		case 'f':
@@ -1962,6 +1972,12 @@ int main(int argc, char **argv)
 			curexpr = tmp;
 			add_history(tmp);
 
+			if (tmp[0] == 'c') {
+				convertbase(tmp + 1);
+				free(tmp);
+				continue;
+			}
+
 			if (tmp[1] == '\0') {
 				/* Show the last stored result */
 				if (tmp[0] == 'r') {
@@ -1999,7 +2015,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
-	/* Conversion */
+	/* Unit conversion */
 	if (argc - optind == 2)
 		if (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1)
 			return -1;

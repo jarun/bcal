@@ -49,11 +49,11 @@
 
 - evaluate arithmetic expressions involving storage units
 - convert to IEC/SI standard data storage units
-- REPL mode with the last valid result stored for reuse
+- interactive mode with the last valid result stored for reuse
 - show the address in bytes
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
-- show binary, decimal and hex representation of a number
+- base conversion to binary, decimal and hex
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
@@ -141,7 +141,7 @@ optional arguments:
 
 #### Operational notes
 
-- **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
+- **Interactive mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
 - **Expression**: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
@@ -194,6 +194,7 @@ optional arguments:
        $ bcal -c 20140115
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
+       bcal> c 20140115  // Interactive mode
 7. Help and additional information.
 
        $ man bcal
