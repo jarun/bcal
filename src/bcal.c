@@ -1400,7 +1400,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				raw_c.unit = raw_a.unit;
 				break;
 			case '+':
-				/* Check if both are units */
+				/* Check if the units match */
 				if (raw_a.unit == raw_b.unit) {
 					c = a + b;
 					if (raw_a.unit)
@@ -1411,7 +1411,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				log(ERROR, "unit mismatch in +\n");
 				goto error;
 			case '-':
-				/* Check if both are units */
+				/* Check if the units match */
 				if (raw_a.unit == raw_b.unit) {
 					if (b > a) {
 						log(ERROR, "negative result\n");
