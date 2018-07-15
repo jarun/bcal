@@ -1905,7 +1905,6 @@ int main(int argc, char **argv)
 		case 'c':
 		{
 			operation = 1;
-			printf("\033[1mBASE CONVERSION\033[0m\n");
 			convertbase(optarg);
 			printf("\n");
 			break;
