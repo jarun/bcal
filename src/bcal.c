@@ -1635,13 +1635,13 @@ static char *fixexpr(char *exp, int *unitless)
 			if (exp[i] == '<' || exp[i] == '>') { /* handle shift operators << and >> */
 				log(DEBUG, "in here\n");
 				if (prev != exp[i] && exp[i] != exp[i + 1]) {
-					log(DEBUG, "%c followed by %c\n", exp[i], exp[i + 1]);
+					log(ERROR, "invalid operator %c\n", exp[i]);
 					*unitless = 0;
 					return NULL;
 				}
 
 				if (prev == exp[i + 1]) { /* handle <<< or >>> */
-					log(DEBUG, "Invalid sequence %c%c%c\n", prev, exp[i], exp[i + 1]);
+					log(ERROR, "invalid sequence %c%c%c\n", prev, exp[i], exp[i + 1]);
 					*unitless = 0;
 					return NULL;
 				}
