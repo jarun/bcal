@@ -97,8 +97,8 @@ To uninstall, run:
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]
-            [expression] [N [unit]]
+usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d]
+            [expression] [N [unit]] [-h]
 
 Storage expression calculator.
 
@@ -116,7 +116,7 @@ positional arguments:
              N can be decimal or '0x' prefixed hex value
 
 optional arguments:
- -c N        show +ve integer N in binary, decimal and hex
+ -c N        show +ve integer N in binary, decimal, hex
  -f FORMAT   convert CHS to LBA or LBA to CHS
              formats are hyphen-separated
              LBA format:

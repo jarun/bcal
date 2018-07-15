@@ -1042,8 +1042,8 @@ static void show_basic_sizes()
 
 static void usage()
 {
-	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d] [-h]\n\
-            [expression] [N [unit]] \n\n\
+	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d]\n\
+            [expression] [N [unit]] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
@@ -1058,7 +1058,7 @@ positional arguments:\n\
              default unit is B (byte), case is ignored\n\
              N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
- -c N        show +ve integer N in binary, decimal and hex\n\
+ -c N        show +ve integer N in binary, decimal, hex\n\
  -f FORMAT   convert CHS to LBA or LBA to CHS\n\
              formats are hyphen-separated\n\
              LBA format:\n\
