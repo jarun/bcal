@@ -1047,13 +1047,12 @@ static void usage()
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expression  evaluate storage arithmetic expression\n\
-             +, -, *, / operators with decimal or hex operands\n\
-             >, < denote bitwise right and left shift operators\n\
+             +, -, *, /, >>, << with decimal/hex operands\n\
              Examples:\n\
                bcal \"(5kb+2mb)/3\"\n\
                bcal \"5 tb / 12\"\n\
                bcal \"2.5mb*3\"\n\
-               bcal \"(2giB * 2) / (2kib > 2)\"\n\
+               bcal \"(2giB * 2) / (2kib >> 2)\"\n\
  N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
              see https://wiki.ubuntu.com/UnitsPolicy\n\
              default unit is B (byte), case is ignored\n\
@@ -1383,7 +1382,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			switch (arg.p[0]) {
 			case '>':
 				if (raw_b.unit) {
-					log(ERROR, "unit mismatch in >\n");
+					log(ERROR, "unit mismatch in >>\n");
 					goto error;
 				}
 
@@ -1392,7 +1391,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				break;
 			case '<':
 				if (raw_b.unit) {
-					log(ERROR, "unit mismatch in <\n");
+					log(ERROR, "unit mismatch in <<\n");
 					goto error;
 				}
 
@@ -1633,6 +1632,24 @@ static char *fixexpr(char *exp, int *unitless)
 		     isoperator(exp[i + 1]))) ||
 		    (isalpha(exp[i]) && isoperator(exp[i + 1])) ||
 		    (isoperator(exp[i]) && (exp[i + 1] == 'r'))) {
+			if (exp[i] == '<' || exp[i] == '>') { /* handle shift operators << and >> */
+				log(DEBUG, "in here\n");
+				if (prev != exp[i] && exp[i] != exp[i + 1]) {
+					log(DEBUG, "%c followed by %c\n", exp[i], exp[i + 1]);
+					*unitless = 0;
+					return NULL;
+				}
+
+				if (prev == exp[i + 1]) { /* handle <<< or >>> */
+					log(DEBUG, "Invalid sequence %c%c%c\n", prev, exp[i], exp[i + 1]);
+					*unitless = 0;
+					return NULL;
+				}
+
+				if (exp[i] == exp[i + 1])
+					goto loop_end;
+			}
+
 			parsed[j] = exp[i];
 			++j;
 			parsed[j] = ' ';
@@ -1643,6 +1660,7 @@ static char *fixexpr(char *exp, int *unitless)
 			++j;
 		}
 
+loop_end:
 		prev = exp[i];
 		++i;
 	}

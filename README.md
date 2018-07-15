@@ -104,13 +104,12 @@ Storage expression calculator.
 
 positional arguments:
  expression  evaluate storage arithmetic expression
-             +, -, *, / operators with decimal or hex operands
-             >, < denote bitwise right and left shift operators
+             +, -, *, /, >>, << with decimal/hex operands
              Examples:
                bcal "(5kb+2mb)/3"
                bcal "5 tb / 12"
                bcal "2.5mb*3"
-               bcal "(2giB * 2) / (2kib > 2)"
+               bcal "(2giB * 2) / (2kib >> 2)"
  N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
              see https://wiki.ubuntu.com/UnitsPolicy
              default unit is B (byte), case is ignored
@@ -166,7 +165,7 @@ optional arguments:
        $ bcal "(5kb+2mb)/3"
        $ bcal "5 tb / 12"
        $ bcal "2.5mb*3"
-       $ bcal "(2giB * 2) / (2kib > 2)"
+       $ bcal "(2giB * 2) / (2kib >> 2)"
 2. Convert storage capacity to other units and get address, LBA.
 
        $ bcal 20140115 b
