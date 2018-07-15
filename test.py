@@ -83,6 +83,9 @@ test = [
     ('./bcal', '-m', "0kib /4kb"),                                     # 58
     ('./bcal', '-m', "{10+2"),                                         # 59
     ('./bcal', '-m', "10 + 2]"),                                       # 60
+    ('./bcal', '-m', "2 >>> 2"),                                       # 61
+    ('./bcal', '-m', "2 b<3"),                                         # 62
+    ('./bcal', '-m', "(2giB * 2) / (2kib >> 2)"),                      # 63
 ]
 
 res = [
@@ -148,6 +151,9 @@ res = [
     b'0\n',                                          # 58
     b'ERROR: first brackets only\n',                 # 59
     b'ERROR: first brackets only\n',                 # 60
+    b'ERROR: invalid sequence >>>\n',                # 61
+    b'ERROR: invalid operator <\n',                  # 62
+    b'8388608\n',                                    # 63
 ]
 
 
