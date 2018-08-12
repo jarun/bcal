@@ -65,7 +65,7 @@
 
 #### From a package manager
 
-- [AUR](https://aur.archlinux.org/packages/bcal/) (`pacman -S bcal`)
+- [AUR](https://aur.archlinux.org/packages/bcal/) (`yaourt -S bcal`)
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
 - [Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
