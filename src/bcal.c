@@ -197,6 +197,14 @@ static int try_bc()
 	/* parent */
 	char buffer[128] = "";
 	ret = write(pipe_pc[1], "scale=5\n", 8);
+
+	ret = write(pipe_pc[1], "last=", 5);
+	if (lastres.p[0])
+		ret = write(pipe_pc[1], lastres.p, strlen(lastres.p));
+	else
+		ret = write(pipe_pc[1], "0", 1);
+	ret = write(pipe_pc[1], "\n", 1);
+
 	ret = write(pipe_pc[1], curexpr, strlen(curexpr));
 	ret = write(pipe_pc[1], "\n", 1);
 	ret = read(pipe_cp[0], buffer, sizeof(buffer));
@@ -1964,12 +1972,14 @@ int main(int argc, char **argv)
 	log(DEBUG, "argc %d, optind %d\n", argc, optind);
 
 	if (!operation && (argc == optind)) {
-		char *tmp = NULL;
+		char *ptr, *tmp = NULL;
 		repl = 1;
 		int enters = 0;
 
 		printf("q/double Enter -> quit, ? -> help\n");
 		while ((tmp = readline("bcal> ")) != NULL) {
+			ptr = tmp;
+
 			if (tmp[0] == '\0') {
 				if (enters == 1)
 					break;
@@ -1982,18 +1992,26 @@ int main(int argc, char **argv)
 
 			strstrip(tmp);
 			if (tmp[0] == '\0') {
-				free(tmp);
+				free(ptr);
 				continue;
 			}
 
-			curexpr = tmp;
 			add_history(tmp);
 
 			if (tmp[0] == 'c') {
 				convertbase(tmp + 1);
-				free(tmp);
+				free(ptr);
 				continue;
 			}
+
+			if (tmp[0] == 'b') {
+				curexpr = tmp + 1;
+				try_bc();
+				free(ptr);
+				continue;
+			}
+
+			curexpr = tmp;
 
 			if (tmp[1] == '\0') {
 				/* Show the last stored result */
@@ -2007,18 +2025,18 @@ int main(int argc, char **argv)
 						printf("\n");
 					}
 
-					free(tmp);
+					free(ptr);
 					continue;
 				}
 
 				if (tmp[0] == '?') {
-					free(tmp);
+					free(ptr);
 					usage();
 					continue;
 				}
 
 				if (tmp[0] == 'q') {
-					free(tmp);
+					free(ptr);
 					break;
 				}
 			}
@@ -2026,7 +2044,7 @@ int main(int argc, char **argv)
 			/* Evaluate the expression */
 			evaluate(tmp, sectorsz);
 
-			free(tmp);
+			free(ptr);
 		}
 
 		return 0;
