@@ -148,7 +148,7 @@ optional arguments:
  -m          show minimal output (e.g. decimal bytes)
  -b          list sizes of basic data types in bytes
  -d          enable debug information and logs
- -h          show this help and exit
+ -h          show this help, storage sizes and exit
 ```
 
 #### Operational notes

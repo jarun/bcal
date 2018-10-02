@@ -1025,7 +1025,8 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 
 static void show_basic_sizes()
 {
-	printf("char       : %lu\n"
+	printf("\n---------------\n Storage sizes\n---------------\n"
+		"char       : %lu\n"
 		"short      : %lu\n"
 		"int        : %lu\n"
 		"long       : %lu\n"
@@ -1084,9 +1085,9 @@ optional arguments:\n\
              default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
  -s bytes    sector size [default 512]\n\
  -m          show minimal output (e.g. decimal bytes)\n\
- -b          list sizes of basic data types in bytes\n\
+ -b          \n\
  -d          enable debug information and logs\n\
- -h          show this help and exit\n\n\
+ -h          show this help, storage sizes and exit\n\n\
 Version %s\n\
 Copyright © 2016-2018 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
@@ -1953,7 +1954,6 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			show_basic_sizes();
 			break;
 		case 'd':
 			cur_loglevel = DEBUG;
@@ -1963,6 +1963,7 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 			usage();
+			show_basic_sizes();
 			return 0;
 		default:
 			usage();
