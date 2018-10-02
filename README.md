@@ -214,8 +214,8 @@ optional arguments:
 
        $ bcal -b '3.5 * 2.1 + 5.7'
        bcal> b  // Interactive mode
-       entering bc mode
-       bcal> 3.5 * 2.1 + 5.7
+       bc vars: scale = 10, ibase = 10, last = r
+       bc> 3.5 * 2.1 + 5.7
 8. Help and additional information.
 
        $ man bcal

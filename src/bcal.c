@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 #include <unistd.h>
 #include <readline/history.h>
 #include <readline/readline.h>
@@ -75,6 +76,7 @@ static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 static char *FAILED = "1";
 static char *PASSED = "\0";
 static char *curexpr = NULL;
+static char prompt[8] = "bcal> ";
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
@@ -1990,7 +1992,7 @@ int main(int argc, char **argv)
 		int enters = 0;
 
 		printf("q/double Enter -> quit, ? -> help\n");
-		while ((tmp = readline("bcal> ")) != NULL) {
+		while ((tmp = readline(prompt)) != NULL) {
 			/* Quit on double Enter */
 			if (tmp[0] == '\0') {
 				if (enters == 1) {
@@ -2036,10 +2038,11 @@ int main(int argc, char **argv)
 					continue;
 				case 'b':
 					cfg.bcmode ^= 1;
-					if (cfg.bcmode)
-						printf("entering bc mode\n");
-					else
-						printf("exiting bc mode\n");
+					if (cfg.bcmode) {
+						printf("bc vars: scale = 10, ibase = 10, last = r\n");
+						strncpy(prompt, "bc> ", 5);
+					} else
+						strncpy(prompt, "bcal> ", 7);
 
 					free(ptr);
 					continue;
