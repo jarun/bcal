@@ -40,6 +40,7 @@
 #define _ALIGNMENT_MASK 0xF
 
 typedef unsigned char bool;
+typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef unsigned long long ull;
@@ -51,14 +52,25 @@ typedef __uint128_t maxuint_t;
 typedef __uint64_t maxuint_t;
 #endif
 
+/* CHS representation */
 typedef struct {
 	ulong c;
 	ulong h;
 	ulong s;
 } t_chs;
 
+/* Settings */
+typedef struct {
+	uchar bcmode  : 1;
+	uchar minimal : 1;
+	uchar repl    : 1;
+	uchar rsvd    : 3; /* Reserved for future usage */
+	uchar loglvl  : 2;
+} settings;
+
 static char *VERSION = "1.9";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
+static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 
 static char *FAILED = "1";
 static char *PASSED = "\0";
@@ -67,14 +79,8 @@ static char *curexpr = NULL;
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
-static bool bcmode;
-static int minimal;
-static int repl;
-
 static Data lastres = {"\0", 0};
-
-static int cur_loglevel = INFO;
-static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
+static settings cfg = {0, 0, 0, 0, INFO};
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -85,8 +91,8 @@ static void debug_log(const char *func, int level, const char *format, ...)
 	if (level < 0 || level > DEBUG)
 		return;
 
-	if (level <= cur_loglevel) {
-		if (cur_loglevel == DEBUG) {
+	if (level <= cfg.loglvl) {
+		if (cfg.loglvl == DEBUG) {
 			fprintf(stderr, "%s(), %s: ", func, logarr[level]);
 			vfprintf(stderr, format, ap);
 		} else {
@@ -459,7 +465,7 @@ static maxuint_t convertbyte(char *buf, int *ret)
 	} else
 		*ret = 0;
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -511,7 +517,7 @@ static maxuint_t convertkib(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -558,7 +564,7 @@ static maxuint_t convertmib(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -605,7 +611,7 @@ static maxuint_t convertgib(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -652,7 +658,7 @@ static maxuint_t converttib(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -699,7 +705,7 @@ static maxuint_t convertkb(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -746,7 +752,7 @@ static maxuint_t convertmb(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -793,7 +799,7 @@ static maxuint_t convertgb(char *buf, int *ret)
 
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -840,7 +846,7 @@ static maxuint_t converttb(char *buf, int *ret)
 
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
 
-	if (minimal) {
+	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
 		return bytes;
 	}
@@ -1155,7 +1161,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 			break;
 
 	if (count == -1) {
-		if (minimal)
+		if (cfg.minimal)
 			log(ERROR, "unknown unit\n");
 		else
 			try_bc(NULL);
@@ -1335,7 +1341,7 @@ static int validate_div(maxuint_t dividend, maxuint_t divisor, maxuint_t quotien
 	if (divisor * quotient < dividend) {
 		log(WARNING, "result truncated\n");
 
-		if (cur_loglevel == DEBUG) {
+		if (cfg.loglvl == DEBUG) {
 			printhex_u128(dividend);
 			printf(" (dividend)\n");
 			printhex_u128(divisor);
@@ -1752,7 +1758,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 
 	log(DEBUG, "%s %s\n", value, units[count]);
 
-	if (!minimal && unit)
+	if (!cfg.minimal && unit)
 		printf("\033[1mUNIT CONVERSION\033[0m\n");
 
 	switch (count) {
@@ -1789,7 +1795,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (ret == -1) {
-		if (minimal || unit) /* For running python test cases */
+		if (cfg.minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else
 			return try_bc(NULL);
@@ -1801,7 +1807,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	lastres.unit = 1;
 	log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 
-	if (minimal)
+	if (cfg.minimal)
 		return 0;
 
 	printf("\nADDRESS\n (d) %s\n (h) ",
@@ -1856,7 +1862,7 @@ static int evaluate(char *exp, ulong sectorsz)
 		return 0;
 	}
 
-	if (!(minimal || repl))
+	if (!(cfg.minimal || cfg.repl))
 		printf("\033[1mRESULT\033[0m\n");
 
 	convertbyte(getstr_u128(bytes, uint_buf), &ret);
@@ -1870,7 +1876,7 @@ static int evaluate(char *exp, ulong sectorsz)
 	lastres.unit = 1;
 	log(DEBUG, "result2: %s %d\n", lastres.p, lastres.unit);
 
-	if (minimal)
+	if (cfg.minimal)
 		return 0;
 
 	printf("\nADDRESS\n (d) %s\n (h) ", ptr);
@@ -1949,7 +1955,7 @@ int main(int argc, char **argv)
 				log(ERROR, "invalid input\n");
 			break;
 		case 'm':
-			minimal = 1;
+			cfg.minimal = 1;
 			break;
 		case 's':
 			if (*optarg == '-') {
@@ -1961,7 +1967,7 @@ int main(int argc, char **argv)
 		case 'b':
 			return try_bc(optarg);
 		case 'd':
-			cur_loglevel = DEBUG;
+			cfg.loglvl = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
 			log(DEBUG, "maxuint_t is %lu bytes\n", sizeof(maxuint_t));
 
@@ -1980,7 +1986,7 @@ int main(int argc, char **argv)
 
 	if (!operation && (argc == optind)) {
 		char *ptr = NULL, *tmp = NULL;
-		repl = 1;
+		cfg.repl = 1;
 		int enters = 0;
 
 		printf("q/double Enter -> quit, ? -> help\n");
@@ -2029,8 +2035,8 @@ int main(int argc, char **argv)
 					free(ptr);
 					continue;
 				case 'b':
-					bcmode = !bcmode;
-					if (bcmode)
+					cfg.bcmode ^= 1;
+					if (cfg.bcmode)
 						printf("entering bc mode\n");
 					else
 						printf("exiting bc mode\n");
@@ -2058,7 +2064,7 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			if (bcmode) {
+			if (cfg.bcmode) {
 				try_bc(tmp);
 				free(ptr);
 				continue;
