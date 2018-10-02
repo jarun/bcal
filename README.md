@@ -76,7 +76,7 @@ To perform non-storage general purpose calculations, there's a switch to invoke 
 - [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
-- [Void Linux](https://github.com/voidlinux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
+- [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
 
 #### Release packages
 

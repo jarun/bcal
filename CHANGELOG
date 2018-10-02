@@ -1,3 +1,14 @@
+bcal v2.0
+2018-10-02
+
+What's in?
+- `bc` mode for general purpose calculations
+- Bitwise shift (<< and >>) operations
+- Base conversion in interactive mode
+- Prompt help
+
+-------------------------------------------------------------------------------
+
 bcal v1.9
 2018-05-21
 

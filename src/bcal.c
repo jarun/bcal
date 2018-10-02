@@ -69,7 +69,7 @@ typedef struct {
 	uchar loglvl  : 2;
 } settings;
 
-static char *VERSION = "1.9";
+static char *VERSION = "2.0";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 
