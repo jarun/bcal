@@ -152,6 +152,13 @@ optional arguments:
  -m         show minimal output (e.g. decimal bytes)
  -d         enable debug information and logs
  -h         show this help, storage sizes and exit
+
+prompt keys:
+ b          toggle bc mode
+ r          show result from last operation
+ s          show sizes of storage types
+ ?          show prompt help
+ q/double ↵ quit program
 ```
 
 #### Operational notes
@@ -172,7 +179,7 @@ optional arguments:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: scale = 10, ibase = 10. `bc` is not called in minimal output mode.
+- **bc variables**: `scale` = 10, `ibase` = 10. `last` and `r` are synced when toggling `bc` mode. `bc` is not called in minimal output mode.
 
 ### Examples
 

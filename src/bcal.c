@@ -1038,7 +1038,7 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 
 static void show_basic_sizes()
 {
-	printf("\n---------------\n Storage sizes\n---------------\n"
+	printf("---------------\n Storage sizes\n---------------\n"
 		"char       : %lu\n"
 		"short      : %lu\n"
 		"int        : %lu\n"
@@ -1061,6 +1061,16 @@ static void show_basic_sizes()
 		sizeof(float),
 		sizeof(double),
 		sizeof(long double));
+}
+
+static void prompt_help()
+{
+	printf("prompt keys:\n\
+ b          toggle bc mode\n\
+ r          show result from last operation\n\
+ s          show sizes of storage types\n\
+ ?          show prompt help\n\
+ q/double ↵ quit program\n");
 }
 
 static void usage()
@@ -1100,8 +1110,11 @@ optional arguments:\n\
  -b expr    evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\
  -d         enable debug information and logs\n\
- -h         show this help, storage sizes and exit\n\n\
-Version %s\n\
+ -h         show this help, storage sizes and exit\n\n");
+
+	prompt_help();
+
+	printf("\nVersion %s\n\
 Copyright © 2016-2018 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
@@ -1976,7 +1989,6 @@ int main(int argc, char **argv)
 			break;
 		case 'h':
 			usage();
-			show_basic_sizes();
 			return 0;
 		default:
 			usage();
@@ -2047,13 +2059,18 @@ int main(int argc, char **argv)
 					free(ptr);
 					continue;
 				case '?':
-					usage();
+					prompt_help();
 
 					free(ptr);
 					continue;
 				case 'q':
 					free(ptr);
 					return 0;
+				case 's':
+					show_basic_sizes();
+
+					free(ptr);
+					continue;
 				default:
 					printf("invalid input\n");
 					free(ptr);
