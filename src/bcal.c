@@ -67,6 +67,7 @@ static char *curexpr = NULL;
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
+static bool bcmode;
 static int minimal;
 static int repl;
 
@@ -2005,7 +2006,16 @@ int main(int argc, char **argv)
 			}
 
 			if (tmp[0] == 'b') {
-				curexpr = tmp + 1;
+				bcmode = !bcmode;
+				if (bcmode)
+					printf("entering bc mode\n");
+				else
+					printf("exiting bc mode\n");
+				continue;
+			}
+
+			if (bcmode) {
+				curexpr = tmp;
 				try_bc();
 				free(ptr);
 				continue;
