@@ -110,45 +110,45 @@ $ make strip install
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f FORMAT] [-s bytes] [-m] [-b] [-d]
-            [expression] [N [unit]] [-h]
+usage: bcal [-c N] [-f FORMAT] [-s bytes] [expr]
+            [N [unit]] [-b expr] [-m] [-d] [-h]
 
 Storage expression calculator.
 
 positional arguments:
- expression  evaluate storage arithmetic expression
-             +, -, *, /, >>, << with decimal/hex operands
-             Examples:
+ expr       evaluate storage arithmetic expression
+            +, -, *, /, >>, << with decimal/hex operands
+            Examples:
                bcal "(5kb+2mb)/3"
                bcal "5 tb / 12"
                bcal "2.5mb*3"
                bcal "(2giB * 2) / (2kib >> 2)"
- N [unit]    capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
-             see https://wiki.ubuntu.com/UnitsPolicy
-             default unit is B (byte), case is ignored
-             N can be decimal or '0x' prefixed hex value
+ N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
+            see https://wiki.ubuntu.com/UnitsPolicy
+            default unit is B (byte), case is ignored
+            N can be decimal or '0x' prefixed hex value
 
 optional arguments:
- -c N        show +ve integer N in binary, decimal, hex
- -f FORMAT   convert CHS to LBA or LBA to CHS
-             formats are hyphen-separated
-             LBA format:
+ -c N       show +ve integer N in binary, decimal, hex
+ -f FORMAT  convert CHS to LBA or LBA to CHS
+            formats are hyphen-separated
+            LBA format:
                starts with 'l':
                lLBA-MAX_HEAD-MAX_SECTOR
-             CHS format:
+            CHS format:
                starts with 'c':
                cC-H-S-MAX_HEAD-MAX_SECTOR
-             omitted values are considered 0
-             FORMAT 'c-50--0x12-' denotes:
+            omitted values are considered 0
+            FORMAT 'c-50--0x12-' denotes:
                C = 0, H = 50, S = 0, MH = 0x12, MS = 0
-             FORMAT 'l50-0x12' denotes:
+            FORMAT 'l50-0x12' denotes:
                LBA = 50, MH = 0x12, MS = 0
-             default MAX_HEAD: 16, default MAX_SECTOR: 63
- -s bytes    sector size [default 512]
- -m          show minimal output (e.g. decimal bytes)
- -b          evaluate expression in bc
- -d          enable debug information and logs
- -h          show this help, storage sizes and exit
+            default MAX_HEAD: 16, default MAX_SECTOR: 63
+ -s bytes   sector size [default 512]
+ -b expr    evaluate expression in bc
+ -m         show minimal output (e.g. decimal bytes)
+ -d         enable debug information and logs
+ -h         show this help, storage sizes and exit
 ```
 
 #### Operational notes
