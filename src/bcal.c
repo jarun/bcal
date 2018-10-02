@@ -157,16 +157,21 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 
 /*
  * Try to evaluate en expression using bc
+ * If argument is NULL, global curexpr is picked
  */
-static int try_bc()
+static int try_bc(char *expr)
 {
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2], ret;
 
-	if (!curexpr)
-		return -1;
+	if (!expr) {
+		if (curexpr)
+			expr = curexpr;
+		else
+			return -1;
+	}
 
-	log(DEBUG, "expression: \"%s\"\n", curexpr);
+	log(DEBUG, "expression: \"%s\"\n", expr);
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		printf("Could not pipe\n");
@@ -206,7 +211,7 @@ static int try_bc()
 		ret = write(pipe_pc[1], "0", 1);
 	ret = write(pipe_pc[1], "\n", 1);
 
-	ret = write(pipe_pc[1], curexpr, strlen(curexpr));
+	ret = write(pipe_pc[1], expr, strlen(expr));
 	ret = write(pipe_pc[1], "\n", 1);
 	ret = read(pipe_cp[0], buffer, sizeof(buffer));
 
@@ -1085,7 +1090,7 @@ optional arguments:\n\
              default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
  -s bytes    sector size [default 512]\n\
  -m          show minimal output (e.g. decimal bytes)\n\
- -b          \n\
+ -b          evaluate expression in bc\n\
  -d          enable debug information and logs\n\
  -h          show this help, storage sizes and exit\n\n\
 Version %s\n\
@@ -1153,7 +1158,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		if (minimal)
 			log(ERROR, "unknown unit\n");
 		else
-			try_bc();
+			try_bc(NULL);
 
 		*out = -1;
 		return 0;
@@ -1787,7 +1792,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		if (minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else
-			return try_bc();
+			return try_bc(NULL);
 
 		return -1;
 	}
@@ -1910,7 +1915,7 @@ int main(int argc, char **argv)
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
 
-	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
+	while ((opt = getopt(argc, argv, "b:c:df:hms:")) != -1) {
 		switch (opt) {
 		case 'c':
 		{
@@ -1954,7 +1959,7 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			break;
+			return try_bc(optarg);
 		case 'd':
 			cur_loglevel = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
@@ -1974,23 +1979,28 @@ int main(int argc, char **argv)
 	log(DEBUG, "argc %d, optind %d\n", argc, optind);
 
 	if (!operation && (argc == optind)) {
-		char *ptr, *tmp = NULL;
+		char *ptr = NULL, *tmp = NULL;
 		repl = 1;
 		int enters = 0;
 
 		printf("q/double Enter -> quit, ? -> help\n");
 		while ((tmp = readline("bcal> ")) != NULL) {
-			ptr = tmp;
-
+			/* Quit on double Enter */
 			if (tmp[0] == '\0') {
-				if (enters == 1)
+				if (enters == 1) {
+					free(tmp);
 					break;
+				}
 
 				++enters;
+				free(tmp);
 				continue;
 			}
 
 			enters = 0;
+
+			/* Save the original pointer from readline() */
+			ptr = tmp;
 
 			strstrip(tmp);
 			if (tmp[0] == '\0') {
@@ -1998,35 +2008,15 @@ int main(int argc, char **argv)
 				continue;
 			}
 
+			log(DEBUG, "ptr: [%s]\n", ptr);
+			log(DEBUG, "tmp: [%s]\n", ptr);
+
 			add_history(tmp);
 
-			if (tmp[0] == 'c') {
-				convertbase(tmp + 1);
-				free(ptr);
-				continue;
-			}
-
-			if (tmp[0] == 'b') {
-				bcmode = !bcmode;
-				if (bcmode)
-					printf("entering bc mode\n");
-				else
-					printf("exiting bc mode\n");
-				continue;
-			}
-
-			if (bcmode) {
-				curexpr = tmp;
-				try_bc();
-				free(ptr);
-				continue;
-			}
-
-			curexpr = tmp;
-
-			if (tmp[1] == '\0') {
-				/* Show the last stored result */
-				if (tmp[0] == 'r') {
+			if ((strlen(tmp) == 1) && tmp[1] == '\0') {
+				switch (tmp[0]) {
+				case 'r':
+					/* Show the last stored result */
 					if (lastres.p[0] == '\0')
 						printf("no result stored\n");
 					else {
@@ -2038,19 +2028,43 @@ int main(int argc, char **argv)
 
 					free(ptr);
 					continue;
-				}
+				case 'b':
+					bcmode = !bcmode;
+					if (bcmode)
+						printf("entering bc mode\n");
+					else
+						printf("exiting bc mode\n");
 
-				if (tmp[0] == '?') {
 					free(ptr);
+					continue;
+				case '?':
 					usage();
+
+					free(ptr);
+					continue;
+				case 'q':
+					free(ptr);
+					return 0;
+				default:
+					printf("invalid input\n");
+					free(ptr);
 					continue;
 				}
-
-				if (tmp[0] == 'q') {
-					free(ptr);
-					break;
-				}
 			}
+
+			if (tmp[0] == 'c') {
+				convertbase(tmp + 1);
+				free(ptr);
+				continue;
+			}
+
+			if (bcmode) {
+				try_bc(tmp);
+				free(ptr);
+				continue;
+			}
+
+			curexpr = tmp;
 
 			/* Evaluate the expression */
 			evaluate(tmp, sectorsz);

@@ -146,7 +146,7 @@ optional arguments:
              default MAX_HEAD: 16, default MAX_SECTOR: 63
  -s bytes    sector size [default 512]
  -m          show minimal output (e.g. decimal bytes)
- -b          list sizes of basic data types in bytes
+ -b          evaluate expression in bc
  -d          enable debug information and logs
  -h          show this help, storage sizes and exit
 ```
