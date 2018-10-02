@@ -1075,37 +1075,20 @@ static void prompt_help()
 
 static void usage()
 {
-	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [expr]\n\
+	printf("usage: bcal [-c N] [-f loc] [-s bytes] [expr]\n\
             [N [unit]] [-b [expr]] [-m] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
- expr       evaluate storage arithmetic expression\n\
+ expr       expression to evaluate; supported operators:\n\
             +, -, *, /, >>, << with decimal/hex operands\n\
-            Examples:\n\
-               bcal \"(5kb+2mb)/3\"\n\
-               bcal \"5 tb / 12\"\n\
-               bcal \"2.5mb*3\"\n\
-               bcal \"(2giB * 2) / (2kib >> 2)\"\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
             see https://wiki.ubuntu.com/UnitsPolicy\n\
             default unit is B (byte), case is ignored\n\
             N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
  -c N       show +ve integer N in binary, decimal, hex\n\
- -f FORMAT  convert CHS to LBA or LBA to CHS\n\
-            formats are hyphen-separated\n\
-            LBA format:\n\
-               starts with 'l':\n\
-               lLBA-MAX_HEAD-MAX_SECTOR\n\
-            CHS format:\n\
-               starts with 'c':\n\
-               cC-H-S-MAX_HEAD-MAX_SECTOR\n\
-            omitted values are considered 0\n\
-            FORMAT 'c-50--0x12-' denotes:\n\
-               C = 0, H = 50, S = 0, MH = 0x12, MS = 0\n\
-            FORMAT 'l50-0x12' denotes:\n\
-               LBA = 50, MH = 0x12, MS = 0\n\
-            default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
+ -f loc     convert CHS to LBA or LBA to CHS\n\
+            refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
  -b [expr]  enter bc mode or evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\

@@ -113,19 +113,14 @@ $ make strip install
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f FORMAT] [-s bytes] [expr]
+usage: bcal [-c N] [-f loc] [-s bytes] [expr]
             [N [unit]] [-b [expr]] [-m] [-d] [-h]
 
 Storage expression calculator.
 
 positional arguments:
- expr       evaluate storage arithmetic expression
+ expr       expression to evaluate; supported operators:
             +, -, *, /, >>, << with decimal/hex operands
-            Examples:
-               bcal "(5kb+2mb)/3"
-               bcal "5 tb / 12"
-               bcal "2.5mb*3"
-               bcal "(2giB * 2) / (2kib >> 2)"
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
             see https://wiki.ubuntu.com/UnitsPolicy
             default unit is B (byte), case is ignored
@@ -133,20 +128,8 @@ positional arguments:
 
 optional arguments:
  -c N       show +ve integer N in binary, decimal, hex
- -f FORMAT  convert CHS to LBA or LBA to CHS
-            formats are hyphen-separated
-            LBA format:
-               starts with 'l':
-               lLBA-MAX_HEAD-MAX_SECTOR
-            CHS format:
-               starts with 'c':
-               cC-H-S-MAX_HEAD-MAX_SECTOR
-            omitted values are considered 0
-            FORMAT 'c-50--0x12-' denotes:
-               C = 0, H = 50, S = 0, MH = 0x12, MS = 0
-            FORMAT 'l50-0x12' denotes:
-               LBA = 50, MH = 0x12, MS = 0
-            default MAX_HEAD: 16, default MAX_SECTOR: 63
+ -f loc     convert CHS to LBA or LBA to CHS
+            refer to the operational notes in man page
  -s bytes   sector size [default 512]
  -b [expr]  enter bc mode or evaluate expression in bc
  -m         show minimal output (e.g. decimal bytes)
@@ -175,6 +158,9 @@ prompt keys:
   - CHS: `cC-H-S-MAX_HEAD-MAX_SECTOR` [NOTE: CHS starts with `c` (case ignored)]
   - Format conversion arguments must be hyphen separated.
   - Any unspecified value, including the one preceding the first `-` to the one following the last `-`, is considered `0` (zero).
+  - Examples:
+    - `c-50--0x12-` -> C = 0, H = 50, S = 0, MH = 0x12, MS = 0
+    - `l50-0x12` -> LBA = 50, MH = 0x12, MS = 0
 - **Default values**:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)

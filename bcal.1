@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Storage expression calculator.
 .SH SYNOPSIS
-.B bcal [-c N] [-f FORMAT] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-d] [-h]
+.B bcal [-c N] [-f loc] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc. It invokes GNU \fBbc\fR for non-storage expressions.
@@ -53,6 +53,9 @@ Refer to:
   - CHS: 'cC-H-S-MAX_HEAD-MAX_SECTOR' [NOTE: CHS starts with 'c' (case ignored)]
   - Format conversion arguments must be hyphen separated.
   - Any unspecified value, including the one preceding the first '-' to the one following the last '-', is considered '0' (zero).
+  - Examples:
+    - 'c-50--0x12-' -> C = 0, H = 50, S = 0, MH = 0x12, MS = 0
+    - 'l50-0x12' -> LBA = 50, MH = 0x12, MS = 0
 .PP
 .IP 9. 4
 \fBDefault values\fR:
@@ -67,14 +70,8 @@ Refer to:
 .BI "-c=" N
 Show decimal, binary and hex representation of positive integer \fIN\fR.
 .TP
-.BI "-f=" FORMAT
-Convert CHS to LBA or LBA to CHS. \fIFORMAT\fR is hyphen-separated representation of LBA or CHS.
-
-LBA: lLBA-MAX_HEAD-MAX_SECTOR (starts with 'l')
-.br
-CHS: cC-H-S-MAX_HEAD-MAX_SECTOR (starts with 'c')
-
-Omitted values, (other than MAX_HEAD and MAX_SECTOR) are considered 0. Default MAX_HEAD: 16, default MAX_SECTOR: 63.
+.BI "-f=" loc
+Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS. Please refer to the \fBOperational Notes\fR section for more details.
 .TP
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.
