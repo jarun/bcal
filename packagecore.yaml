@@ -34,6 +34,13 @@ packages:
       - readline-devel
     deps:
       - readline
+  centos7.4:
+    builddeps:
+      - make
+      - gcc
+      - readline-devel
+    deps:
+      - readline
   debian9:
     builddeps:
       - make
@@ -90,14 +97,14 @@ packages:
       - readline-devel
     deps:
       - readline
-  ubuntu16.04:
+  ubuntu14.04:
     builddeps:
       - make
       - gcc
       - libreadline6-dev
     deps:
       - libreadline6
-  ubuntu17.10:
+  ubuntu16.04:
     builddeps:
       - make
       - gcc
