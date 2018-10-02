@@ -114,7 +114,7 @@ $ make strip install
 
 ```
 usage: bcal [-c N] [-f FORMAT] [-s bytes] [expr]
-            [N [unit]] [-b expr] [-m] [-d] [-h]
+            [N [unit]] [-b [expr]] [-m] [-d] [-h]
 
 Storage expression calculator.
 
@@ -148,7 +148,7 @@ optional arguments:
                LBA = 50, MH = 0x12, MS = 0
             default MAX_HEAD: 16, default MAX_SECTOR: 63
  -s bytes   sector size [default 512]
- -b expr    evaluate expression in bc
+ -b [expr]  enter bc mode or evaluate expression in bc
  -m         show minimal output (e.g. decimal bytes)
  -d         enable debug information and logs
  -h         show this help, storage sizes and exit

@@ -1076,7 +1076,7 @@ static void prompt_help()
 static void usage()
 {
 	printf("usage: bcal [-c N] [-f FORMAT] [-s bytes] [expr]\n\
-            [N [unit]] [-b expr] [-m] [-d] [-h]\n\n\
+            [N [unit]] [-b [expr]] [-m] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expr       evaluate storage arithmetic expression\n\
@@ -1107,7 +1107,7 @@ optional arguments:\n\
                LBA = 50, MH = 0x12, MS = 0\n\
             default MAX_HEAD: 16, default MAX_SECTOR: 63\n\
  -s bytes   sector size [default 512]\n\
- -b expr    evaluate expression in bc\n\
+ -b [expr]  enter bc mode or evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\
  -d         enable debug information and logs\n\
  -h         show this help, storage sizes and exit\n\n");
@@ -1936,7 +1936,7 @@ int main(int argc, char **argv)
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
 
-	while ((opt = getopt(argc, argv, "b:c:df:hms:")) != -1) {
+	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
 		switch (opt) {
 		case 'c':
 		{
@@ -1980,7 +1980,9 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			return try_bc(optarg);
+			cfg.bcmode = 1;
+			strncpy(prompt, "bc> ", 5);
+			break;
 		case 'd':
 			cfg.loglvl = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
@@ -1991,6 +1993,7 @@ int main(int argc, char **argv)
 			usage();
 			return 0;
 		default:
+			log(ERROR, "invalid option \'%c\'\n\n", (char)optopt);
 			usage();
 			return -1;
 		}
@@ -2108,8 +2111,12 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
-		curexpr = argv[optind];
-		return evaluate(argv[optind], sectorsz);
+		if (cfg.bcmode)
+			return try_bc(argv[optind]);
+		else {
+			curexpr = argv[optind];
+			return evaluate(argv[optind], sectorsz);
+		}
 	}
 
 	return -1;

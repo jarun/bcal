@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Storage expression calculator.
 .SH SYNOPSIS
-.B bcal [-c N] [-f FORMAT] [-s bytes] [expr] [N [unit]] [-b expr] [-m] [-d] [-h]
+.B bcal [-c N] [-f FORMAT] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc. It invokes GNU \fBbc\fR for non-storage expressions.
@@ -79,8 +79,8 @@ Omitted values, (other than MAX_HEAD and MAX_SECTOR) are considered 0. Default M
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.
 .TP
-.BI "-b=" expr
-Evaluate expression in bc.
+.BI "-b=" [expr]
+Start in \fIbc\fR mode. If expression is provided, evaluate in \fIbc\fR and quit.
 .TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
