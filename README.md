@@ -21,6 +21,8 @@
 
 `bcal` (*Byte CALculator*) is a command-line utility for storage, hardware and firmware developers who deal with storage-specific numerical calculations, expressions, unit conversions or address calculations frequently. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
 
+To perform non-storage general purpose calculations, there's a switch to invoke `bc`.
+
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
 *Love smart and efficient utilities? Explore [my repositories](https://github.com/jarun?tab=repositories). Buy me a cup of coffee if they help you.*
@@ -56,6 +58,7 @@
 - convert CHS to LBA and *vice versa*
 - base conversion to binary, decimal and hex
 - custom sector size, max heads/cylinder and max sectors/track
+- perform general purpose calculations (using bc)
 - minimal dependencies
 
 ### Installation
@@ -207,7 +210,13 @@ optional arguments:
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
        bcal> c 20140115  // Interactive mode
-7. Help and additional information.
+7. Invoke `bc`.
+
+       $ bcal -b '3.5 * 2.1 + 5.7'
+       bcal> b  // Interactive mode
+       entering bc mode
+       bcal> 3.5 * 2.1 + 5.7
+8. Help and additional information.
 
        $ man bcal
        $ bcal -h

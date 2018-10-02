@@ -17,6 +17,7 @@ bcal \- Storage expression calculator.
   * convert CHS to LBA and vice versa
   * base conversion to binary, decimal and hex
   * custom sector size, max heads/cylinder and max sectors/track
+  * perform general purpose calculations (using bc)
   * minimal dependencies
 .PP
 \fBbcal\fR follows Ubuntu's standard unit conversion and notation policy. Only 64-bit operating systems are supported.
@@ -153,6 +154,18 @@ Show binary, decimal and hex representations of a number.
 .B $ bcal -c 0b1001100110101000001010011
 .B $ bcal -c 0x1335053
 .B bcal> c 20140115  // Interactive mode
+.EE
+.PP
+.IP 7. 4
+Invoke bc.
+.PP
+.EX
+.IP
+.B $ bcal -b '3.5 * 2.1 + 5.7'
+.B bcal> b  // Interactive mode
+.B entering bc mode
+.B bcal> 3.5 * 2.1 + 5.7
+.EE
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>
 .SH HOME
