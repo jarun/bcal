@@ -65,7 +65,7 @@ To perform non-storage general purpose calculations, there's a switch to invoke 
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline. It tries GNU `bc` for expressions it cannot resolve.
+`bcal` is written in C and depends on standard libc and libreadline. It invokes GNU `bc` for non-storage expressions.
 
 #### From a package manager
 
