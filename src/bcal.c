@@ -208,7 +208,7 @@ static int try_bc(char *expr)
 
 	/* parent */
 	char buffer[128] = "";
-	ret = write(pipe_pc[1], "scale=5\n", 8);
+	ret = write(pipe_pc[1], "scale=10\n", 9);
 
 	ret = write(pipe_pc[1], "last=", 5);
 	if (lastres.p[0])

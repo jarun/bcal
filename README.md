@@ -169,7 +169,7 @@ optional arguments:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: scale = 5, ibase = 10. `bc` is not called in minimal output mode.
+- **bc variables**: scale = 10, ibase = 10. `bc` is not called in minimal output mode.
 
 ### Examples
 
