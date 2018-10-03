@@ -1652,7 +1652,6 @@ static char *fixexpr(char *exp, int *unitless)
 		    (isalpha(exp[i]) && isoperator(exp[i + 1])) ||
 		    (isoperator(exp[i]) && (exp[i + 1] == 'r'))) {
 			if (exp[i] == '<' || exp[i] == '>') { /* handle shift operators << and >> */
-				log(DEBUG, "in here\n");
 				if (prev != exp[i] && exp[i] != exp[i + 1]) {
 					log(ERROR, "invalid operator %c\n", exp[i]);
 					*unitless = 0;
