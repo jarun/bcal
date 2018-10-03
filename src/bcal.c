@@ -1252,11 +1252,12 @@ static int priority(char sign) /* Get the priority of operators, higher priprity
 	case '|': return 1;
 	case '^': return 2;
 	case '&': return 3;
-	case '>': return 4;
+	case '>':
 	case '<': return 4;
-	case '-': return 5;
+	case '-':
 	case '+': return 5;
-	case '/': return 6;
+	case '%':
+	case '/':
 	case '*': return 6;
 	}
 
@@ -1281,6 +1282,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '-':
 		case '*':
 		case '/':
+		case '%':
 		case '>':
 		case '<':
 		case '&':
@@ -1496,11 +1498,12 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 
 				if (raw_a.unit && raw_b.unit) {
 					c = a / b;
-					raw_c.unit = 0;
 
 					validate_div(a, b, c);
 					break;
-				} else if (!raw_b.unit) {
+				}
+
+				if (!raw_b.unit) {
 					c = a / b;
 					if (raw_a.unit)
 						raw_c.unit = 1;
@@ -1510,6 +1513,19 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 				}
 
 				log(ERROR, "unit mismatch in /\n");
+				goto error;
+			case '%':
+				if (b == 0) {
+					log(ERROR, "division by 0\n");
+					goto error;
+				}
+
+				if (!(raw_a.unit || raw_b.unit)) {
+					c = a % b;
+					break;
+				}
+
+				log(ERROR, "unit mismatch in modulo\n");
 				goto error;
 			}
 
@@ -1552,6 +1568,7 @@ static int issign(char c)
 	case '-':
 	case '*':
 	case '/':
+	case '%':
 	case '>':
 	case '<':
 	case '&':
@@ -1571,6 +1588,7 @@ static int isoperator(char c)
 	case '-':
 	case '*':
 	case '/':
+	case '%':
 	case '>':
 	case '<':
 	case '&':
