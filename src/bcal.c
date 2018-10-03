@@ -182,7 +182,7 @@ static int try_bc(char *expr)
 	log(DEBUG, "expression: \"%s\"\n", expr);
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
-		printf("Could not pipe\n");
+		log(ERROR, "pipe()!\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -1079,8 +1079,7 @@ static void usage()
             [N [unit]] [-b [expr]] [-m] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
- expr       expression to evaluate; supported operators:\n\
-            +, -, *, /, >>, << with decimal/hex operands\n\
+ expr       expression in decimal/hex operands\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
             see https://wiki.ubuntu.com/UnitsPolicy\n\
             default unit is B (byte), case is ignored\n\
@@ -1234,12 +1233,15 @@ error:
 static int priority(char sign) /* Get the priority of operators */
 {
 	switch (sign) {
-	case '>': return 1;
-	case '<': return 2;
-	case '-': return 3;
-	case '+': return 4;
-	case '*': return 5;
-	case '/': return 6;
+	case '|': return 1;
+	case '^': return 2;
+	case '&': return 3;
+	case '>': return 4;
+	case '<': return 5;
+	case '-': return 6;
+	case '+': return 7;
+	case '*': return 8;
+	case '/': return 9;
 	}
 
 	return 0;
@@ -1265,6 +1267,9 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '/':
 		case '>':
 		case '<':
+		case '&':
+		case '|':
+		case '^':
 			if (token[1] != '\0') {
 				log(ERROR, "invalid token terminator\n");
 				emptystack(&op);
@@ -1400,33 +1405,45 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 
 			switch (arg.p[0]) {
 			case '>':
-				if (raw_b.unit) {
-					log(ERROR, "unit mismatch in >>\n");
-					goto error;
-				}
-
-				c = a >> b;
-				raw_c.unit = raw_a.unit;
-				break;
 			case '<':
 				if (raw_b.unit) {
-					log(ERROR, "unit mismatch in <<\n");
+					log(ERROR, "unit mismatch in %c%c\n", arg.p[0], arg.p[0]);
 					goto error;
 				}
 
-				c = a << b;
+				if (arg.p[0] == '>')
+					c = a >> b;
+				else
+					c = a << b;
 				raw_c.unit = raw_a.unit;
 				break;
 			case '+':
+			case '&':
+			case '|':
+			case '^':
 				/* Check if the units match */
 				if (raw_a.unit == raw_b.unit) {
-					c = a + b;
+					switch (arg.p[0]) {
+					case '+':
+						c = a + b;
+						break;
+					case '&':
+						c = a & b;
+						break;
+					case '|':
+						c = a | b;
+						break;
+					case '^':
+						c = a ^ b;
+						break;
+					}
+
 					if (raw_a.unit)
 						raw_c.unit = 1;
 					break;
 				}
 
-				log(ERROR, "unit mismatch in +\n");
+				log(ERROR, "unit mismatch in %c\n", arg.p[0]);
 				goto error;
 			case '-':
 				/* Check if the units match */
@@ -1486,7 +1503,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 			push(&est, raw_c);
 
 		} else {
-			log(DEBUG, "in else (%s)\n", arg.p);
+			log(DEBUG, "pushing (%s)\n", arg.p);
 			push(&est, arg);
 		}
 	}
@@ -1515,12 +1532,15 @@ error:
 static int issign(char c)
 {
 	switch (c) {
-	case '>':
-	case '<':
 	case '+':
 	case '-':
 	case '*':
 	case '/':
+	case '>':
+	case '<':
+	case '&':
+	case '|':
+	case '^':
 		return 1;
 	default:
 		return 0;
@@ -1531,12 +1551,15 @@ static int issign(char c)
 static int isoperator(char c)
 {
 	switch (c) {
-	case '>':
-	case '<':
 	case '+':
 	case '-':
 	case '*':
 	case '/':
+	case '>':
+	case '<':
+	case '&':
+	case '|':
+	case '^':
 	case '(':
 	case ')': return 1;
 	default: return 0;

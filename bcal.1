@@ -30,7 +30,7 @@ Refer to:
 \fBInteractive mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
 .PP
 .IP 2. 4
-\fBExpression\fR: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored.
+\fBExpression\fR: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: +, -, *, /, C bitwise operators (other than ~).
 .PP
 .IP 3. 4
 \fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
