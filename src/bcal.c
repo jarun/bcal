@@ -171,6 +171,7 @@ static int try_bc(char *expr)
 {
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2], ret;
+	size_t len, count = 0;
 
 	if (!expr) {
 		if (curexpr)
@@ -225,9 +226,21 @@ static int try_bc(char *expr)
 
 	if (buffer[0] != '(') {
 		printf("%s", buffer);
-		bstrlcpy(lastres.p, buffer, NUM_LEN);
-		/* remove newline */
-		lastres.p[strlen(lastres.p) - 1] = '\0';
+		len = bstrlcpy(lastres.p, buffer, NUM_LEN);
+
+		/* remove newline appended at the end of result by bc */
+		len -= 2;
+		lastres.p[len] = '\0';
+
+		/* Trim the decimal part, if any */
+		while (count < len) {
+			if (lastres.p[count] == '.') {
+				lastres.p[count] = '\0';
+				break;
+			}
+
+			++count;
+		}
 		lastres.unit = 0;
 		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 		return 0;
