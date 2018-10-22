@@ -1946,10 +1946,18 @@ int convertbase(char *arg)
 
 	strstrip(arg);
 
+	if (*arg == '\0') {
+		log(ERROR, "empty input\n");
+		return -1;
+	}
+
 	if (*arg == '-') {
 		log(ERROR, "N must be >= 0\n");
 		return -1;
 	}
+
+	if (cfg.repl && arg[0] == 'r' && arg[1] == '\0')
+		arg = lastres.p;
 
 	maxuint_t val = strtouquad(arg, &pch);
 	if (*pch) {
