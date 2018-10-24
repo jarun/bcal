@@ -1142,6 +1142,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		return 0;
 	}
 
+	log(DEBUG, "numstr: %s\n", numstr);
 	*out = 0;
 	len = strlen(numstr) - 1;
 	if (isdigit(numstr[len])) {
@@ -1164,6 +1165,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		--len;
 
 	punit = numstr + len + 1;
+	log(DEBUG, "punit: %s\n", punit);
 
 	count = ARRAY_SIZE(units);
 	while (--count >= 0)
@@ -1272,6 +1274,10 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 	Data tokenData = {"\0", 0};
 	int balanced = 0;
 	Data ct;
+	bool next = TRUE;
+
+	log(DEBUG, "exp: %s\n", exp);
+	log(DEBUG, "token: %s\n", token);
 
 	while (token) {
 		/* Copy argument to string part of the structure */
@@ -1329,11 +1335,27 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 			enqueue(resf, resr, lastres);
 			break;
 		default:
+			/*
+			 * Check if unit is specified
+			 * This also guards against a case of 0xn b
+			 */
+			token = strtok(NULL, " ");
+			if (token && token[0] == 'b' && token[1] == '\0') {
+				tokenData.unit = 1;
+				log(DEBUG, "unit found\n");
+			} else
+				next = FALSE;
+
 			/* Enqueue operands */
 			enqueue(resf, resr, tokenData);
 		}
 
-		token = strtok(NULL, " ");
+		if (next)
+			token = strtok(NULL, " ");
+		else
+			next = TRUE;
+
+		log(DEBUG, "token: %s\n", token);
 	}
 
 	while (!isempty(op)) {
@@ -1649,7 +1671,8 @@ static void removeinnerspaces(char *s)
 	char *p = s;
 
 	while (*s != '\0') {
-		if (!isspace(*s)) {
+		/* We should not combine 0xn b*/
+		if (!isspace(*s) || (*(s + 1) == 'b')) {
 			*p = *s;
 			++p;
 		}
@@ -1891,6 +1914,8 @@ static int evaluate(char *exp, ulong sectorsz)
 	queue *front = NULL, *rear = NULL;
 	char *expr = fixexpr(exp, &ret);  /* Make parsing compatible */
 	char *ptr;
+
+	log(DEBUG, "expr: %s\n", expr);
 
 	if (expr == NULL) {
 		if (ret)
