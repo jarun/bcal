@@ -19,9 +19,9 @@
 <a href="https://asciinema.org/a/168719"><img src="https://asciinema.org/a/168719.png" alt="bcal_asciicast" width="600"/></a>
 </p>
 
-`bcal` (*Byte CALculator*) is a command-line utility for storage, hardware and firmware developers who deal with storage-specific numerical calculations, expressions, unit conversions or address calculations frequently. If you are one and can't calculate the hex address offset for (512 - 16) MiB immediately, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set, `bcal` is for you.
+`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expressions, unit conversions or address calculations. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
 
-To perform non-storage general purpose calculations, there's a switch to invoke [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html).
+It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations.
 
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
@@ -51,6 +51,7 @@ To perform non-storage general purpose calculations, there's a switch to invoke 
 ### Features
 
 - evaluate arithmetic expressions involving storage units
+- perform general purpose calculations (using bc)
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse
 - show the address in bytes
@@ -58,7 +59,6 @@ To perform non-storage general purpose calculations, there's a switch to invoke 
 - convert CHS to LBA and *vice versa*
 - base conversion to binary, decimal and hex
 - custom sector size, max heads/cylinder and max sectors/track
-- perform general purpose calculations (using bc)
 - minimal dependencies
 
 ### Installation
