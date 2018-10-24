@@ -1132,8 +1132,8 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	/* Data is a C structure containing a string p and a char
 	 * indicating if the string is a unit or a plain number
 	 */
-	char *numstr = bunit.p, *punit;
-	int len, count;
+	char *numstr = bunit.p, *punit = NULL;
+	int  count;
 	maxfloat_t byte_metric = 0;
 
 	if (numstr == NULL || *numstr == '\0') {
@@ -1144,27 +1144,16 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 
 	log(DEBUG, "numstr: %s\n", numstr);
 	*out = 0;
-	len = strlen(numstr) - 1;
-	if (isdigit(numstr[len])) {
-		char *pc = NULL;
-		maxuint_t r;
 
-		/* ensure this is not the result of a previous operation */
-		if (*isunit != 1)
-			*isunit = 0;
-		r = strtoull(numstr, &pc, 0);
-		if (*numstr != '\0' && *pc == '\0')
-			return r;
+	/* ensure this is not the result of a previous operation */
+	if (*isunit != 1)
+		*isunit = 0;
 
-		log(ERROR, "invalid token: %s\n", pc);
-		*out = -1;
-		return 0;
-	}
+	byte_metric = strtold(numstr, &punit);
+	log(DEBUG, "byte_metric: %Lf\n", byte_metric);
+	if (*numstr != '\0' && *punit == '\0')
+		return (maxuint_t)byte_metric;
 
-	while (isalpha(numstr[len]))
-		--len;
-
-	punit = numstr + len + 1;
 	log(DEBUG, "punit: %s\n", punit);
 
 	count = ARRAY_SIZE(units);
@@ -1183,66 +1172,31 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	}
 
 	*isunit = 1;
-	*punit = '\0';
 
 	switch (count) {
-	case 0: {
-		maxuint_t bytes;
-		bytes = (maxuint_t)strtold(numstr, &punit);
-		if (*punit)
-			goto error;
-		return bytes;
-		}
+	case 0:
+		return byte_metric;
 	case 1: /* Kibibyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * 1024);
 	case 2: /* Mebibyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * (1 << 20));
 	case 3: /* Gibibyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * (1 << 30));
 	case 4: /* Tebibyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * ((maxuint_t)1 << 40));
 	case 5: /* Kilobyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * 1000);
 	case 6: /* Megabyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * 1000000);
 	case 7: /* Gigabyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * 1000000000);
 	case 8: /* Terabyte */
-		byte_metric = strtold(numstr, &punit);
-		if (*punit)
-			goto error;
 		return (maxuint_t)(byte_metric * 1000000000000);
 	default:
 		log(ERROR, "unknown unit\n");
 		*out = -1;
 		return 0;
 	}
-
-error:
-	log(ERROR, "malformed input\n");
-	*out = -1;
-	return 0;
 }
 
 /* Get the priority of operators.
