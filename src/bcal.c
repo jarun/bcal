@@ -1105,7 +1105,7 @@ optional arguments:\n\
  -b [expr]  enter bc mode or evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\
  -d         enable debug information and logs\n\
- -h         show this help, storage sizes and exit\n\n");
+ -h         show this help\n\n");
 
 	prompt_help();
 

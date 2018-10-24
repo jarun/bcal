@@ -133,7 +133,7 @@ optional arguments:
  -b [expr]  enter bc mode or evaluate expression in bc
  -m         show minimal output (e.g. decimal bytes)
  -d         enable debug information and logs
- -h         show this help, storage sizes and exit
+ -h         show this help
 
 prompt keys:
  b          toggle bc mode
