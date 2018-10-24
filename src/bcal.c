@@ -1225,10 +1225,9 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 {
 	stack *op = NULL;  /* Operator Stack */
 	char *token = strtok(exp, " ");
-	Data tokenData = {"\0", 0};
+	Data tokenData = {"\0", 0}, ct;
 	int balanced = 0;
-	Data ct;
-	bool next = TRUE;
+	bool tokenize = TRUE;
 
 	log(DEBUG, "exp: %s\n", exp);
 	log(DEBUG, "token: %s\n", token);
@@ -1298,16 +1297,19 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 				tokenData.unit = 1;
 				log(DEBUG, "unit found\n");
 			} else
-				next = FALSE;
+				tokenize = FALSE; /* We already toknized here */
 
 			/* Enqueue operands */
+            log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
 			enqueue(resf, resr, tokenData);
+            if (tokenize)
+                tokenData.unit = 0;
 		}
 
-		if (next)
+		if (tokenize)
 			token = strtok(NULL, " ");
 		else
-			next = TRUE;
+			tokenize = TRUE;
 
 		log(DEBUG, "token: %s\n", token);
 	}
@@ -1507,11 +1509,13 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 
 			/* Convert to string */
 			bstrlcpy(raw_c.p, getstr_u128(c, uint_buf), NUM_LEN);
+			log(DEBUG, "c: %s unit: %d\n", raw_c.p, raw_c.unit);
+
 			/* Push to stack */
 			push(&est, raw_c);
 
 		} else {
-			log(DEBUG, "pushing (%s)\n", arg.p);
+			log(DEBUG, "pushing (%s %d)\n", arg.p, arg.unit);
 			push(&est, arg);
 		}
 	}
