@@ -39,11 +39,13 @@ install:
         pip3 install logilab-common;
         pip3 install pytest;
     fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [[ "$CC" == "clang" ]]; then brew update; brew install llvm; export PATH="/usr/local/opt/llvm/bin:$PATH"; fi; fi
 
 script:
   - make clean; make strip;
   - pytest -p no:cacheprovider ./test.py;
   - make clean;
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [[ "$CC" == "clang" ]]; then clang-tidy **/*.h **/*.c -- -Iinc; fi; fi
 
 before_deploy:
   - cd ..
