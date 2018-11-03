@@ -44,4 +44,6 @@ strip: bcal
 clean:
 	-rm -f bcal
 
+skip: ;
+
 .PHONY: bcal all x86 distclean install uninstall strip clean
