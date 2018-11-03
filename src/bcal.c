@@ -18,8 +18,9 @@
  * along with bcal.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
+#include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <readline/history.h>
@@ -88,10 +89,10 @@ static void debug_log(const char *func, int level, const char *format, ...)
 {
 	va_list ap;
 
-	va_start(ap, format);
-
 	if (level < 0 || level > DEBUG)
 		return;
+
+	va_start(ap, format);
 
 	if (level <= cfg.loglvl) {
 		if (cfg.loglvl == DEBUG) {
@@ -210,19 +211,54 @@ static int try_bc(char *expr)
 	}
 
 	/* parent */
-	char buffer[128] = "";
-	ret = write(pipe_pc[1], "scale=10\n", 9);
+	if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
+		log(ERROR, "write(1)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
 
-	ret = write(pipe_pc[1], "last=", 5);
-	if (lastres.p[0])
-		ret = write(pipe_pc[1], lastres.p, strlen(lastres.p));
-	else
-		ret = write(pipe_pc[1], "0", 1);
-	ret = write(pipe_pc[1], "\n", 1);
+	if (write(pipe_pc[1], "last=", 5) != 5) {
+		log(ERROR, "write(2)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
 
-	ret = write(pipe_pc[1], expr, strlen(expr));
-	ret = write(pipe_pc[1], "\n", 1);
-	ret = read(pipe_cp[0], buffer, sizeof(buffer));
+	if (lastres.p[0]) {
+		ret = strlen(lastres.p);
+		if (write(pipe_pc[1], lastres.p, ret) != ret) {
+			log(ERROR, "write(3)! [%s]\n", strerror(errno));
+			exit(-1);
+		}
+	} else {
+		if (write(pipe_pc[1], "0", 1) != 1) {
+			log(ERROR, "write(4)! [%s]\n", strerror(errno));
+			exit(-1);
+		}
+	}
+
+	if (write(pipe_pc[1], "\n", 1) != 1) {
+		log(ERROR, "write(5)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	ret = strlen(expr);
+	if (write(pipe_pc[1], expr, ret) != ret) {
+		log(ERROR, "write(6)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	if (write(pipe_pc[1], "\n", 1) != 1) {
+		log(ERROR, "write(7)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	static char buffer[128];
+
+	ret = read(pipe_cp[0], buffer, sizeof(buffer) - 1);
+	if (ret == -1) {
+		log(ERROR, "read()! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	buffer[ret] = '\0';
 
 	if (buffer[0] != '(') {
 		printf("%s", buffer);
@@ -477,8 +513,9 @@ static maxuint_t convertbyte(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	if (cfg.minimal) {
 		printf("%s B\n", getstr_u128(bytes, uint_buf));
@@ -527,8 +564,9 @@ static maxuint_t convertkib(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(kib * 1024);
 
@@ -574,8 +612,9 @@ static maxuint_t convertmib(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(mib * (1 << 20));
 
@@ -621,8 +660,9 @@ static maxuint_t convertgib(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(gib * (1 << 30));
 
@@ -668,8 +708,9 @@ static maxuint_t converttib(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(tib * ((maxuint_t)1 << 40));
 
@@ -715,8 +756,9 @@ static maxuint_t convertkb(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(kb * 1000);
 
@@ -762,8 +804,9 @@ static maxuint_t convertmb(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(mb * 1000000);
 
@@ -809,8 +852,9 @@ static maxuint_t convertgb(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (maxuint_t)(gb * 1000000000);
 
@@ -856,8 +900,9 @@ static maxuint_t converttb(char *buf, int *ret)
 	if (*pch) {
 		*ret = -1;
 		return 0;
-	} else
-		*ret = 0;
+	}
+
+	*ret = 0;
 
 	maxuint_t bytes = (__uint128_t)(tb * 1000000000000);
 
@@ -1175,7 +1220,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 
 	switch (count) {
 	case 0:
-		return byte_metric;
+		return (maxuint_t)byte_metric;
 	case 1: /* Kibibyte */
 		return (maxuint_t)(byte_metric * 1024);
 	case 2: /* Mebibyte */
@@ -1225,9 +1270,12 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 {
 	stack *op = NULL;  /* Operator Stack */
 	char *token = strtok(exp, " ");
-	Data tokenData = {"\0", 0}, ct;
+	static Data tokenData, ct;
 	int balanced = 0;
 	bool tokenize = TRUE;
+
+	tokenData.p[0] = '\0';
+	tokenData.unit = 0;
 
 	log(DEBUG, "exp: %s\n", exp);
 	log(DEBUG, "token: %s\n", token);
@@ -1300,10 +1348,10 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 				tokenize = FALSE; /* We already toknized here */
 
 			/* Enqueue operands */
-            log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
+			log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
 			enqueue(resf, resr, tokenData);
-            if (tokenize)
-                tokenData.unit = 0;
+			if (tokenize)
+				tokenData.unit = 0;
 		}
 
 		if (tokenize)
@@ -1890,7 +1938,8 @@ static int evaluate(char *exp, ulong sectorsz)
 	bytes = eval(&front, &rear, &ret);  /* Evaluate Expression */
 	if (ret == -1)
 		return -1;
-	else if (ret == 1) {
+
+	if (ret == 1) {
 		ptr = getstr_u128(bytes, uint_buf);
 		printf("%s\n", ptr);
 		bstrlcpy(lastres.p, getstr_u128(bytes, uint_buf), UINT_BUF_LEN);
@@ -2147,10 +2196,9 @@ int main(int argc, char **argv)
 	if (argc - optind == 1) {
 		if (cfg.bcmode)
 			return try_bc(argv[optind]);
-		else {
-			curexpr = argv[optind];
-			return evaluate(argv[optind], sectorsz);
-		}
+
+		curexpr = argv[optind];
+		return evaluate(argv[optind], sectorsz);
 	}
 
 	return -1;

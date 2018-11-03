@@ -11,7 +11,7 @@
 <p>
 
 <p align="center">
-<a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal.svg" alt="Build Status" /></a>
+<a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal/master.svg" alt="Build Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
 </p>
@@ -70,7 +70,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 #### From a package manager
 
-- [AUR](https://aur.archlinux.org/packages/bcal/) (`yaourt -S bcal`)
+- [AUR](https://aur.archlinux.org/packages/bcal/) (`yay -S bcal`)
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
 - [Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
