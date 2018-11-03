@@ -89,10 +89,10 @@ static void debug_log(const char *func, int level, const char *format, ...)
 {
 	va_list ap;
 
-	va_start(ap, format);
-
 	if (level < 0 || level > DEBUG)
 		return;
+
+	va_start(ap, format);
 
 	if (level <= cfg.loglvl) {
 		if (cfg.loglvl == DEBUG) {
@@ -211,7 +211,6 @@ static int try_bc(char *expr)
 	}
 
 	/* parent */
-	char buffer[128] = "";
 	if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
 		log(ERROR, "write(1)! [%s]\n", strerror(errno));
 		exit(-1);
@@ -251,10 +250,15 @@ static int try_bc(char *expr)
 		exit(-1);
 	}
 
-	if (read(pipe_cp[0], buffer, sizeof(buffer)) == -1) {
+	static char buffer[128];
+
+	ret = read(pipe_cp[0], buffer, sizeof(buffer) - 1);
+	if (ret == -1) {
 		log(ERROR, "read()! [%s]\n", strerror(errno));
 		exit(-1);
 	}
+
+	buffer[ret] = '\0';
 
 	if (buffer[0] != '(') {
 		printf("%s", buffer);
@@ -1216,7 +1220,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 
 	switch (count) {
 	case 0:
-		return byte_metric;
+		return (maxuint_t)byte_metric;
 	case 1: /* Kibibyte */
 		return (maxuint_t)(byte_metric * 1024);
 	case 2: /* Mebibyte */
@@ -1266,9 +1270,12 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 {
 	stack *op = NULL;  /* Operator Stack */
 	char *token = strtok(exp, " ");
-	Data tokenData = {"\0", 0}, ct;
+	static Data tokenData, ct;
 	int balanced = 0;
 	bool tokenize = TRUE;
+
+	tokenData.p[0] = '\0';
+	tokenData.unit = 0;
 
 	log(DEBUG, "exp: %s\n", exp);
 	log(DEBUG, "token: %s\n", token);
@@ -1341,10 +1348,10 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 				tokenize = FALSE; /* We already toknized here */
 
 			/* Enqueue operands */
-            log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
+			log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
 			enqueue(resf, resr, tokenData);
-            if (tokenize)
-                tokenData.unit = 0;
+			if (tokenize)
+				tokenData.unit = 0;
 		}
 
 		if (tokenize)
