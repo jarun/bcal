@@ -1,73 +1,25 @@
 language: c
-sudo: required
-services:
-  - docker
+
 env:
   global:
-    - REPO=bcal
+    # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+    # via the "travis encrypt" command using the project repo's public key
+    - secure: "Ck0f7wt5mvmz0VHVV6BD5spXPrm6I1RNx5HIqpqJ0oacUyEK+xPRymwbM2f2dZb5JDjrnfdTxUMTEtDhWqX4HYQXRSqdW/Nw4nwe66XChL2E7a2uz7/CJ+Mo4ZuvdkS37yCYfQTFJkM5vaC2rbhWvbix6Mb/dDZ5iCwG4NxvVeM9Wqn6SZ6LxEzln6wqIGmu6A0xigSWEMb6EkgWQR0tQ5yKcwWyv3hXxUUlWQOyqUhAxpl7kluMCphExwvBfw3WuAj/P76E813HjA2Bm9k6VIsUYREpdhhjjVKhGc4qWL8xKJXKxbbjP0sDMXXUE24Nya/Ok+L1rGJK0ueyq5bPS/nvRRDfvmlH7agjvib7Cmx5Zu4zz19v6h/xuiKHAjcbHrVAqaCWJtxbLaCOTClZ0qdcmO+l73L7CearDBTjrQZfqjYSfdgisJQ5ChCvtXrqhQAOPJOZUBo/9QUvxpT3Vrlbp0NzNkL8IMGmk7INuE8lDGZQNao/R3kolOArvlGxhPv1mMD7Kb/7KsUCK+l89Mq0kDmYZBJHQ586ZFhvdwquQl65TNqGVz6dORGw7jFwHjGOaP4jWfZNVe8wUo2LJosjfThDFKtDxxHohVuJg5KRucWX+oXhwJF1sYAfqBTlSCcvSdfmezgc146PqnYyasDSL5Yc8b+9qwSLrOaFwqA="
 
-matrix:
-  include:
-    - os: linux
-      dist: trusty
-      compiler: gcc
-    - os: linux
-      dist: trusty
-      compiler: clang
-#    - os: linux
-#      compiler: musl-gcc
-#      addons:
-#        apt:
-#          packages: &musl_packages
-#          - musl
-#          - musl-dev
-#          - musl-tools
-    - os: osx
-      compiler: gcc
-    - os: osx
-      compiler: clang
+before_install:
+  - echo -n | openssl s_client -connect https://scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-
 
-install:
-  - if [ $TRAVIS_OS_NAME = linux ]; then
-        sudo apt-get update -qy;
-        sudo apt-get install -qy python3 python3-pip;
-        python -m pip install logilab-common --user;
-        python -m pip install pytest --user;
-    fi
-  - if [ $TRAVIS_OS_NAME = osx ]; then
-        brew upgrade python;
-        pip3 install logilab-common;
-        pip3 install pytest;
-    fi
+addons:
+  apt:
+    packages:
+      - cmake
+      - gcc-4.8
 
-script:
-  - make clean; make strip;
-  - pytest -p no:cacheprovider ./test.py;
-  - make clean;
-
-before_deploy:
-  - cd ..
-  - rm -rf $REPO/.git
-  - tar -czf $REPO-${TRAVIS_TAG}.tar.gz $REPO
-  - cd $REPO
-  - sudo apt-get update -qy
-  - sudo apt-get install -qy python3 python3-pip
-  - sudo python3 -m pip install --upgrade pip
-  - sudo python3 -m pip install --upgrade packagecore setuptools
-  - packagecore -o dist/ "${TRAVIS_TAG#v}"
-  - mv ../$REPO-${TRAVIS_TAG}.tar.gz dist/
-
-deploy:
-  provider: releases
-  api-key:
-    secure: ZtMbo/H21MoodNvw7+tvPId97meS4Xs2beUzqOhI166iuaLSWtjXxQgeC7vdYTWgPNacN6gxwhnXTLMXpt81a7g0NWxjRQ72/Rwh7aCdgQkJI/Y+0c7RNNVdLOtAWBM8csPoJy0jFdI34yHRj053tm9x65V4fMEKC9ArRm7pbTjNNovYXbW2KmRh6kr3dJdB/7tpoCpiMov6l4uHyWIcniFx97P+3dGnGqBd8SpR3IxeEypm8fzIGiX7NIJqwyG5MbLaWoyloBu21ilwh07dDifF6MI4mrkxtGY0yQ9GtHVp5cr7qyMgCt60hUGtrKhTtPQWwpzK0GSZ5eeYiLt6I/kkcj8FkWP+OazRLy/MydjGtG7q8tnbgNcmGqsbv+g1jJMEfZsnTfozeGOPPsYlhB/7kCi2BVqguXlKMRmpNPMZsc4HYK9yjV4HNsEkmwJcXgD350XS5iFu/koIGiT2PJ+/msdwPir74JpgRn00iGC0fD25V8M2TRnKn43g6jNRAZYMITaYDx+ML0SkdWIjksalW0759BgLfQopNbs9a9PbsKiNbfRRRF3xA8j2fQI6my7hXx0TzRwWTC7aMAuJkdjKn5UYOrMAZ+VXhHSOcX5LPiefwgtoU0YGjgWQdgTkQ7aR13rKuDSKepGonnkyiHWnM9gGftnNbNFi7WZRk5w=
-  file_glob: true
-  file:
-    - dist/*
-  skip_cleanup: true
-  on:
-    condition:
-      - "$TRAVIS_OS_NAME == linux"
-      - "$CC == gcc"
-    tags: true
-    repo: jarun/bcal
+  coverity_scan:
+    project:
+      name: "jarun/bcal"
+      description: "Storage expression calculator."
+    notification_email: engineerarun@gmail.com
+    build_command_prepend: "cov-configure --comptype gcc --compiler gcc-4.8"
+    build_command: "make"
+    branch_pattern: coverity_scan
