@@ -23,3 +23,6 @@ addons:
     build_command_prepend: "cov-configure --comptype gcc --compiler gcc-4.8"
     build_command: "make"
     branch_pattern: coverity_scan
+
+script:
+  make skip;
