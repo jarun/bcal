@@ -2036,6 +2036,8 @@ int main(int argc, char **argv)
 		cfg.repl = 1;
 		int enters = 0;
 
+		read_history(NULL);
+
 		printf("q/double Enter -> quit, ? -> help\n");
 		while ((tmp = readline(prompt)) != NULL) {
 			/* Quit on double Enter */
@@ -2098,6 +2100,7 @@ int main(int argc, char **argv)
 					continue;
 				case 'q':
 					free(ptr);
+					write_history(NULL);
 					return 0;
 				case 's':
 					show_basic_sizes();
@@ -2131,6 +2134,7 @@ int main(int argc, char **argv)
 			free(ptr);
 		}
 
+		write_history(NULL);
 		return 0;
 	}
 
