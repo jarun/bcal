@@ -43,7 +43,7 @@ install:
 
 script:
   - make clean; make strip;
-  - pytest -p no:cacheprovider ./test.py;
+  - pytest ./test.py;
   - make clean;
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then if [[ "$CC" == "clang" ]]; then clang-tidy **/*.h **/*.c -- -Iinc; fi; fi
 
