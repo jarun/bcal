@@ -265,7 +265,7 @@ static int try_bc(char *expr)
 		len = bstrlcpy(lastres.p, buffer, NUM_LEN);
 
 		/* remove newline appended at the end of result by bc */
-		len -= 2;
+		(len >= 2) ? (len -= 2) : (len = 0);
 		lastres.p[len] = '\0';
 
 		/* Trim the decimal part, if any */
@@ -1741,12 +1741,14 @@ static char *fixexpr(char *exp, int *unitless)
 				if (prev != exp[i] && exp[i] != exp[i + 1]) {
 					log(ERROR, "invalid operator %c\n", exp[i]);
 					*unitless = 0;
+					free(parsed);
 					return NULL;
 				}
 
 				if (prev == exp[i + 1]) { /* handle <<< or >>> */
 					log(ERROR, "invalid sequence %c%c%c\n", prev, exp[i], exp[i + 1]);
 					*unitless = 0;
+					free(parsed);
 					return NULL;
 				}
 
