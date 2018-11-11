@@ -7,7 +7,11 @@ bcal \- Storage expression calculator.
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc. It invokes GNU \fBbc\fR for non-storage expressions.
 .PP
-.B Features
+\fBbcal\fR follows Ubuntu's standard unit conversion and notation policy:
+.br
+.I https://wiki.ubuntu.com/UnitsPolicy
+.PP
+.SH FEATURES
 .PP
   * evaluate arithmetic expressions involving storage units
   * perform general purpose calculations (using bc)
@@ -19,11 +23,6 @@ bcal \- Storage expression calculator.
   * base conversion to binary, decimal and hex
   * custom sector size, max heads/cylinder and max sectors/track
   * minimal dependencies
-.PP
-\fBbcal\fR follows Ubuntu's standard unit conversion and notation policy. Only 64-bit operating systems are supported.
-
-Refer to:
-.I https://wiki.ubuntu.com/UnitsPolicy
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
@@ -42,7 +41,7 @@ Refer to:
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 6. 4
-\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported.
+\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported. Only 64-bit operating systems are supported.
 .PP
 .IP 7. 4
 \fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
