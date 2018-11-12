@@ -41,7 +41,7 @@ bcal \- Storage expression calculator.
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 6. 4
-\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported. Only 64-bit operating systems are supported.
+\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
 .PP
 .IP 7. 4
 \fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
