@@ -1,0 +1,22 @@
+name: bcal
+base: core18
+version: git
+summary: Storage and general-purpose calculator
+description: |
+  `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expressions,
+  unit conversions or address calculations. If you can't calculate the hex
+  address offset for (512 - 16) MiB, or the value when the 43rd bit of a
+  64-bit address is set mentally, `bcal` is for you.
+
+grade: stable
+confinement: strict
+
+parts:
+  bcal:
+    plugin: make
+    build-packages: [clang, libreadline-dev]
+    source: .
+
+apps:
+  bcal:
+    command: usr/local/bin/bcal
