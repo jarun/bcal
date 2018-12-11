@@ -13,6 +13,7 @@ packages:
       - gcc
     deps:
       - readline
+    container: "base/archlinux"
   centos7.1:
     builddeps:
       - make
@@ -70,6 +71,13 @@ packages:
     deps:
       - readline
   fedora28:
+    builddeps:
+      - make
+      - gcc
+      - readline-devel
+    deps:
+      - readline
+  fedora29:
     builddeps:
       - make
       - gcc

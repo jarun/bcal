@@ -223,4 +223,4 @@ Due to the nature of the project, it's extremely important to test existing func
 
 ### Copyright
 
-Copyright © 2016-2018 [Arun Prakash Jana](https://github.com/jarun)
+Copyright © 2016 [Arun Prakash Jana](https://github.com/jarun)

@@ -70,7 +70,7 @@ typedef struct {
 	uchar loglvl  : 2;
 } settings;
 
-static char *VERSION = "2.0";
+static char *VERSION = "2.1";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 
@@ -1155,7 +1155,7 @@ optional arguments:\n\
 	prompt_help();
 
 	printf("\nVersion %s\n\
-Copyright © 2016-2018 Arun Prakash Jana <engineerarun@gmail.com>\n\
+Copyright © 2016 Arun Prakash Jana <engineerarun@gmail.com>\n\
 License: GPLv3\n\
 Webpage: https://github.com/jarun/bcal\n", VERSION);
 }
