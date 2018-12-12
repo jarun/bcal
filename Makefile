@@ -12,12 +12,12 @@ SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
 
 bcal: $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 
 all: bcal
 
 x86: $(SRC)
-	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(CC) -m64 $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
 	strip bcal
 
 distclean: clean
