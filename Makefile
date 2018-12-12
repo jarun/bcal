@@ -6,7 +6,7 @@ STRIP ?= strip
 
 CFLAGS ?= -O3
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
-LDLIBS = -lreadline
+LDLIBS += -lreadline
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
