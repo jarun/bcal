@@ -4,7 +4,6 @@ MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 STRIP ?= strip
 
-CFLAGS ?= -O3
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
 LDLIBS += -lreadline
 
