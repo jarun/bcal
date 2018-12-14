@@ -205,7 +205,7 @@ static int try_bc(char *expr)
 		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
 		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
 
-		ret = execlp("bc", "bc", "-q", (char*) NULL);
+		ret = execlp("bc", "bc", (char*) NULL);
 		log(ERROR, "execlp() failed!\n");
 		exit(ret);
 	}
@@ -216,6 +216,7 @@ static int try_bc(char *expr)
 		exit(-1);
 	}
 
+#ifdef __GNU_LIBRARY__
 	if (write(pipe_pc[1], "last=", 5) != 5) {
 		log(ERROR, "write(2)! [%s]\n", strerror(errno));
 		exit(-1);
@@ -238,6 +239,7 @@ static int try_bc(char *expr)
 		log(ERROR, "write(5)! [%s]\n", strerror(errno));
 		exit(-1);
 	}
+#endif
 
 	ret = strlen(expr);
 	if (write(pipe_pc[1], expr, ret) != ret) {
@@ -2137,7 +2139,11 @@ int main(int argc, char **argv)
 				case 'b':
 					cfg.bcmode ^= 1;
 					if (cfg.bcmode) {
+#ifdef __GNU_LIBRARY__
 						printf("bc vars: scale = 10, ibase = 10, last = r\n");
+#else
+						printf("bc vars: scale = 10, ibase = 10, last = 0\n");
+#endif
 						strncpy(prompt, "bc> ", 5);
 					} else
 						strncpy(prompt, "bcal> ", 7);
