@@ -78,6 +78,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
 - [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
+- [pkgsrc](http://pkgsrc.se/math/bcal) (`pkg_add bcal`)
 
 #### Release packages
 
