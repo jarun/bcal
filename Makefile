@@ -5,7 +5,7 @@ DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 STRIP ?= strip
 
 CFLAGS_OPTIMIZATION ?= -O3
-CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-paramter -Werror
+CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-parameter -Werror
 
 LDLIBS_READLINE ?= -lreadline
 
