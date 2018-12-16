@@ -4,8 +4,13 @@ MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 STRIP ?= strip
 
-CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
-LDLIBS += -lreadline
+CFLAGS_OPTIMIZATION ?= -O3
+CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-paramter -Werror
+
+LDLIBS_READLINE ?= -lreadline
+
+CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
+LDLIBS += $(LDLIBS_READLINE)
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
