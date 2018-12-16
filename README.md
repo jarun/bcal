@@ -74,6 +74,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
 - [Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
 - [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
+- [pkgsrc](http://pkgsrc.se/math/bcal) (`pkg_add bcal`)
 - [Raspbian Testing](https://archive.raspbian.org/raspbian/pool/main/b/bcal/) (`apt-get install bcal`)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
