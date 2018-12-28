@@ -72,6 +72,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [AUR](https://aur.archlinux.org/packages/bcal/) (`yay -S bcal`)
 - [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
 - [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
+- [FreeBSD](https://www.freshports.org/math/bcal/) (`pkg install bcal`)
 - [macOS/Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
 - [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
 - [pkgsrc](http://pkgsrc.se/math/bcal) (`pkg_add bcal`)
