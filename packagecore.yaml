@@ -13,7 +13,7 @@ packages:
       - gcc
     deps:
       - readline
-    container: "base/archlinux"
+    container: "archlinux/base"
   centos7.1:
     builddeps:
       - make
