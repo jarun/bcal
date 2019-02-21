@@ -1925,7 +1925,8 @@ static int evaluate(char *exp, ulong sectorsz)
 	char *expr = fixexpr(exp, &ret);  /* Make parsing compatible */
 	char *ptr;
 
-	log(DEBUG, "expr: %s\n", expr);
+	if (expr)
+		log(DEBUG, "expr: %s\n", expr);
 
 	if (expr == NULL) {
 		if (ret)
