@@ -21,7 +21,7 @@
 <a href="https://asciinema.org/a/168719"><img src="https://asciinema.org/a/168719.png" alt="bcal_asciicast" width="600"/></a>
 </p>
 
-`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expressions, unit conversions or address calculations. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
+`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression evaluation, unit conversion and address calculation. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
 
 It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations.
 
