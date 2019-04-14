@@ -171,8 +171,9 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 static int try_bc(char *expr)
 {
 	pid_t pid;
-	int pipe_pc[2], pipe_cp[2], ret;
+	int pipe_pc[2], pipe_cp[2];
 	size_t len, count = 0;
+	ssize_t ret;
 
 	if (!expr) {
 		if (curexpr)
@@ -223,7 +224,7 @@ static int try_bc(char *expr)
 	}
 
 	if (lastres.p[0]) {
-		ret = strlen(lastres.p);
+		ret = (ssize_t)strlen(lastres.p);
 		if (write(pipe_pc[1], lastres.p, ret) != ret) {
 			log(ERROR, "write(3)! [%s]\n", strerror(errno));
 			exit(-1);
@@ -241,7 +242,7 @@ static int try_bc(char *expr)
 	}
 #endif
 
-	ret = strlen(expr);
+	ret = (ssize_t)strlen(expr);
 	if (write(pipe_pc[1], expr, ret) != ret) {
 		log(ERROR, "write(6)! [%s]\n", strerror(errno));
 		exit(-1);
@@ -1651,7 +1652,7 @@ static void strstrip(char *s)
 	if (!s || !*s)
 		return;
 
-	int len = strlen(s) - 1;
+	int len = (int)strlen(s) - 1;
 
 	if (s[len] == '\n')
 		--len;
@@ -1807,7 +1808,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (!unit) {
-		int unitchars = 0, len = strlen(value);
+		int unitchars = 0, len = (int)strlen(value);
 
 		while (len) {
 			if (!isalpha(value[len - 1]))
