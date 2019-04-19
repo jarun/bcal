@@ -7,7 +7,6 @@
 <a href="https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/debian-9+-blue.svg?maxAge=2592000" alt="Debian Stretch+" /></a>
 <a href="https://apps.fedoraproject.org/packages/bcal"><img src="https://img.shields.io/badge/fedora-27+-blue.svg?maxAge=2592000" alt="Fedora 27+" /></a>
 <a href="https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
-<a href="https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/"><img src="https://img.shields.io/badge/ubuntu-PPA-blue.svg?maxAge=2592000" alt="Ubuntu PPA" /></a>
 <p>
 
 <p align="center">
@@ -79,7 +78,6 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [pkgsrc](http://pkgsrc.se/math/bcal) (`pkg_add bcal`)
 - [Raspbian Testing](https://archive.raspbian.org/raspbian/pool/main/b/bcal/) (`apt-get install bcal`)
 - [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
-- [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
 - [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
 
 #### Release packages
