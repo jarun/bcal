@@ -1612,7 +1612,7 @@ static int issign(char c)
 }
 
 /* Check if a char is operator or not */
-static int isoperator(char c)
+static int isoperator(int c)
 {
 	switch (c) {
 	case '+':
