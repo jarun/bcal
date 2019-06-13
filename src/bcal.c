@@ -1165,7 +1165,7 @@ Webpage: https://github.com/jarun/bcal\n", VERSION);
 
 static int bstricmp(const char *s1, const char *s2)
 {
-	while (*s1 && (tolower(*s1) == tolower(*s2))) {
+	while ((int)*s1 && (tolower((int)*s1) == tolower((int)*s2))) {
 		++s1;
 		++s2;
 	}
@@ -1433,7 +1433,7 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		dequeue(front, rear, &arg);
 
 		/* Check if arg is an operator */
-		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])) {
+		if (strlen(arg.p) == 1 && !isdigit((int)arg.p[0])) {
 			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
@@ -1612,7 +1612,7 @@ static int issign(char c)
 }
 
 /* Check if a char is operator or not */
-static int isoperator(char c)
+static int isoperator(int c)
 {
 	switch (c) {
 	case '+':
@@ -1656,12 +1656,12 @@ static void strstrip(char *s)
 
 	if (s[len] == '\n')
 		--len;
-	while (len >= 0 && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
+	while (len >= 0 && (isspace((int)s[len]) || s[len] == '\"' || s[len] == '\''))
 		--len;
 	s[len + 1] = '\0';
 
 	len = 0;
-	while (s[len] && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
+	while (s[len] && (isspace((int)s[len]) || s[len] == '\"' || s[len] == '\''))
 		++len;
 
 	if (len) {
@@ -1681,7 +1681,7 @@ static void removeinnerspaces(char *s)
 
 	while (*s != '\0') {
 		/* We should not combine 0xn b*/
-		if (!isspace(*s) || (*(s + 1) == 'b')) {
+		if (!isspace((int)*s) || (*(s + 1) == 'b')) {
 			*p = *s;
 			++p;
 		}
@@ -1729,17 +1729,17 @@ static char *fixexpr(char *exp, int *unitless)
 			return NULL;
 		}
 
-		if (isoperator(exp[i]) && isalpha(exp[i + 1]) && (exp[i + 1] != 'r')) {
+		if (isoperator((int)exp[i]) && isalpha((int)exp[i + 1]) && (exp[i + 1] != 'r')) {
 			log(ERROR, "invalid expression\n");
 			free(parsed);
 			return NULL;
 		}
 
-		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
-		     isoperator(exp[i + 1]))) ||
-		    (isalpha(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && (exp[i + 1] == 'r'))) {
+		if ((isdigit((int)exp[i]) && isoperator((int)exp[i + 1])) ||
+		    (isoperator((int)exp[i]) && (isdigit((int)exp[i + 1]) ||
+		     isoperator((int)exp[i + 1]))) ||
+		    (isalpha((int)exp[i]) && isoperator((int)exp[i + 1])) ||
+		    (isoperator((int)exp[i]) && ((int)exp[i + 1] == 'r'))) {
 			if (exp[i] == '<' || exp[i] == '>') { /* handle shift operators << and >> */
 				if (prev != exp[i] && exp[i] != exp[i + 1]) {
 					log(ERROR, "invalid operator %c\n", exp[i]);
@@ -1811,7 +1811,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		int unitchars = 0, len = (int)strlen(value);
 
 		while (len) {
-			if (!isalpha(value[len - 1]))
+			if (!isalpha((int)value[len - 1]))
 				break;
 
 			++unitchars;
@@ -2033,7 +2033,7 @@ int main(int argc, char **argv)
 		case 'f':
 			operation = 1;
 
-			if (tolower(*optarg) == 'c') {
+			if (tolower((int)*optarg) == 'c') {
 				maxuint_t lba = 0;
 
 				if (chs2lba(optarg + 1, &lba)) {
@@ -2042,7 +2042,7 @@ int main(int argc, char **argv)
 					printhex_u128(lba);
 					printf("\n\n");
 				}
-			} else if (tolower(*optarg) == 'l') {
+			} else if (tolower((int)*optarg) == 'l') {
 				t_chs chs;
 
 				if (lba2chs(optarg + 1, &chs)) {
