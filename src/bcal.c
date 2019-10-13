@@ -173,7 +173,7 @@ static int try_bc(char *expr)
 {
 	pid_t pid;
 	int pipe_pc[2], pipe_cp[2];
-	size_t len, count = 0;
+	size_t len;
 	ssize_t ret;
 	char *ptr = cfg.calc ? "calc" : "bc";
 
@@ -277,7 +277,10 @@ static int try_bc(char *expr)
 		(len >= 2) ? (len -= 2) : (len = 0);
 		lastres.p[len] = '\0';
 
+#ifdef TRIM_DECIMAL
 		/* Trim the decimal part, if any */
+		size_t count = 0;
+
 		while (count < len) {
 			if (lastres.p[count] == '.') {
 				lastres.p[count] = '\0';
@@ -286,6 +289,7 @@ static int try_bc(char *expr)
 
 			++count;
 		}
+#endif
 		lastres.unit = 0;
 		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 		return 0;
