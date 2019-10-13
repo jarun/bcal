@@ -219,54 +219,29 @@ static int try_bc(char *expr)
 			log(ERROR, "write(1)! [%s]\n", strerror(errno));
 			exit(-1);
 		}
+	}
 
-#ifdef __GNU_LIBRARY__
-		if (write(pipe_pc[1], "last=", 5) != 5) {
-			log(ERROR, "write(2)! [%s]\n", strerror(errno));
+	if (write(pipe_pc[1], "r=", 2) != 2) {
+		log(ERROR, "write(2)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	if (lastres.p[0]) {
+		ret = (ssize_t)strlen(lastres.p);
+		if (write(pipe_pc[1], lastres.p, ret) != ret) {
+			log(ERROR, "write(3)! [%s]\n", strerror(errno));
 			exit(-1);
 		}
-
-		if (lastres.p[0]) {
-			ret = (ssize_t)strlen(lastres.p);
-			if (write(pipe_pc[1], lastres.p, ret) != ret) {
-				log(ERROR, "write(3)! [%s]\n", strerror(errno));
-				exit(-1);
-			}
-		} else {
-			if (write(pipe_pc[1], "0", 1) != 1) {
-				log(ERROR, "write(4)! [%s]\n", strerror(errno));
-				exit(-1);
-			}
-		}
-
-		if (write(pipe_pc[1], "\n", 1) != 1) {
-			log(ERROR, "write(5)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
-#endif
 	} else {
-		if (write(pipe_pc[1], "r=", 2) != 2) {
-			log(ERROR, "write(2)! [%s]\n", strerror(errno));
+		if (write(pipe_pc[1], "0", 1) != 1) {
+			log(ERROR, "write(4)! [%s]\n", strerror(errno));
 			exit(-1);
 		}
+	}
 
-		if (lastres.p[0]) {
-			ret = (ssize_t)strlen(lastres.p);
-			if (write(pipe_pc[1], lastres.p, ret) != ret) {
-				log(ERROR, "write(3)! [%s]\n", strerror(errno));
-				exit(-1);
-			}
-		} else {
-			if (write(pipe_pc[1], "0", 1) != 1) {
-				log(ERROR, "write(4)! [%s]\n", strerror(errno));
-				exit(-1);
-			}
-		}
-
-		if (write(pipe_pc[1], "\n", 1) != 1) {
-			log(ERROR, "write(5)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
+	if (write(pipe_pc[1], "\n", 1) != 1) {
+		log(ERROR, "write(5)! [%s]\n", strerror(errno));
+		exit(-1);
 	}
 
 	ret = (ssize_t)strlen(expr);
@@ -2181,13 +2156,7 @@ int main(int argc, char **argv)
 						if (cfg.calc)
 							strncpy(prompt, "calc> ", 7);
 						else {
-#ifdef __GNU_LIBRARY__
-							printf("bc vars: scale = 10, \
-								ibase = 10, last = r\n");
-#else
-							printf("bc vars: scale = 10, \
-								ibase = 10, last = 0\n");
-#endif
+							printf("bc vars: scale = 10, ibase = 10\n");
 							strncpy(prompt, "bc> ", 5);
 						}
 					} else

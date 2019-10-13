@@ -170,7 +170,7 @@ prompt keys:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: `scale` = 10, `ibase` = 10. `last` is synced to `r` when toggling from `bc` to `bcal`. Syncing `r` to `last` works with GNU `bc`. `bc` is not called in minimal output mode. Note that `r` works as usual with `calc`.
+- **bc variables**: `scale` = 10, `ibase` = 10. `r` is synced and can be used in expressions. `bc` is not called in minimal output mode.
 
 ### Examples
 
