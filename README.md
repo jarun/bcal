@@ -22,7 +22,7 @@
 
 `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression evaluation, unit conversion and address calculation. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
 
-It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations.
+It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations. Alternatively, it can also use [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) (helps with expressions involving multiple bases).
 
 `bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
 
@@ -65,7 +65,11 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline. It invokes GNU `bc` for non-storage expressions.
+`bcal` is written in C and depends on standard libc and libreadline. It invokes GNU `bc` or `calc` for non-storage expressions.
+
+To use `calc`:
+
+    export BCAL_USE_CALC=1
 
 #### From a package manager
 
@@ -166,7 +170,7 @@ prompt keys:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: `scale` = 10, `ibase` = 10. `last` is synced to `r` when toggling from `bc` to `bcal`. Syncing `r` to `last` works with GNU `bc`. `bc` is not called in minimal output mode.
+- **bc variables**: `scale` = 10, `ibase` = 10. `last` is synced to `r` when toggling from `bc` to `bcal`. Syncing `r` to `last` works with GNU `bc`. `bc` is not called in minimal output mode. Note that `r` works as usual with `calc`.
 
 ### Examples
 

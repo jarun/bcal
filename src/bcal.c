@@ -66,7 +66,8 @@ typedef struct {
 	uchar bcmode  : 1;
 	uchar minimal : 1;
 	uchar repl    : 1;
-	uchar rsvd    : 3; /* Reserved for future usage */
+	uchar calc    : 1;
+	uchar rsvd    : 2; /* Reserved for future usage */
 	uchar loglvl  : 2;
 } settings;
 
@@ -83,7 +84,7 @@ static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
-static settings cfg = {0, 0, 0, 0, INFO};
+static settings cfg = {0, 0, 0, 0, 0, INFO};
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -174,6 +175,7 @@ static int try_bc(char *expr)
 	int pipe_pc[2], pipe_cp[2];
 	size_t len, count = 0;
 	ssize_t ret;
+	char *ptr = cfg.calc ? "calc" : "bc";
 
 	if (!expr) {
 		if (curexpr)
@@ -206,41 +208,66 @@ static int try_bc(char *expr)
 		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
 		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
 
-		ret = execlp("bc", "bc", (char*) NULL);
+		ret = execlp(ptr, ptr, (char*) NULL);
 		log(ERROR, "execlp() failed!\n");
 		exit(ret);
 	}
 
-	/* parent */
-	if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
-		log(ERROR, "write(1)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
+	if (!cfg.calc) {
+		/* parent */
+		if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
+			log(ERROR, "write(1)! [%s]\n", strerror(errno));
+			exit(-1);
+		}
 
 #ifdef __GNU_LIBRARY__
-	if (write(pipe_pc[1], "last=", 5) != 5) {
-		log(ERROR, "write(2)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (lastres.p[0]) {
-		ret = (ssize_t)strlen(lastres.p);
-		if (write(pipe_pc[1], lastres.p, ret) != ret) {
-			log(ERROR, "write(3)! [%s]\n", strerror(errno));
+		if (write(pipe_pc[1], "last=", 5) != 5) {
+			log(ERROR, "write(2)! [%s]\n", strerror(errno));
 			exit(-1);
 		}
-	} else {
-		if (write(pipe_pc[1], "0", 1) != 1) {
-			log(ERROR, "write(4)! [%s]\n", strerror(errno));
+
+		if (lastres.p[0]) {
+			ret = (ssize_t)strlen(lastres.p);
+			if (write(pipe_pc[1], lastres.p, ret) != ret) {
+				log(ERROR, "write(3)! [%s]\n", strerror(errno));
+				exit(-1);
+			}
+		} else {
+			if (write(pipe_pc[1], "0", 1) != 1) {
+				log(ERROR, "write(4)! [%s]\n", strerror(errno));
+				exit(-1);
+			}
+		}
+
+		if (write(pipe_pc[1], "\n", 1) != 1) {
+			log(ERROR, "write(5)! [%s]\n", strerror(errno));
 			exit(-1);
 		}
-	}
-
-	if (write(pipe_pc[1], "\n", 1) != 1) {
-		log(ERROR, "write(5)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
 #endif
+	} else {
+		if (write(pipe_pc[1], "r=", 2) != 2) {
+			log(ERROR, "write(2)! [%s]\n", strerror(errno));
+			exit(-1);
+		}
+
+		if (lastres.p[0]) {
+			ret = (ssize_t)strlen(lastres.p);
+			if (write(pipe_pc[1], lastres.p, ret) != ret) {
+				log(ERROR, "write(3)! [%s]\n", strerror(errno));
+				exit(-1);
+			}
+		} else {
+			if (write(pipe_pc[1], "0", 1) != 1) {
+				log(ERROR, "write(4)! [%s]\n", strerror(errno));
+				exit(-1);
+			}
+		}
+
+		if (write(pipe_pc[1], "\n", 1) != 1) {
+			log(ERROR, "write(5)! [%s]\n", strerror(errno));
+			exit(-1);
+		}
+	}
 
 	ret = (ssize_t)strlen(expr);
 	if (write(pipe_pc[1], expr, ret) != ret) {
@@ -264,8 +291,12 @@ static int try_bc(char *expr)
 	buffer[ret] = '\0';
 
 	if (buffer[0] != '(') {
-		printf("%s", buffer);
-		len = bstrlcpy(lastres.p, buffer, NUM_LEN);
+		ptr = buffer;
+		while (isspace(*ptr)) /* calc results have space before them */
+			++ptr;
+
+		printf("%s", ptr);
+		len = bstrlcpy(lastres.p, ptr, NUM_LEN);
 
 		/* remove newline appended at the end of result by bc */
 		(len >= 2) ? (len -= 2) : (len = 0);
@@ -2018,6 +2049,9 @@ int main(int argc, char **argv)
 	int opt = 0, operation = 0;
 	ulong sectorsz = SECTOR_SIZE;
 
+	if (getenv("BCAL_USE_CALC"))
+		cfg.calc = TRUE;
+
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
 
@@ -2066,7 +2100,10 @@ int main(int argc, char **argv)
 			break;
 		case 'b':
 			cfg.bcmode = 1;
-			strncpy(prompt, "bc> ", 5);
+			if (cfg.calc)
+				strncpy(prompt, "calc> ", 7);
+			else
+				strncpy(prompt, "bc> ", 5);
 			break;
 		case 'd':
 			cfg.loglvl = DEBUG;
@@ -2141,12 +2178,18 @@ int main(int argc, char **argv)
 				case 'b':
 					cfg.bcmode ^= 1;
 					if (cfg.bcmode) {
+						if (cfg.calc)
+							strncpy(prompt, "calc> ", 7);
+						else {
 #ifdef __GNU_LIBRARY__
-						printf("bc vars: scale = 10, ibase = 10, last = r\n");
+							printf("bc vars: scale = 10, \
+								ibase = 10, last = r\n");
 #else
-						printf("bc vars: scale = 10, ibase = 10, last = 0\n");
+							printf("bc vars: scale = 10, \
+								ibase = 10, last = 0\n");
 #endif
-						strncpy(prompt, "bc> ", 5);
+							strncpy(prompt, "bc> ", 5);
+						}
 					} else
 						strncpy(prompt, "bcal> ", 7);
 

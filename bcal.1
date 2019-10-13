@@ -63,7 +63,7 @@ bcal \- Storage expression calculator.
   - max sectors per track: 0x3f (63)
 .PP
 .IP 10. 4
-\fBbc variables\fR: \fIscale\fR = 10, \fIibase\fR = 10. \fIlast\fR is synced to \fIr\fR when toggling from \fIbc\fR to \fBbcal\fR. Syncing \fIr\fR to \fIlast\fR works with GNU \fIbc\fR. \fIbc\fR is not called in minimal output mode.
+\fBbc variables\fR: \fIscale\fR = 10, \fIibase\fR = 10. \fIlast\fR is synced to \fBr\fR when toggling from \fBbc\fR to \fBbcal\fR. Syncing \fBr\fR to \fIlast\fR works with GNU \fBbc\fR. \fBbc\fR is not called in minimal output mode. Note that \fBr\fR works as usual with \fBcalc\fR. To use \fBcalc\fR, \fIexport BCAL_USE_CALC=1\fR.
 .SH OPTIONS
 .TP
 .BI "-c=" N
@@ -76,7 +76,7 @@ Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation o
 Sector size in bytes. Default value is 512.
 .TP
 .BI "-b=" [expr]
-Start in \fIbc\fR mode. If expression is provided, evaluate in \fIbc\fR and quit.
+Start in \fBbc\fR mode. If expression is provided, evaluate in \fBbc\fR and quit.
 .TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
@@ -89,7 +89,7 @@ Show program help, storage sizes on the system and exit.
 .SH PROMPT KEYS
 .TP
 .BI "b"
-Toggle \fIbc\fR mode.
+Toggle \fBbc\fR mode.
 .TP
 .BI "r"
 Show result from last operation.
