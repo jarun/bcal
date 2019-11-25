@@ -50,6 +50,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 ### Features
 
+- REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
 - perform general purpose calculations (using bc)
 - convert to IEC/SI standard data storage units
