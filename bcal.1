@@ -5,7 +5,13 @@ bcal \- Storage expression calculator.
 .B bcal [-c N] [-f loc] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
-(Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc. It invokes GNU \fBbc\fR for non-storage expressions.
+(Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc.
+.PP
+It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also invoke \fBcalc\fR (\fIhttp://www.isthe.com/chongo/tech/comp/calc/\fR) which works better with expressions involving multiple bases. To use \fBcalc\fR:
+.PP
+.EX
+.B export BCAL_USE_CALC=1
+.EE
 .PP
 \fBbcal\fR follows Ubuntu's standard unit conversion and notation policy:
 .br
