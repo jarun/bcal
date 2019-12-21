@@ -2,7 +2,7 @@
 
 <p align="center">
 <a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg?maxAge=600" alt="Latest release" /></a>
-<a href="https://repology.org/metapackage/bcal"><img src="https://repology.org/badge/tiny-repos/bcal.svg" alt="Availability"></a>
+<a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/tiny-repos/bcal.svg" alt="Availability"></a>
 <a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal/master.svg" alt="Build Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
@@ -66,16 +66,14 @@ To use `calc`:
 
 #### From a package manager
 
-- [AUR](https://aur.archlinux.org/packages/bcal/) (`yay -S bcal`)
-- [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
-- [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
-- [FreeBSD](https://www.freshports.org/math/bcal/) (`pkg install bcal`)
-- [macOS/Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
-- [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
-- [pkgsrc](http://pkgsrc.se/math/bcal) (`pkg_add bcal`)
-- [Raspbian Testing](https://archive.raspbian.org/raspbian/pool/main/b/bcal/) (`apt-get install bcal`)
-- [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
-- [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
+Install `bcal` from your package manager. If the version available is dated try an alternative installation method.
+
+<details><summary>Packaging status (expand)</summary>
+<p>
+<br>
+<a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/vertical-allrepos/bcal.svg" alt="Packaging status"></a>
+</p>
+</details>
 
 #### Release packages
 
