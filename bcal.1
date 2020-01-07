@@ -21,6 +21,7 @@ It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also 
 .PP
   * evaluate arithmetic expressions involving storage units
   * perform general purpose calculations (using bc or calc)
+  * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
   * interactive mode with the last valid result stored for reuse
   * show the address in bytes
@@ -183,6 +184,26 @@ Invoke \fIbc\fR.
 .B bcal> b  // Interactive mode
 .B bc vars: scale = 10, ibase = 10, last = r
 .B bc> 3.5 * 2.1 + 5.7
+.EE
+.PP
+.IP 8. 4
+Pipe input.
+.PP
+.EX
+.IP
+.B $ printf '15 kib + 15 gib \en r / 5' | bcal -m
+.B $ printf '15 + 15 + 2' | bcal -bm
+.EE
+.PP
+.IP 9. 4
+Redirect from file.
+.PP
+.EX
+.IP
+.B $ cat expr
+.B 15 gib + 15 kib
+.B r / 5
+.B $ bcal -m < expr
 .EE
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>

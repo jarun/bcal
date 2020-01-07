@@ -45,6 +45,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
 - perform general purpose calculations (using bc or calc)
+- works with piped input or file redirection
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse
 - show the address in bytes
@@ -205,10 +206,20 @@ prompt keys:
        bcal> b  // Interactive mode
        bc vars: scale = 10, ibase = 10, last = r
        bc> 3.5 * 2.1 + 5.7
-8. Help and additional information.
+8. Pipe input.
 
-       $ man bcal
-       $ bcal -h
+       $ printf '15 kib + 15 gib \n r / 5' | bcal -m
+       $ printf '15 + 15 + 2' | bcal -bm
+9. Redirect from file.
+
+       $ cat expr
+       15 gib + 15 kib
+       r / 5
+       $ bcal -m < expr
+10. Help and additional information.
+
+        $ man bcal
+        $ bcal -h
 
 ### Testing
 
