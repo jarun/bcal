@@ -1,3 +1,16 @@
+bcal v2.2
+2020-01-07
+
+What's in?
+- Support [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) for multi-base expressions
+- To use `calc`, `export BCAL_USE_CALC=1`
+- Fix lint issues
+- Fix issue #30
+- Updated auto-generated packages
+- More portable Makefile
+
+-------------------------------------------------------------------------------
+
 bcal v2.1
 2018-12-11
 

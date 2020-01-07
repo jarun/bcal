@@ -44,7 +44,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 - REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
-- perform general purpose calculations (using bc)
+- perform general purpose calculations (using bc or calc)
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse
 - show the address in bytes
@@ -86,7 +86,7 @@ If you have git installed, clone this repository. Otherwise, download the [lates
 Install to default location (`/usr/local`):
 
     $ make
-    $ sudo make install
+    $ sudo make strip install
 To uninstall, run:
 
     $ sudo make uninstall

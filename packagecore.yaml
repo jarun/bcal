@@ -14,28 +14,21 @@ packages:
     deps:
       - readline
     container: "archlinux/base"
-  centos7.1:
+  centos7.5:
     builddeps:
       - make
       - gcc
       - readline-devel
     deps:
       - readline
-  centos7.2:
+  centos7.6:
     builddeps:
       - make
       - gcc
       - readline-devel
     deps:
       - readline
-  centos7.3:
-    builddeps:
-      - make
-      - gcc
-      - readline-devel
-    deps:
-      - readline
-  centos7.4:
+  centos8.0:
     builddeps:
       - make
       - gcc
@@ -49,34 +42,13 @@ packages:
       - libreadline-dev
     deps:
       - readline-common
-  fedora25:
+  debian10:
     builddeps:
       - make
       - gcc
-      - readline-devel
+      - libreadline-dev
     deps:
-      - readline
-  fedora26:
-    builddeps:
-      - make
-      - gcc
-      - readline-devel
-    deps:
-      - readline
-  fedora27:
-    builddeps:
-      - make
-      - gcc
-      - readline-devel
-    deps:
-      - readline
-  fedora28:
-    builddeps:
-      - make
-      - gcc
-      - readline-devel
-    deps:
-      - readline
+      - readline-common
   fedora29:
     builddeps:
       - make
@@ -84,34 +56,27 @@ packages:
       - readline-devel
     deps:
       - readline
-  opensuse42.1:
+  fedora30:
     builddeps:
       - make
       - gcc
       - readline-devel
     deps:
       - readline
-  opensuse42.2:
+  fedora31:
     builddeps:
       - make
       - gcc
       - readline-devel
     deps:
       - readline
-  opensuse42.3:
+  opensuse15.1:
     builddeps:
       - make
       - gcc
       - readline-devel
     deps:
       - readline
-  ubuntu14.04:
-    builddeps:
-      - make
-      - gcc
-      - libreadline6-dev
-    deps:
-      - libreadline6
   ubuntu16.04:
     builddeps:
       - make
