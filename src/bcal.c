@@ -2114,6 +2114,9 @@ int main(int argc, char **argv)
 
 		printf("q/double Enter -> quit, ? -> help\n");
 		while ((tmp = readline(prompt)) != NULL) {
+			if (!tmp)
+				exit(0);
+
 			/* Quit on double Enter */
 			if (tmp[0] == '\0') {
 				if (enters == 1) {
