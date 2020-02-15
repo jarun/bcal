@@ -186,6 +186,9 @@ static int try_bc(char *expr)
 
 	log(DEBUG, "expression: \"%s\"\n", expr);
 
+	if (!strcmp(expr, "quit") || !strcmp(expr, "exit"))
+		exit(0);
+
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
 		log(ERROR, "pipe()!\n");
 		exit(EXIT_FAILURE);
