@@ -5,7 +5,7 @@
 <a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/tiny-repos/bcal.svg" alt="Availability"></a>
 <a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal/master.svg" alt="Build Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
-<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
+<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellowgreen.svg?maxAge=2592000" alt="License" /></a>
 </p>
 
 <p align="center">
