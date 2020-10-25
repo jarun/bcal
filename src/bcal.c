@@ -39,7 +39,7 @@
 #define FLOAT_WIDTH 40
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX_BITS 128
-#define _ALIGNMENT_MASK 0xF
+#define ALIGNMENT_MASK_4BIT 0xF
 
 typedef unsigned char bool;
 typedef unsigned char uchar;
@@ -118,7 +118,7 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	static ulong *s, *d;
 	static size_t len, blocks;
 	static const uint lsize = sizeof(ulong);
-	static const uint _WSHIFT = (sizeof(ulong) == 8) ? 3 : 2;
+	static const uint WORD_SHIFT = (sizeof(ulong) == 8) ? 3 : 2;
 
 	if (!src || !dest || !n)
 		return 0;
@@ -134,10 +134,11 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	 * To enable -O3 ensure src and dest are 16-byte aligned
 	 * More info: http://www.felixcloutier.com/x86/MOVDQA.html
 	 */
-	if ((n >= lsize) && (((ulong)src & _ALIGNMENT_MASK) == 0 && ((ulong)dest & _ALIGNMENT_MASK) == 0)) {
+	if ((n >= lsize) && (((ulong)src & ALIGNMENT_MASK_4BIT) == 0
+	    && ((ulong)dest & ALIGNMENT_MASK_4BIT) == 0)) {
 		s = (ulong *)src;
 		d = (ulong *)dest;
-		blocks = n >> _WSHIFT;
+		blocks = n >> WORD_SHIFT;
 		n &= lsize - 1;
 
 		while (blocks) {
