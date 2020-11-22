@@ -1,5 +1,5 @@
 language: c
-arch : 
+arch :
 - amd64
 - ppc64le
 sudo: required
@@ -25,10 +25,10 @@ matrix:
 #          - musl
 #          - musl-dev
 #          - musl-tools
-    - os: osx
-      compiler: gcc
-    - os: osx
-      compiler: clang
+#    - os: osx
+#      compiler: gcc
+#    - os: osx
+#      compiler: clang
 
 install:
   - if [ $TRAVIS_OS_NAME = linux ]; then

@@ -1,0 +1,43 @@
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  macOS-gcc:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile with gcc
+        env:
+          CC: gcc
+        run: |
+          brew upgrade python
+          pip3 install logilab-common
+          pip3 install pytest
+          make clean
+          make
+          pytest ./test.py
+          make clean
+  macOS-clang:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile with clang
+        env:
+          CC: clang
+        run: |
+          brew update
+          brew upgrade python
+          pip3 install logilab-common
+          pip3 install pytest
+          brew install llvm
+          export PATH="/usr/local/opt/llvm/bin:$PATH"
+          make clean
+          make
+          pytest ./test.py
+          make clean
+          clang-tidy **/*.h **/*.c -- -Iinc
