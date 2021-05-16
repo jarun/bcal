@@ -12,10 +12,10 @@ env:
 matrix:
   include:
     - os: linux
-      dist: trusty
+      dist: focal
       compiler: gcc
     - os: linux
-      dist: trusty
+      dist: focal
       compiler: clang
 #    - os: linux
 #      compiler: musl-gcc
