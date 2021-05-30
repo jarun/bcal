@@ -212,7 +212,7 @@ static int try_bc(char *expr)
 		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
 		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
 
-		ret = execlp(ptr, ptr, (char*) NULL);
+		int ret = execlp(ptr, ptr, (char*) NULL);
 		log(ERROR, "execlp() failed!\n");
 		exit(ret);
 	}
@@ -356,7 +356,7 @@ static char *getstr_f128(maxfloat_t val, char *buf)
 
 static void printval(maxfloat_t val, char *unit)
 {
-	if (val - (maxuint_t)val == 0)
+	if (val - (maxuint_t)val == 0) // NOLINT
 		printf("%40s %s\n", getstr_u128((maxuint_t)val, uint_buf), unit);
 	else
 		printf("%s %s\n", getstr_f128(val, float_buf), unit);
@@ -544,31 +544,31 @@ static maxuint_t convertbyte(char *buf, int *ret)
 	/* Convert and print in IEC standard units */
 
 	printf("\n            IEC standard (base 2)\n\n");
-	val = bytes / (maxfloat_t)1024;
+	val = (maxfloat_t)bytes / 1024;
 	printval(val, "KiB");
 
-	val = bytes / (maxfloat_t)(1 << 20);
+	val = (maxfloat_t)bytes / (1 << 20);
 	printval(val, "MiB");
 
-	val = bytes / (maxfloat_t)(1 << 30);
+	val = (maxfloat_t)bytes / (1 << 30);
 	printval(val, "GiB");
 
-	val = bytes / (maxfloat_t)((maxuint_t)1 << 40);
+	val = (maxfloat_t)bytes / ((unsigned long long)1 << 40);
 	printval(val, "TiB");
 
 	/* Convert and print in SI standard values */
 
 	printf("\n            SI standard (base 10)\n\n");
-	val = bytes / (maxfloat_t)1000;
+	val = (maxfloat_t)bytes / 1000;
 	printval(val, "kB");
 
-	val = bytes / (maxfloat_t)1000000;
+	val = (maxfloat_t)bytes / 1000000;
 	printval(val, "MB");
 
-	val = bytes / (maxfloat_t)1000000000;
+	val = (maxfloat_t)bytes / 1000000000;
 	printval(val, "GB");
 
-	val = bytes / (maxfloat_t)1000000000000;
+	val = (maxfloat_t)bytes / 1000000000000;
 	printval(val, "TB");
 
 	return bytes;
