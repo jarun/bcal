@@ -306,22 +306,28 @@ static int try_bc(char *expr)
 static void binprint(maxuint_t n)
 {
 	int count = MAX_BITS - 1;
-	char binstr[MAX_BITS + 1] = {0};
+	int pos = MAX_BITS + (MAX_BITS >> 2) - 1;
+	char binstr[MAX_BITS + (MAX_BITS >> 2) + 1] = {0};
 
 	if (!n) {
-		printf("0b0");
+		printf("0");
 		return;
 	}
 
 	while (n && count >= 0) {
-		binstr[count] = "01"[n & 1];
-		--count;
+		binstr[pos] = "01"[n & 1];
+		--pos;
 		n >>= 1;
+		if (n && count && !(count & 7)) {
+			binstr[pos] = ' ';
+			--pos;
+		}
+		--count;
 	}
 
-	++count;
+	++pos;
 
-	printf("0b%s", binstr + count);
+	printf("%s", binstr + pos);
 }
 
 static char *getstr_u128(maxuint_t n, char *buf)
