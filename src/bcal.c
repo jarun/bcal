@@ -23,6 +23,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "dslib.h"
@@ -267,6 +270,17 @@ static int try_bc(char *expr)
 		exit(-1);
 	}
 
+	if (write(pipe_pc[1], "quit\n", 5) != 5) {
+		log(ERROR, "write(7)! [%s]\n", strerror(errno));
+		exit(-1);
+	}
+
+	if (cfg.calc)
+		kill(pid, SIGTERM);
+
+	close(pipe_cp[0]);
+	close(pipe_pc[1]);
+
 	buffer[ret] = '\0';
 
 	if (buffer[0] != '(') {
@@ -275,6 +289,9 @@ static int try_bc(char *expr)
 			++ptr;
 
 		printf("%s", ptr);
+		if (cfg.calc && strstr(ptr, "is undefined"))
+			return -1;
+
 		len = bstrlcpy(lastres.p, ptr, NUM_LEN);
 
 		/* remove newline appended at the end of result by bc */
