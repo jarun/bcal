@@ -1179,7 +1179,7 @@ Storage expression calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
-            see https://wiki.ubuntu.com/UnitsPolicy\n\
+            https://en.wikipedia.org/wiki/Binary_prefix\n\
             default unit is B (byte), case is ignored\n\
             N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\

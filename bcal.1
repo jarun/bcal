@@ -13,9 +13,8 @@ It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also 
 .B export BCAL_USE_CALC=1
 .EE
 .PP
-\fBbcal\fR follows Ubuntu's standard unit conversion and notation policy:
-.br
-.I https://wiki.ubuntu.com/UnitsPolicy
+\fBbcal\fR uses [SI and IEC binary prefixes]:
+.I https://en.wikipedia.org/wiki/Binary_prefix
 .PP
 .SH FEATURES
 .PP
@@ -39,7 +38,7 @@ It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also 
 \fBExpression\fR: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: +, -, *, /, % and C bitwise operators (except ~ due to storage width dependency).
 .PP
 .IP 3. 4
-\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
+\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
 .PP
 .IP 4. 4
 \fBNumeric representation\fR: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
@@ -204,6 +203,14 @@ Redirect from file.
 .B 15 gib + 15 kib
 .B r / 5
 .B $ bcal -m < expr
+.EE
+.PP
+.IP 10. 4
+Use as a general-purpose calculator.
+.PP
+.EX
+.IP
+.B $ bcal -b
 .EE
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>

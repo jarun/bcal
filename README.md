@@ -17,7 +17,7 @@
 
 It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations. Alternatively, it can also invoke [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) which works better with expressions involving multiple bases.
 
-`bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
+`bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
 <p align="center">
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/donate-@PayPal-1eb0fc.svg" alt="Donate via PayPal!" /></a>
@@ -118,7 +118,7 @@ Storage expression calculator.
 positional arguments:
  expr       expression in decimal/hex operands
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
-            see https://wiki.ubuntu.com/UnitsPolicy
+            https://en.wikipedia.org/wiki/Binary_prefix
             default unit is B (byte), case is ignored
             N can be decimal or '0x' prefixed hex value
 
@@ -144,7 +144,7 @@ prompt keys:
 
 - **Interactive mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
 - **Expression**: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: `+`, `-`, `*`, `/`, `%` and C bitwise operators (except `~` due to storage width dependency).
-- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
+- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numerical conversions. Floating point operations use `long double`. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
@@ -215,10 +215,9 @@ prompt keys:
        15 gib + 15 kib
        r / 5
        $ bcal -m < expr
-10. Help and additional information.
+10. Use as a general-purpose calculator.
 
-        $ man bcal
-        $ bcal -h
+        $ bcal -b
 
 ### Testing
 
