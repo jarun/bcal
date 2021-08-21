@@ -13,9 +13,9 @@
 <a href="https://asciinema.org/a/168719"><img src="https://asciinema.org/a/168719.svg" alt="bcal_asciicast" width="600"/></a>
 </p>
 
-`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression evaluation, unit conversion and address calculation. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
+`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
 
-It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations. Alternatively, it can also invoke [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) which works better with expressions involving multiple bases.
+It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations. Alternatively, it can also invoke the more featured [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) which works better with expressions involving multiple bases.
 
 `bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
