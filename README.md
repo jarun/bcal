@@ -98,7 +98,7 @@ To uninstall, run:
 `bcal` can be compiled and installed from source in the Termux environment on `aarch64` Android devices. Instructions:
 
 ```
-$ aria2c https://github.com/jarun/bcal/archive/master.zip
+$ wget https://github.com/jarun/bcal/archive/master.zip
 $ unzip bcal-master.zip
 $ cd bcal-master/
 $ pkg install make clang readline-dev
