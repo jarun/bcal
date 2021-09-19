@@ -19,10 +19,6 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 `bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
-<p align="center">
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/donate-@PayPal-1eb0fc.svg" alt="Donate via PayPal!" /></a>
-</p>
-
 ### Table of Contents
 
 - [Features](#features)
