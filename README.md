@@ -25,7 +25,6 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [Installation](#installation)
   - [Dependencies](#dependencies)
   - [From a package manager](#from-a-package-manager)
-  - [Release packages](#release-packages)
   - [From source](#from-source)
   - [Termux](#termux)
 - [Usage](#usage)
@@ -70,10 +69,6 @@ Install `bcal` from your package manager. If the version available is dated try 
 <a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/vertical-allrepos/bcal.svg" alt="Packaging status"></a>
 </p>
 </details>
-
-#### Release packages
-
-Packages for Arch Linux, CentOS, Debian, Fedora, OpenSUSE Leap and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
 
 #### From source
 
