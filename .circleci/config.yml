@@ -1,0 +1,128 @@
+version: 2
+
+jobs:
+  compile:
+    docker:
+      - image: ubuntu:20.04
+        working_directory: ~/bcal
+        environment:
+          CI_FORCE_TEST: 1
+    steps:
+      - run:
+          command: |
+            apt update -qq
+            DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get -y install tzdata
+            apt install -y --no-install-recommends git make libreadline-dev
+            apt install -y --no-install-recommends gcc-7 gcc-8 gcc-9 gcc-10
+            apt install -y --no-install-recommends clang-6.0 clang-7 clang-8 clang-9 clang-10 clang-11 clang-tidy-11
+      - checkout
+      - run:
+          command: |
+            export CFLAGS=-Werror
+            make clean
+            echo
+            echo "########## gcc-7 ##########"
+            CC=gcc-7 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## gcc-8 ##########"
+            CC=gcc-8 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## gcc-9 ##########"
+            CC=gcc-9 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## gcc-10 ##########"
+            CC=gcc-10 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-6 ##########"
+            CC=clang-6.0 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-7 ##########"
+            CC=clang-7 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-8 ##########"
+            CC=clang-8 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-9 ##########"
+            CC=clang-9 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-10 ##########"
+            CC=clang-10 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-11 ##########"
+            CC=clang-11 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-tidy-11 ##########"
+            clang-tidy-11 **/*.h **/*.c -- -Iinc
+
+  package-and-publish:
+    machine: true
+    working_directory: ~/bcal
+    steps:
+      - checkout
+      - run:
+          name: "auto-generate packages"
+          command: |
+            # Create dist directory if it doesn't exist
+            mkdir ./dist
+            # Clean up
+            rm -rf ./dist/*
+            # Pack source
+            git archive -o ../${CIRCLE_PROJECT_REPONAME}-${CIRCLE_TAG}.tar.gz --format tar.gz --prefix=${CIRCLE_PROJECT_REPONAME}-${CIRCLE_TAG#v}/ ${CIRCLE_TAG}
+            # Use latest installed python3 from pyenv
+            export PYENV_VERSION="$(pyenv versions | grep -Po '\b3\.\d+\.\d+' | tail -1)"
+            #pip install packagecore
+            #packagecore -c misc/packagecore/packagecore.yaml -o ./dist/ ${CIRCLE_TAG#v}
+            # Move source pack to dist
+            mv ../${CIRCLE_PROJECT_REPONAME}-${CIRCLE_TAG}.tar.gz ./dist/
+
+      - run:
+          name: "publish to GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            ghr -t ${GITHUB_API_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${CIRCLE_TAG} ./dist/
+
+workflows:
+  version: 2
+
+  test:
+    jobs: &all-tests
+      - compile
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * 6"
+          filters:
+            branches:
+              only:
+                - master
+    jobs: *all-tests
+
+  publish-github-release:
+    jobs:
+      - package-and-publish:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
