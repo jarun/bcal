@@ -1,7 +1,7 @@
 bcal v2.3
 2021-10-09
 
-- show binary conversion output in octets for readabilityA
+- show binary conversion output in octets for readability
 - handle `^D`
 - quit program or 'exit' or 'quit'
 - fix broken terminal with calc as backend on "undefined input" (#36)
