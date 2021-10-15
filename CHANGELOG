@@ -1,3 +1,13 @@
+bcal v2.3
+2021-10-09
+
+- show binary conversion output in octets for readabilityA
+- handle `^D`
+- quit program or 'exit' or 'quit'
+- fix broken terminal with calc as backend on "undefined input" (#36)
+
+-------------------------------------------------------------------------------
+
 bcal v2.2
 2020-01-07
 

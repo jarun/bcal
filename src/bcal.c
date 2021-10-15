@@ -74,7 +74,7 @@ typedef struct {
 	uchar loglvl  : 2;
 } settings;
 
-static char *VERSION = "2.2";
+static char *VERSION = "2.3";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 
@@ -1048,9 +1048,8 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 		return FALSE;
 	}
 
-
-	*lba = param[3] * param[4] * param[0]; /* MH * MS * C */
-	*lba += param[4] * param[1]; /* MS * H */
+	*lba = (maxuint_t)param[3] * param[4] * param[0]; /* MH * MS * C */
+	*lba += (maxuint_t)param[4] * param[1]; /* MS * H */
 
 	*lba += param[2] - 1; /* S - 1 */
 
