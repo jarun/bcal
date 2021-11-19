@@ -171,7 +171,7 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 
 static bool program_exit(const char *str)
 {
-	if (!(strcmp(str, "exit") && strcmp(str, "quit")))
+	if (!strcmp(str, "exit") || !strcmp(str, "quit"))
 		return TRUE;
 	return FALSE;
 }
