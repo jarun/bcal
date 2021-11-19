@@ -169,6 +169,13 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	return len;
 }
 
+static bool program_exit(const char *str)
+{
+	if (!(strcmp(str, "exit") && strcmp(str, "quit")))
+		return TRUE;
+	return FALSE;
+}
+
 /*
  * Try to evaluate en expression using bc
  * If argument is NULL, global curexpr is picked
@@ -190,7 +197,7 @@ static int try_bc(char *expr)
 
 	log(DEBUG, "expression: \"%s\"\n", expr);
 
-	if (!strcmp(expr, "quit") || !strcmp(expr, "exit"))
+	if (program_exit(expr))
 		exit(0);
 
 	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
@@ -2139,6 +2146,11 @@ int main(int argc, char **argv)
 		while ((tmp = readline(prompt)) != NULL) {
 			if (!tmp)
 				exit(0);
+
+			if (program_exit(tmp)) {
+				free(tmp);
+				exit(0);
+			}
 
 			/* Quit on double Enter */
 			if (tmp[0] == '\0') {
