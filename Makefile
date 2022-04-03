@@ -8,9 +8,17 @@ CFLAGS_OPTIMIZATION ?= -O3
 CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-parameter -Werror
 
 LDLIBS_READLINE ?= -lreadline
+LDLIBS_EDITLINE ?= -ledit
 
 CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
-LDLIBS += $(LDLIBS_READLINE)
+
+O_EL := 0  # set to use the BSD editline library
+
+ifeq ($(strip $(O_EL)),1)
+	LDLIBS += $(LDLIBS_EDITLINE)
+else
+	LDLIBS += $(LDLIBS_READLINE)
+endif
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc

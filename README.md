@@ -53,7 +53,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline. It invokes GNU `bc` or `calc` for non-storage expressions.
+`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)). It invokes GNU `bc` or `calc` for non-storage expressions.
 
 To use `calc`:
 
@@ -76,8 +76,10 @@ If you have git installed, clone this repository. Otherwise, download the [lates
 
 Install to default location (`/usr/local`):
 
-    $ make
     $ sudo make strip install
+To link to libedit:
+
+    $ sudo make O_EL=1 strip install
 To uninstall, run:
 
     $ sudo make uninstall
