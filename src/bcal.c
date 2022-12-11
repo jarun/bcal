@@ -43,6 +43,7 @@
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX_BITS 128
 #define ALIGNMENT_MASK_4BIT 0xF
+#define ELEMENTS(x) (sizeof(x) / sizeof(*(x)))
 
 typedef unsigned char bool;
 typedef unsigned char uchar;
@@ -88,6 +89,11 @@ static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
 static settings cfg = {0, 0, 0, 0, 0, INFO};
+
+static const char* const error_strings[] = {
+	"is undefined",
+	"Missing operator"
+};
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -295,10 +301,15 @@ static int try_bc(char *expr)
 		while (isspace(*ptr)) /* calc results have space before them */
 			++ptr;
 
-		printf("%s", ptr);
-		if (cfg.calc && strstr(ptr, "is undefined"))
-			return -1;
+		printf("%s", ptr); /* Print the result/error */
 
+		/* Detect common error conditions for calc and stop */
+		if (cfg.calc)
+			for (size_t r = 0; r < ELEMENTS(error_strings); ++r)
+				if (strstr(ptr, error_strings[r]))
+					return -1;
+
+		/* Store the result in 'r' for next usage */
 		len = bstrlcpy(lastres.p, ptr, NUM_LEN);
 
 		/* remove newline appended at the end of result by bc */
