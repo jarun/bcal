@@ -3,7 +3,7 @@
 <p align="center">
 <a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg?maxAge=600" alt="Latest release" /></a>
 <a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/tiny-repos/bcal.svg" alt="Availability"></a>
-<a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal/master.svg?label=travis" alt="Travis CI Status" /></a>
+<a href="https://circleci.com/gh/jarun/workflows/bcal"><img src="https://img.shields.io/circleci/project/github/jarun/bcal.svg?label=circle%20ci" alt="CircleCI Status" /></a>
 <a href="https://github.com/jarun/bcal/actions"><img src="https://github.com/jarun/bcal/workflows/ci/badge.svg?branch=master" alt="GitHub CI Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
 <a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellowgreen.svg?maxAge=2592000" alt="License" /></a>
