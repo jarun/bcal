@@ -182,6 +182,20 @@ static bool program_exit(const char *str)
 	return FALSE;
 }
 
+static void remove_commas(char *str)
+{
+	if (!str || !*str)
+		return;
+
+	char *iter1, *iter2;
+
+	for (iter1 = iter2 = str; *iter2; iter2++)
+		if (*iter2 != ',')
+			*iter1++ = *iter2;
+
+	*iter1 = '\0';
+}
+
 /*
  * Try to evaluate en expression using bc
  * If argument is NULL, global curexpr is picked
@@ -193,6 +207,8 @@ static int try_bc(char *expr)
 	size_t len;
 	ssize_t ret;
 	char *ptr = cfg.calc ? "calc" : "bc";
+
+	remove_commas(expr);
 
 	if (!expr) {
 		if (curexpr)
@@ -2181,6 +2197,8 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
+			remove_commas(tmp);
+
 			if (tmp[0] == '\0') {
 				free(ptr);
 				continue;
