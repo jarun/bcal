@@ -312,7 +312,7 @@ static int try_bc(char *expr)
 
 	buffer[ret] = '\0';
 
-	if (buffer[0] != '(') {
+	if ((buffer[0] != '(') && (strncmp(buffer, "Warning", 7) != 0) && (strncmp(buffer, "Missing", 7) != 0)) {
 		ptr = buffer;
 		while (isspace(*ptr)) /* calc results have space before them */
 			++ptr;
