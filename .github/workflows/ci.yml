@@ -30,12 +30,12 @@ jobs:
         env:
           CC: clang
         run: |
-          brew update
-          brew upgrade python
+          brew update || true
+          brew install llvm || true
+          brew link --overwrite python@3.11
+          export PATH="/usr/local/opt/llvm/bin:$PATH"
           pip3 install logilab-common
           pip3 install pytest
-          brew install llvm
-          export PATH="/usr/local/opt/llvm/bin:$PATH"
           make clean
           make
           pytest ./test.py
