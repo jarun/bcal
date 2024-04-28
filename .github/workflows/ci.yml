@@ -16,8 +16,9 @@ jobs:
           CC: gcc
         run: |
           brew upgrade python
-          pip3 install logilab-common
-          pip3 install pytest
+          brew install pipx
+          pipx install logilab-common
+          pipx install pytest
           make clean
           make
           pytest ./test.py
@@ -32,10 +33,12 @@ jobs:
         run: |
           brew update || true
           brew install llvm || true
-          brew link --overwrite python@3.11
+          brew install pipx
+          pipx install logilab-common
+          pipx install pytest
+          brew unlink python@3.11 && brew link python@3.11
           export PATH="/usr/local/opt/llvm/bin:$PATH"
-          pip3 install logilab-common
-          pip3 install pytest
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
           make clean
           make
           pytest ./test.py
