@@ -1333,6 +1333,7 @@ static int priority(char sign) /* Get the priority of operators, higher priprity
 	case '%':
 	case '/':
 	case '*': return 6;
+	default : return 0;
 	}
 
 	return 0;
@@ -1553,6 +1554,8 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					case '^':
 						c = a ^ b;
 						break;
+					default:
+						break;
 					}
 
 					if (raw_a.unit)
@@ -1624,7 +1627,8 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "unit mismatch in modulo\n");
+				log(ERROR, "unit mismatch in modulo\n"); // fallthrough
+			default:
 				goto error;
 			}
 
@@ -1701,8 +1705,8 @@ static int isoperator(int c)
 	}
 }
 
-#if 0
 /* Check if valid storage arithmetic expression */
+/*
 static int checkexp(char *exp)
 {
 	while (*exp) {
@@ -1714,7 +1718,7 @@ static int checkexp(char *exp)
 
 	return 0;
 }
-#endif
+*/
 
 /* Trim ending newline and whitespace from both ends, in place */
 static void strstrip(char *s)
@@ -1772,13 +1776,13 @@ static char *fixexpr(char *exp, int *unitless)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
-#if 0
+	/*
 	if (!checkexp(exp)) {
 		log(DEBUG, "no unit in expression [%s]\n", exp);
 		*unitless = 1;
 		return NULL;
 	}
-#endif
+	*/
 
 	int i = 0, j = 0;
 	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
