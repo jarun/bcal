@@ -20,6 +20,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,9 +31,6 @@
 #include <readline/readline.h>
 #include "dslib.h"
 #include "log.h"
-
-#define TRUE 1
-#define FALSE !TRUE
 
 #define SECTOR_SIZE 512 /* 0x200 */
 #define MAX_HEAD 16 /* 0x10 */
@@ -45,7 +43,6 @@
 #define ALIGNMENT_MASK_4BIT 0xF
 #define ELEMENTS(x) (sizeof(x) / sizeof(*(x)))
 
-typedef unsigned char bool;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
@@ -178,8 +175,8 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 static bool program_exit(const char *str)
 {
 	if (!strcmp(str, "exit") || !strcmp(str, "quit"))
-		return TRUE;
-	return FALSE;
+		return true;
+	return false;
 }
 
 static void remove_commas(char *str)
@@ -466,31 +463,31 @@ static bool ischarvalid(char ch, uint base, uint *val)
 	{
 		if (ch == '0' || ch == '1') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 	} else if (base == 16) {
 		if (ch >= '0' && ch <= '9') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 
 		if (ch >= 'a' && ch <= 'f') {
 			*val = (ch - 'a') + 10;
-			return TRUE;
+			return true;
 		}
 
 		if (ch >= 'A' && ch <= 'F') {
 			*val = (ch - 'A') + 10;
-			return TRUE;
+			return true;
 		}
 	} else if (base == 10) {
 		if (ch >= '0' && ch <= '9') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /*
@@ -1054,32 +1051,32 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 	/* Fail if CHS is omitted */
 	if (token_no < 3) {
 		log(ERROR, "CHS missing\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[3]) {
 		log(ERROR, "MAX_HEAD = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[4]) {
 		log(ERROR, "MAX_SECTOR = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[2]) {
 		log(ERROR, "S = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (param[1] > param[3]) {
 		log(ERROR, "H > MAX_HEAD\n");
-		return FALSE;
+		return false;
 	}
 
 	if (param[2] > param[4]) {
 		log(ERROR, "S > MAX_SECTOR\n");
-		return FALSE;
+		return false;
 	}
 
 	*lba = (maxuint_t)param[3] * param[4] * param[0]; /* MH * MS * C */
@@ -1091,7 +1088,7 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 	printf("  C:%lu  H:%lu  S:%lu  MAX_HEAD:%lu  MAX_SECTOR:%lu\n",
 		param[0], param[1], param[2], param[3], param[4]);
 
-	return TRUE;
+	return true;
 }
 
 static bool lba2chs(char *lba, t_chs *p_chs)
@@ -1130,17 +1127,17 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	/* Fail if LBA is omitted */
 	if (!token_no) {
 		log(ERROR, "LBA missing\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[1]) {
 		log(ERROR, "MAX_HEAD = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[2]) {
 		log(ERROR, "MAX_SECTOR = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	/* L / (MS * MH) */
@@ -1149,14 +1146,14 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	p_chs->h = (ulong)((param[0] / param[2]) % param[1]);
 	if (p_chs->h > MAX_HEAD) {
 		log(ERROR, "H > MAX_HEAD\n");
-		return FALSE;
+		return false;
 	}
 
 	/* (L % MS) + 1 */
 	p_chs->s = (ulong)((param[0] % param[2]) + 1);
 	if (p_chs->s > MAX_SECTOR) {
 		log(ERROR, "S > MAX_SECTOR\n");
-		return FALSE;
+		return false;
 	}
 
 	printf("\033[1mLBA2CHS\033[0m\n  LBA:%s  ",
@@ -1164,7 +1161,7 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	printf("MAX_HEAD:%s  ", getstr_u128(param[1], uint_buf));
 	printf("MAX_SECTOR:%s\n", getstr_u128(param[2], uint_buf));
 
-	return TRUE;
+	return true;
 }
 
 static void show_basic_sizes()
@@ -1346,7 +1343,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 	char *token = strtok(exp, " ");
 	static Data tokenData, ct;
 	int balanced = 0;
-	bool tokenize = TRUE;
+	bool tokenize = true;
 
 	tokenData.p[0] = '\0';
 	tokenData.unit = 0;
@@ -1419,7 +1416,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 				tokenData.unit = 1;
 				log(DEBUG, "unit found\n");
 			} else
-				tokenize = FALSE; /* We already toknized here */
+				tokenize = false; /* We already toknized here */
 
 			/* Enqueue operands */
 			log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
@@ -1431,7 +1428,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		if (tokenize)
 			token = strtok(NULL, " ");
 		else
-			tokenize = TRUE;
+			tokenize = true;
 
 		log(DEBUG, "token: %s\n", token);
 	}
@@ -2093,7 +2090,7 @@ int main(int argc, char **argv)
 	ulong sectorsz = SECTOR_SIZE;
 
 	if (getenv("BCAL_USE_CALC"))
-		cfg.calc = TRUE;
+		cfg.calc = true;
 
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
