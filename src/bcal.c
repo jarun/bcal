@@ -27,6 +27,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <getopt.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include "dslib.h"
