@@ -58,4 +58,4 @@ clean:
 
 skip: ;
 
-.PHONY: bcal all x86 distclean install uninstall strip clean
+.PHONY: all x86 distclean install uninstall strip clean
