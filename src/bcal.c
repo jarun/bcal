@@ -386,6 +386,8 @@ static void printbin_positions(maxuint_t n)
 		return;
 	}
 
+	printf("\n");
+
 	/* Find the highest bit position */
 	int highest_bit = 0;
 	maxuint_t temp = n;
