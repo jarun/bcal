@@ -156,7 +156,7 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 
 		if (!n) {
 			dest = (char *)d;
-			*--dest = '\0';
+			*--dest = '\0'; // NOLINT
 			return len;
 		}
 
