@@ -1968,6 +1968,19 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	if (*isunit != 1)
 		*isunit = 0;
 
+	if (numstr[0] == '0' &&
+	    (numstr[1] == 'x' || numstr[1] == 'X' ||
+	     numstr[1] == 'b' || numstr[1] == 'B')) {
+		char *pch = NULL;
+		maxuint_t val = strtouquad(numstr, &pch);
+		if (*pch) {
+			log(ERROR, "invalid token\n");
+			*out = -1;
+			return 0;
+		}
+		return val;
+	}
+
 	byte_metric = strtold(numstr, &punit);
 	log(DEBUG, "byte_metric: %Lf\n", byte_metric);
 	if (*numstr != '\0' && *punit == '\0')
@@ -2034,6 +2047,7 @@ static int priority(char sign) /* Get the priority of operators, higher priprity
 	case '%':
 	case '/':
 	case '*': return 6;
+	case '~': return 7;
 	default : return 0;
 	}
 
@@ -2070,6 +2084,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '&':
 		case '|':
 		case '^':
+		case '~':
 			if (token[1] != '\0') {
 				log(ERROR, "invalid token terminator\n");
 				emptystack(&op);
@@ -2078,7 +2093,8 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 			}
 
 			while (!isempty(op) && top(op)[0] != '(' &&
-			       priority(token[0]) <= priority(top(op)[0])) {
+				       ((token[0] == '~' && priority(token[0]) < priority(top(op)[0])) ||
+				        (token[0] != '~' && priority(token[0]) <= priority(top(op)[0])))) {
 				/* Pop from operator stack */
 				pop(&op, &ct);
 				/* Insert to Queue */
@@ -2206,6 +2222,20 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 
 		/* Check if arg is an operator */
 		if (strlen(arg.p) == 1 && !isdigit((int)arg.p[0])) {
+			if (arg.p[0] == '~') {
+				pop(&est, &raw_a);
+
+				a = unitconv(raw_a, &raw_a.unit, out);
+				if (*out == -1)
+					return 0;
+
+				c = ~a;
+				raw_c.unit = raw_a.unit ? 1 : 0;
+				bstrlcpy(raw_c.p, getstr_u128(c, uint_buf), NUM_LEN);
+				push(&est, raw_c);
+				continue;
+			}
+
 			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
@@ -2358,7 +2388,13 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		*out = 1;
 
 	/* Convert string to integer */
-	return strtoull(res.p, NULL, 0);
+	char *pch = NULL;
+	maxuint_t val = strtouquad(res.p, &pch);
+	if (*pch) {
+		*out = -1;
+		return 0;
+	}
+	return val;
 
 error:
 	*out = -1;
@@ -2377,6 +2413,7 @@ static bool has_bitwise_ops(const char *expr)
 		case '&':
 		case '|':
 		case '^':
+		case '~':
 			return true;
 		case '<':
 			if (expr[i + 1] == '<')
@@ -2441,6 +2478,7 @@ static int issign(char c)
 	case '&':
 	case '|':
 	case '^':
+	case '~':
 		return 1;
 	default:
 		return 0;
@@ -2461,6 +2499,7 @@ static int isoperator(int c)
 	case '&':
 	case '|':
 	case '^':
+	case '~':
 	case '(':
 	case ')': return 1;
 	default: return 0;

@@ -40,7 +40,7 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
 - evaluate arithmetic expressions involving storage units
 - perform general purpose calculations (built-in expression mode)
   - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
-  - bitwise operators: AND, OR, XOR, left shift, right shift
+  - bitwise operators: AND, OR, XOR, complement, left shift, right shift
   - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), min, max
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
@@ -195,12 +195,13 @@ prompt keys:
        bcal> c 20140115  // Interactive mode
 7. Perform bitwise operations.
 
-       $ bcal -b '0xFF & 0x0F'              // AND: 0xFF AND 0x0F = 15
-       $ bcal -b '0x0F | 0xF0'              // OR: 0x0F OR 0xF0 = 255
-       $ bcal -b '0xFF ^ 0xF0'              // XOR: 0xFF XOR 0xF0 = 15
-       $ bcal -b '0x01 << 3'                // Left shift: 0x01 << 3 = 8
-       $ bcal -b '0x10 >> 2'                // Right shift: 0x10 >> 2 = 4
-       $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'  // Combined operations
+       $ bcal -b '0xFF & 0x0F'
+       $ bcal -b '0x0F | 0xF0'
+       $ bcal -b '0xFF ^ 0xF0'
+       $ bcal -b '0xF0'
+       $ bcal -b '0x01 << 3'
+       $ bcal -b '0x10 >> 2'
+       $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'
 8. Use expression mode.
 
        $ bcal -b '3.5 * 2.1 + 5.7'

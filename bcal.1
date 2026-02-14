@@ -17,7 +17,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
   * evaluate arithmetic expressions involving storage units
   * perform general purpose calculations (built-in expression mode)
     - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
-    - bitwise operators: AND, OR, XOR, left shift, right shift
+    - bitwise operators: AND, OR, XOR, complement, left shift, right shift
     - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), min, max
   * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
@@ -182,12 +182,13 @@ Perform bitwise operations.
 .PP
 .EX
 .IP
-.B $ bcal -b '0xFF & 0x0F'              // AND: result = 15
-.B $ bcal -b '0x0F | 0xF0'              // OR: result = 255
-.B $ bcal -b '0xFF ^ 0xF0'              // XOR: result = 15
-.B $ bcal -b '0x01 << 3'                // Left shift: result = 8
-.B $ bcal -b '0x10 >> 2'                // Right shift: result = 4
-.B $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'  // Combined operations
+.B $ bcal -b '0xFF & 0x0F'
+.B $ bcal -b '0x0F | 0xF0'
+.B $ bcal -b '0xFF ^ 0xF0'
+.B $ bcal -b '~0xF0'
+.B $ bcal -b '0x01 << 3'
+.B $ bcal -b '0x10 >> 2'
+.B $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'
 .EE
 .PP
 .IP 8. 4
