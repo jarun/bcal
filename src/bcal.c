@@ -379,6 +379,52 @@ static void printbin(maxuint_t n)
 	printf("%s", binstr + pos);
 }
 
+static void printbin_positions(maxuint_t n)
+{
+	if (!n) {
+		printf("0");
+		return;
+	}
+
+	/* Find the highest bit position */
+	int highest_bit = 0;
+	maxuint_t temp = n;
+	while (temp) {
+		highest_bit++;
+		temp >>= 1;
+	}
+	highest_bit--; /* Adjust to 0-based */
+
+	/* Print positions 0-31, 32-63, etc. Always print all positions in each row */
+	for (int start_bit = 0; start_bit <= 127; start_bit += 32) {
+		int end_bit = start_bit + 31;
+
+		/* Skip rows where no bits exist in the value */
+		if (start_bit > highest_bit)
+			break;
+
+		/* Print bit positions for this row (MSB to LSB) */
+		for (int bit = end_bit; bit >= start_bit; --bit) {
+			maxuint_t bit_value = (bit <= highest_bit) ? ((n >> bit) & 1) : 0;
+			if (bit_value == 1)
+				printf("\033[7m%3d\033[0m ", bit);
+			else
+				printf("%3d ", bit);
+		}
+		printf("\n");
+
+		/* Print bit values for this row (MSB to LSB) - only if bit exists in value */
+		for (int bit = end_bit; bit >= start_bit; --bit) {
+			if (bit <= highest_bit) {
+				int bit_value = (int)(n >> bit) & 1;
+				printf("  %d ", bit_value);
+			} else
+				printf("    ");  /* Leave blank for bits beyond the value */
+		}
+		printf("\n\n");
+	}
+}
+
 static char *getstr_u128(maxuint_t n, char *buf)
 {
 	if (n == 0) {
@@ -1205,7 +1251,7 @@ static void prompt_help()
 static void usage()
 {
 	printf("usage: bcal [-c N] [-f loc] [-s bytes] [expr]\n\
-            [N [unit]] [-b [expr]] [-m] [-d] [-h]\n\n\
+            [N [unit]] [-b [expr]] [-m] [-p] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
@@ -1220,6 +1266,7 @@ optional arguments:\n\
  -s bytes   sector size [default 512]\n\
  -b [expr]  enter bc mode or evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\
+ -p N       show bit position (reversed if set) and value\n\
  -d         enable debug information and logs\n\
  -h         show this help\n\n");
 
@@ -2050,7 +2097,7 @@ static int evaluate(char *exp, ulong sectorsz)
 	return 0;
 }
 
-int convertbase(char *arg)
+int convertbase(char *arg, bool bitposition)
 {
 	char *pch;
 
@@ -2075,12 +2122,16 @@ int convertbase(char *arg)
 		return -1;
 	}
 
-	printf(" (b) ");
-	printbin(val);
-	printf("\n (d) %s\n (h) ",
-		getstr_u128(val, uint_buf));
-	printhex_u128(val);
-	printf("\n");
+	if (bitposition)
+		printbin_positions(val);
+	else {
+		printf(" (b) ");
+		printbin(val);
+		printf("\n (d) %s\n (h) ",
+			getstr_u128(val, uint_buf));
+		printhex_u128(val);
+		printf("\n");
+	}
 
 	return 0;
 }
@@ -2096,15 +2147,13 @@ int main(int argc, char **argv)
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
 
-	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
+	while ((opt = getopt(argc, argv, "bc:df:hmp:s:")) != -1) {
 		switch (opt) {
 		case 'c':
-		{
 			operation = 1;
-			convertbase(optarg);
+			convertbase(optarg, false);
 			printf("\n");
 			break;
-		}
 		case 'f':
 			operation = 1;
 
@@ -2150,7 +2199,11 @@ int main(int argc, char **argv)
 			cfg.loglvl = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
 			log(DEBUG, "maxuint_t is %lu bytes\n", sizeof(maxuint_t));
-
+			break;
+		case 'p':
+			operation = 1;
+			convertbase(optarg, true);
+			printf("\n");
 			break;
 		case 'h':
 			usage();
@@ -2262,7 +2315,13 @@ int main(int argc, char **argv)
 			}
 
 			if (tmp[0] == 'c') {
-				convertbase(tmp + 1);
+				convertbase(tmp + 1, false);
+				free(ptr);
+				continue;
+			}
+
+			if (tmp[0] == 'p') {
+				convertbase(tmp + 1, true);
 				free(ptr);
 				continue;
 			}

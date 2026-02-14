@@ -46,6 +46,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
 - base conversion to binary, decimal and hex
+- show bit positions with bit value of a number
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
@@ -104,7 +105,7 @@ $ make strip install
 
 ```
 usage: bcal [-c N] [-f loc] [-s bytes] [expr]
-            [N [unit]] [-b [expr]] [-m] [-d] [-h]
+            [N [unit]] [-b [expr]] [-m] [-p] [-d] [-h]
 
 Storage expression calculator.
 
@@ -122,6 +123,7 @@ optional arguments:
  -s bytes   sector size [default 512]
  -b [expr]  enter bc mode or evaluate expression in bc
  -m         show minimal output (e.g. decimal bytes)
+ -p N       show bit position (reversed if set) and value
  -d         enable debug information and logs
  -h         show this help
 
