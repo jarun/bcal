@@ -1278,6 +1278,52 @@ static maxuint_t strtouquad(char *token, char **pch)
 	return val;
 }
 
+static bool parse_prefixed_uint(const char *token, maxuint_t *val, char **endptr)
+{
+	if (!token || !*token || !val || !endptr)
+		return false;
+
+	uint base = 10, multiplier = 0, digit = 0, bits_used = 0;
+	uint max_bit_len = sizeof(maxuint_t) << 3;
+
+	if (token[0] == '0') {
+		if (token[1] == 'b' || token[1] == 'B') {
+			base = 2;
+			multiplier = 1;
+		} else if (token[1] == 'x' || token[1] == 'X') {
+			base = 16;
+			multiplier = 4;
+		}
+	}
+
+	if (base != 2 && base != 16)
+		return false;
+
+	const char *ptr = token + 2;
+	if (!*ptr) {
+		*endptr = (char *)ptr;
+		return false;
+	}
+
+	maxuint_t res = 0;
+	bool seen_digit = false;
+	while (*ptr && ischarvalid(*ptr, base, &digit)) {
+		seen_digit = true;
+		if (bits_used == max_bit_len)
+			return false;
+		res = (res << multiplier) + digit;
+		++bits_used;
+		++ptr;
+	}
+
+	if (!seen_digit)
+		return false;
+
+	*val = res;
+	*endptr = (char *)ptr;
+	return true;
+}
+
 static maxuint_t convertbyte(char *buf, int *ret)
 {
 	maxfloat_t val;
@@ -1972,13 +2018,22 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	    (numstr[1] == 'x' || numstr[1] == 'X' ||
 	     numstr[1] == 'b' || numstr[1] == 'B')) {
 		char *pch = NULL;
-		maxuint_t val = strtouquad(numstr, &pch);
-		if (*pch) {
+		maxuint_t val = 0;
+		if (!parse_prefixed_uint(numstr, &val, &pch)) {
 			log(ERROR, "invalid token\n");
 			*out = -1;
 			return 0;
 		}
-		return val;
+		if (*pch == '\0')
+			return val;
+		if (!isalpha((unsigned char)*pch)) {
+			log(ERROR, "invalid token\n");
+			*out = -1;
+			return 0;
+		}
+		byte_metric = (maxfloat_t)val;
+		punit = pch;
+		goto parse_unit;
 	}
 
 	byte_metric = strtold(numstr, &punit);
@@ -1986,6 +2041,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	if (*numstr != '\0' && *punit == '\0')
 		return (maxuint_t)byte_metric;
 
+parse_unit:
 	log(DEBUG, "punit: %s\n", punit);
 
 	count = ARRAY_SIZE(units);
