@@ -837,7 +837,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		log(ERROR, "invalid number\n");
 		return -1;
 	}
-	*pos = endptr - expr;
+	*pos = (int)(endptr - expr);
 	*result = val;
 	return 0;
 }
