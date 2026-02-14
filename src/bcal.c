@@ -2583,7 +2583,7 @@ int main(int argc, char **argv)
 				case 'b':
 					cfg.expr ^= 1;
 					if (cfg.expr) {
-						printf("operators: +, -, *, /, ^ (power), sqrt(x)\n");
+						printf("general purpose expression mode\n");
 						strncpy(prompt, "expr> ", 7);
 					} else
 						strncpy(prompt, "bcal> ", 7);
@@ -2611,19 +2611,19 @@ int main(int argc, char **argv)
 				}
 			}
 
-			if (!cfg.expr && tmp[0] == 'c') {
-				convertbase(tmp + 1, false);
-				free(ptr);
-				continue;
-			}
-
-			if (!cfg.expr && tmp[0] == 'p') {
-				convertbase(tmp + 1, true);
-				free(ptr);
-				continue;
-			}
-
 			if (cfg.expr) {
+				if (tmp[0] == 'c') {
+					convertbase(tmp + 1, false);
+					free(ptr);
+					continue;
+				}
+
+				if (tmp[0] == 'p') {
+					convertbase(tmp + 1, true);
+					free(ptr);
+					continue;
+				}
+
 				maxfloat_t result;
 				if (eval_expr(tmp, &result) == 0) {
 					if (result == (long long)result) {
