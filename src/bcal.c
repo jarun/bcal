@@ -3053,6 +3053,14 @@ int main(int argc, char **argv)
 				continue;
 			}
 
+			/* Check for bitwise operations first */
+			if (has_bitwise_ops(tmp)) {
+				if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+					free(ptr);
+					continue;
+				}
+			}
+
 			curexpr = tmp;
 
 			/* Evaluate the expression */
