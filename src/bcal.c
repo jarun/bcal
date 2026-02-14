@@ -2487,6 +2487,29 @@ static bool has_bitwise_ops(const char *expr)
 	return false;
 }
 
+static bool has_units(const char *expr)
+{
+	if (!expr)
+		return false;
+
+	for (size_t i = 0; i < ARRAY_SIZE(units); ++i) {
+		/* Check if unit keyword exists in expression
+		 * Units must not be followed by alphanumeric characters */
+		size_t unit_len = strlen(units[i]);
+		const char *pos = expr;
+		while ((pos = strstr(pos, units[i])) != NULL) {
+			char after = *(pos + unit_len);
+			/* Unit found if it's not followed by alphanumeric */
+			if (!isalnum((unsigned char)after)) {
+				return true;
+			}
+			pos++;
+		}
+	}
+
+	return false;
+}
+
 static int eval_bitwise_expr(char *expr, char *out, size_t out_len)
 {
 	if (!expr || !out || out_len == 0)
@@ -2508,13 +2531,18 @@ static int eval_bitwise_expr(char *expr, char *out, size_t out_len)
 	if (eval_ret == -1)
 		return -1;
 
-	/* Print result in binary, decimal, and hex formats */
-	printf(" (b) ");
-	printbin(value);
-	printf("\n (d) %s\n (h) ",
-		getstr_u128(value, uint_buf));
-	printhex_u128(value);
-	printf("\n");
+	/* Print result based on minimal mode setting */
+	if (cfg.minimal) {
+		printf("%s\n", getstr_u128(value, uint_buf));
+	} else {
+		/* Print result in binary, decimal, and hex formats */
+		printf(" (b) ");
+		printbin(value);
+		printf("\n (d) %s\n (h) ",
+			getstr_u128(value, uint_buf));
+		printhex_u128(value);
+		printf("\n");
+	}
 
 	/* Store decimal value for lastres */
 	bstrlcpy(out, getstr_u128(value, uint_buf), out_len);
@@ -3192,22 +3220,21 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
-		if (cfg.expr) {
-			char *tmp = strdup(argv[optind]);
-			if (!tmp)
-				return -1;
-			strstrip(tmp);
+		char *tmp = strdup(argv[optind]);
+		if (!tmp)
+			return -1;
+		strstrip(tmp);
+		if (cfg.expr)
 			remove_thousands_commas(tmp);
 
-			if (has_bitwise_ops(tmp)) {
-				if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+		/* Check for bitwise operations first, but only if no units are present */
+		if (has_bitwise_ops(tmp) && !has_units(tmp)) {
+			int bitwise_ret = eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN);
+			free(tmp);
+			return bitwise_ret;
+		}
 
-					return 0;
-				}
-				free(tmp);
-				return -1;
-			}
-
+		if (cfg.expr) {
 			if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
 				printf("%s\n", lastres.p);
 				lastres.unit = 0;
@@ -3235,6 +3262,7 @@ int main(int argc, char **argv)
 		}
 
 		curexpr = argv[optind];
+		free(tmp);
 		return evaluate(argv[optind], sectorsz);
 	}
 
