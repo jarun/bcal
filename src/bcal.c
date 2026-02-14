@@ -20,6 +20,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -87,11 +88,6 @@ static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
 static settings cfg = {0, 0, 0, 0, 0, INFO};
-
-static const char* const error_strings[] = {
-	"is undefined",
-	"Missing operator"
-};
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -194,20 +190,451 @@ static void remove_commas(char *str)
 	*iter1 = '\0';
 }
 
-/*
- * Try to evaluate en expression using bc
- * If argument is NULL, global curexpr is picked
- */
-static int try_bc(char *expr)
+/* Evaluate arithmetic expression without bc/calc */
+static int eval_expr(char *expr_str, maxfloat_t *result);
+
+/* Forward declarations for recursive descent parser */
+static int parse_expr(const char *expr, int *pos, maxfloat_t *result);
+static int parse_factor(const char *expr, int *pos, maxfloat_t *result);
+static int parse_term(const char *expr, int *pos, maxfloat_t *result);
+static int parse_power(const char *expr, int *pos, maxfloat_t *result);
+
+/* Skip whitespace */
+static void skip_space(const char *expr, int *pos)
 {
-	pid_t pid;
-	int pipe_pc[2], pipe_cp[2];
-	size_t len;
-	ssize_t ret;
-	char *ptr = cfg.calc ? "calc" : "bc";
+	while (expr[*pos] && isspace(expr[*pos]))
+		(*pos)++;
+}
 
-	remove_commas(expr);
+/* Parse primary expression: numbers, parentheses, sqrt() */
+static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
+{
+	skip_space(expr, pos);
 
+	if (expr[*pos] == '(') {
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		return 0;
+	}
+
+	/* Check for sqrt() function */
+	if (strncmp(&expr[*pos], "sqrt", 4) == 0 && !isalnum(expr[*pos + 4])) {
+		*pos += 4;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "sqrt requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (*result < 0) {
+			log(ERROR, "sqrt of negative number\n");
+			return -1;
+		}
+		*result = sqrtl(*result);
+		return 0;
+	}
+	
+	/* cbrt */
+	if (strncmp(&expr[*pos], "cbrt", 4) == 0 && !isalnum(expr[*pos + 4])) {
+		*pos += 4;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "cbrt requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = cbrtl(*result);
+		return 0;
+	}
+	
+	/* abs */
+	if (strncmp(&expr[*pos], "abs", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "abs requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = fabsl(*result);
+		return 0;
+	}
+	
+	/* floor */
+	if (strncmp(&expr[*pos], "floor", 5) == 0 && !isalnum(expr[*pos + 5])) {
+		*pos += 5;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "floor requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = floorl(*result);
+		return 0;
+	}
+	
+	/* ceil */
+	if (strncmp(&expr[*pos], "ceil", 4) == 0 && !isalnum(expr[*pos + 4])) {
+		*pos += 4;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "ceil requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = ceill(*result);
+		return 0;
+	}
+	
+	/* round */
+	if (strncmp(&expr[*pos], "round", 5) == 0 && !isalnum(expr[*pos + 5])) {
+		*pos += 5;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "round requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = roundl(*result);
+		return 0;
+	}
+	
+	/* exp */
+	if (strncmp(&expr[*pos], "exp", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "exp requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = expl(*result);
+		return 0;
+	}
+	
+	/* log base 10 */
+	if (strncmp(&expr[*pos], "log", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "log requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (*result <= 0) {
+			log(ERROR, "log of non-positive number\n");
+			return -1;
+		}
+		*result = log10l(*result);
+		return 0;
+	}
+	
+	/* ln natural logarithm */
+	if (strncmp(&expr[*pos], "ln", 2) == 0 && !isalnum(expr[*pos + 2])) {
+		*pos += 2;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "ln requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (*result <= 0) {
+			log(ERROR, "ln of non-positive number\n");
+			return -1;
+		}
+		*result = logl(*result);
+		return 0;
+	}
+
+	
+	/* min */
+	if (strncmp(&expr[*pos], "min", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "min requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		maxfloat_t left, right;
+		if (parse_expr(expr, pos, &left) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "min requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &right) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = (left < right) ? left : right;
+		return 0;
+	}
+	
+	/* max */
+	if (strncmp(&expr[*pos], "max", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "max requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		maxfloat_t left, right;
+		if (parse_expr(expr, pos, &left) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "max requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &right) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = (left > right) ? left : right;
+		return 0;
+	}
+
+	/* Check for 'r' - reference to last result */
+	if (expr[*pos] == 'r' && !isalnum(expr[*pos + 1])) {
+		(*pos)++;
+		if (lastres.p[0] == '\0') {
+			log(ERROR, "no result stored\n");
+			return -1;
+		}
+		*result = strtold(lastres.p, NULL);
+		return 0;
+	}
+
+	/* Parse number (decimal or hex) */
+	char *endptr;
+	maxfloat_t val = strtold(&expr[*pos], (char **)&endptr);
+	if (endptr == &expr[*pos]) {
+		log(ERROR, "invalid number\n");
+		return -1;
+	}
+	*pos = endptr - expr;
+	*result = val;
+	return 0;
+}
+
+/* Parse power operator (^) - right associative */
+static int parse_power(const char *expr, int *pos, maxfloat_t *result)
+{
+	if (parse_factor(expr, pos, result) == -1)
+		return -1;
+
+	skip_space(expr, pos);
+	if (expr[*pos] == '^') {
+		(*pos)++;
+		maxfloat_t right;
+		if (parse_power(expr, pos, &right) == -1)
+			return -1;
+		*result = powl(*result, right);
+	}
+
+	return 0;
+}
+
+/* Parse multiplication and division */
+static int parse_term(const char *expr, int *pos, maxfloat_t *result)
+{
+	if (parse_power(expr, pos, result) == -1)
+		return -1;
+
+	while (1) {
+		skip_space(expr, pos);
+		if (expr[*pos] == '*') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_power(expr, pos, &right) == -1)
+				return -1;
+			*result = *result * right;
+		} else if (expr[*pos] == '/') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_power(expr, pos, &right) == -1)
+				return -1;
+			if (right == 0) {
+				log(ERROR, "division by zero\n");
+				return -1;
+			}
+			*result = *result / right;
+		} else {
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/* Parse addition and subtraction */
+static int parse_expr(const char *expr, int *pos, maxfloat_t *result)
+{
+	if (parse_term(expr, pos, result) == -1)
+		return -1;
+
+	while (1) {
+		skip_space(expr, pos);
+		if (expr[*pos] == '+') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_term(expr, pos, &right) == -1)
+				return -1;
+			*result = *result + right;
+		} else if (expr[*pos] == '-') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_term(expr, pos, &right) == -1)
+				return -1;
+			*result = *result - right;
+		} else {
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/* Evaluate arithmetic expression */
+static int eval_expr(char *expr_str, maxfloat_t *result)
+{
+	int pos = 0;
+	
+	if (!expr_str || !*expr_str) {
+		log(ERROR, "empty expression\n");
+		return -1;
+	}
+
+	if (parse_expr(expr_str, &pos, result) == -1)
+		return -1;
+
+	skip_space(expr_str, &pos);
+	if (expr_str[pos] != '\0') {
+		log(ERROR, "unexpected character in expression\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Format long double removing trailing zeros */
+static void format_result(maxfloat_t result, char *buf, size_t buflen)
+{
+	snprintf(buf, buflen, "%.6Lf", result);
+	
+	/* Find decimal point */
+	char *dot = strchr(buf, '.');
+	if (!dot)
+		return;
+	
+	/* Find last non-zero digit after decimal point */
+	char *end = buf + strlen(buf) - 1;
+	while (end > dot && *end == '0')
+		end--;
+	
+	/* If we stopped at the decimal point, remove it too */
+	if (end == dot) {
+		*dot = '\0';
+	} else {
+		*(end + 1) = '\0';
+	}
+}
+
+/* Evaluate expression and print result */
+static int evaluate_expr(char *expr)
+{
 	if (!expr) {
 		if (curexpr)
 			expr = curexpr;
@@ -215,140 +642,18 @@ static int try_bc(char *expr)
 			return -1;
 	}
 
-	log(DEBUG, "expression: \"%s\"\n", expr);
-
-	if (program_exit(expr))
-		exit(0);
-
-	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
-		log(ERROR, "pipe()!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	pid = fork();
-
-	if (pid == -1) {
-		log(ERROR, "fork() failed!\n");
-		return -1;
-	}
-
-	if (pid == 0) { /* child */
-		close(STDOUT_FILENO);
-		close(STDIN_FILENO);
-		close(pipe_pc[1]); // Close writing end
-		close(pipe_cp[0]); // Close reading end
-
-		dup2(pipe_pc[0], STDIN_FILENO); // Take stdin from parent
-		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
-		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
-
-		int ret = execlp(ptr, ptr, (char*) NULL);
-		log(ERROR, "execlp() failed!\n");
-		exit(ret);
-	}
-
-	if (!cfg.calc) {
-		/* parent */
-		if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
-			log(ERROR, "write(1)! [%s]\n", strerror(errno));
-			exit(-1);
+	maxfloat_t result;
+	if (eval_expr(expr, &result) == 0) {
+		if (result == (long long)result) {
+			printf("%lld\n", (long long)result);
+			snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+		} else {
+			format_result(result, lastres.p, UINT_BUF_LEN);
+			printf("%s\n", lastres.p);
 		}
-	}
-
-	if (write(pipe_pc[1], "r=", 2) != 2) {
-		log(ERROR, "write(2)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (lastres.p[0]) {
-		ret = (ssize_t)strlen(lastres.p);
-		if (write(pipe_pc[1], lastres.p, ret) != ret) {
-			log(ERROR, "write(3)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
-	} else {
-		if (write(pipe_pc[1], "0", 1) != 1) {
-			log(ERROR, "write(4)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
-	}
-
-	if (write(pipe_pc[1], "\n", 1) != 1) {
-		log(ERROR, "write(5)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	ret = (ssize_t)strlen(expr);
-	if (write(pipe_pc[1], expr, ret) != ret) {
-		log(ERROR, "write(6)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (write(pipe_pc[1], "\n", 1) != 1) {
-		log(ERROR, "write(7)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	static char buffer[128];
-
-	ret = read(pipe_cp[0], buffer, sizeof(buffer) - 1);
-	if (ret == -1) {
-		log(ERROR, "read()! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (write(pipe_pc[1], "quit\n", 5) != 5) {
-		log(ERROR, "write(7)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (cfg.calc)
-		kill(pid, SIGTERM);
-
-	close(pipe_cp[0]);
-	close(pipe_pc[1]);
-
-	buffer[ret] = '\0';
-
-	if ((buffer[0] != '(') && (strncmp(buffer, "Warning", 7) != 0) && (strncmp(buffer, "Missing", 7) != 0)) {
-		ptr = buffer;
-		while (isspace(*ptr)) /* calc results have space before them */
-			++ptr;
-
-		printf("%s", ptr); /* Print the result/error */
-
-		/* Detect common error conditions for calc and stop */
-		if (cfg.calc)
-			for (size_t r = 0; r < ELEMENTS(error_strings); ++r)
-				if (strstr(ptr, error_strings[r]))
-					return -1;
-
-		/* Store the result in 'r' for next usage */
-		len = bstrlcpy(lastres.p, ptr, NUM_LEN);
-
-		/* remove newline appended at the end of result by bc */
-		(len >= 2) ? (len -= 2) : (len = 0);
-		lastres.p[len] = '\0';
-
-#ifdef TRIM_DECIMAL
-		/* Trim the decimal part, if any */
-		size_t count = 0;
-
-		while (count < len) {
-			if (lastres.p[count] == '.') {
-				lastres.p[count] = '\0';
-				break;
-			}
-
-			++count;
-		}
-#endif
 		lastres.unit = 0;
-		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 		return 0;
 	}
-
-	log(ERROR, "invalid expression\n");
 	return -1;
 }
 
@@ -1330,7 +1635,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		if (cfg.minimal)
 			log(ERROR, "unknown unit\n");
 		else
-			try_bc(NULL);
+			evaluate_expr(NULL);
 
 		*out = -1;
 		return 0;
@@ -2007,7 +2312,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		if (cfg.minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else
-			return try_bc(NULL);
+			return evaluate_expr(NULL);
 
 		return -1;
 	}
@@ -2192,10 +2497,7 @@ int main(int argc, char **argv)
 			break;
 		case 'b':
 			cfg.bcmode = 1;
-			if (cfg.calc)
-				strncpy(prompt, "calc> ", 7);
-			else
-				strncpy(prompt, "bc> ", 5);
+			strncpy(prompt, "expr> ", 7);
 			break;
 		case 'd':
 			cfg.loglvl = DEBUG;
@@ -2254,7 +2556,8 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
-			remove_commas(tmp);
+			if (!cfg.bcmode)
+				remove_commas(tmp);
 
 			if (tmp[0] == '\0') {
 				free(ptr);
@@ -2284,12 +2587,8 @@ int main(int argc, char **argv)
 				case 'b':
 					cfg.bcmode ^= 1;
 					if (cfg.bcmode) {
-						if (cfg.calc)
-							strncpy(prompt, "calc> ", 7);
-						else {
-							printf("bc vars: scale = 10, ibase = 10\n");
-							strncpy(prompt, "bc> ", 5);
-						}
+						printf("operators: +, -, *, /, ^ (power), sqrt(x)\n");
+						strncpy(prompt, "expr> ", 7);
 					} else
 						strncpy(prompt, "bcal> ", 7);
 
@@ -2316,20 +2615,31 @@ int main(int argc, char **argv)
 				}
 			}
 
-			if (tmp[0] == 'c') {
+			if (!cfg.bcmode && tmp[0] == 'c') {
 				convertbase(tmp + 1, false);
 				free(ptr);
 				continue;
 			}
 
-			if (tmp[0] == 'p') {
+			if (!cfg.bcmode && tmp[0] == 'p') {
 				convertbase(tmp + 1, true);
 				free(ptr);
 				continue;
 			}
 
 			if (cfg.bcmode) {
-				try_bc(tmp);
+				maxfloat_t result;
+				if (eval_expr(tmp, &result) == 0) {
+					if (result == (long long)result) {
+						printf("%lld\n", (long long)result);
+						snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+					} else {
+						format_result(result, lastres.p, UINT_BUF_LEN);
+						printf("%s\n", lastres.p);
+					}
+					/* Store result for next use */
+					lastres.unit = 0;
+				}
 				free(ptr);
 				continue;
 			}
@@ -2353,8 +2663,22 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
-		if (cfg.bcmode)
-			return try_bc(argv[optind]);
+		if (cfg.bcmode) {
+			maxfloat_t result;
+			if (eval_expr(argv[optind], &result) == 0) {
+				if (result == (long long)result) {
+					printf("%lld\n", (long long)result);
+					snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+				} else {
+					format_result(result, lastres.p, UINT_BUF_LEN);
+					printf("%s\n", lastres.p);
+				}
+				/* Store result for next use */
+				lastres.unit = 0;
+				return 0;
+			}
+			return -1;
+		}
 
 		curexpr = argv[optind];
 		return evaluate(argv[optind], sectorsz);

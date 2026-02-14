@@ -10,6 +10,7 @@ CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-parameter -Werror
 LDLIBS_READLINE ?= -lreadline
 LDLIBS_EDITLINE ?= -ledit
 
+LDLIBS_MATH ?= -lm
 CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
 
 O_EL := 0  # set to use the BSD editline library
@@ -18,6 +19,7 @@ ifeq ($(strip $(O_EL)),1)
 	LDLIBS += $(LDLIBS_EDITLINE)
 else
 	LDLIBS += $(LDLIBS_READLINE)
+LDLIBS += $(LDLIBS_MATH)
 endif
 
 SRC = $(wildcard src/*.c)
