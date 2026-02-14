@@ -197,29 +197,58 @@ static void remove_thousands_commas(char *str)
 
 	size_t read = 0;
 	size_t write = 0;
+	int func_paren_depth = 0;
 
 	while (str[read] != '\0') {
-		if (str[read] == ',') {
-			if (read > 0 && isdigit((unsigned char)str[read - 1]) &&
-			    isdigit((unsigned char)str[read + 1])) {
-				size_t k = read + 1;
-				int digits = 0;
-
-				while (isdigit((unsigned char)str[k])) {
-					++digits;
-					++k;
-					if (digits > 3)
-						break;
-				}
-
-				if (digits == 3) {
-					++read;
-					continue;
-				}
+		if (str[read] == '(') {
+			/* Check if this is a function call by looking back for an identifier */
+			int is_function = 0;
+			if (write > 0) {
+				size_t j = write - 1;
+				/* Skip back over alphanumeric characters */
+				while (j > 0 && isalnum((unsigned char)str[j]))
+					j--;
+				/* If we found alphanumeric chars right before '(', it's likely a function */
+				if (j < write - 1 && isalpha((unsigned char)str[j + 1]))
+					is_function = 1;
+				else if (write > 0 && isalpha((unsigned char)str[write - 1]))
+					is_function = 1;
 			}
-		}
+			if (is_function)
+				func_paren_depth++;
+			str[write++] = str[read++];
+		} else if (str[read] == ')') {
+			if (func_paren_depth > 0)
+				func_paren_depth--;
+			str[write++] = str[read++];
+		} else if (str[read] == ',') {
+			/* Don't process comma if we're inside a function call */
+			if (func_paren_depth > 0) {
+				str[write++] = str[read++];
+			} else {
+				/* Check if this is a thousands separator */
+				if (read > 0 && isdigit((unsigned char)str[read - 1]) &&
+				    isdigit((unsigned char)str[read + 1])) {
+					size_t k = read + 1;
+					int digits = 0;
 
-		str[write++] = str[read++];
+					while (isdigit((unsigned char)str[k])) {
+						++digits;
+						++k;
+						if (digits > 3)
+							break;
+					}
+
+					if (digits == 3) {
+						++read;
+						continue;
+					}
+				}
+				str[write++] = str[read++];
+			}
+		} else {
+			str[write++] = str[read++];
+		}
 	}
 
 	str[write] = '\0';
