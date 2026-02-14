@@ -189,6 +189,339 @@ static void remove_commas(char *str)
 	*iter1 = '\0';
 }
 
+static void remove_thousands_commas(char *str)
+{
+	if (!str || !*str)
+		return;
+
+	size_t read = 0;
+	size_t write = 0;
+
+	while (str[read] != '\0') {
+		if (str[read] == ',') {
+			if (read > 0 && isdigit((unsigned char)str[read - 1]) &&
+			    isdigit((unsigned char)str[read + 1])) {
+				size_t k = read + 1;
+				int digits = 0;
+
+				while (isdigit((unsigned char)str[k])) {
+					++digits;
+					++k;
+					if (digits > 3)
+						break;
+				}
+
+				if (digits == 3) {
+					++read;
+					continue;
+				}
+			}
+		}
+
+		str[write++] = str[read++];
+	}
+
+	str[write] = '\0';
+}
+
+typedef struct {
+	char *digits;
+	size_t len;
+	int scale;
+	bool negative;
+} decnum_t;
+
+static bool parse_decimal_token(const char *start, size_t len, decnum_t *out)
+{
+	if (!start || !out || len == 0)
+		return false;
+
+	bool negative = false;
+	bool seen_dot = false;
+	bool seen_digit = false;
+	int scale = 0;
+	size_t i = 0;
+
+	if (start[i] == '+' || start[i] == '-') {
+		negative = (start[i] == '-');
+		++i;
+		if (i >= len)
+			return false;
+	}
+
+	char *digits = (char *)malloc(len + 1);
+	if (!digits)
+		return false;
+
+	size_t dpos = 0;
+	for (; i < len; ++i) {
+		unsigned char ch = (unsigned char)start[i];
+		if (isdigit(ch)) {
+			digits[dpos++] = (char)ch;
+			seen_digit = true;
+			if (seen_dot)
+				++scale;
+		} else if (ch == '.' && !seen_dot) {
+			seen_dot = true;
+		} else {
+			free(digits);
+			return false;
+		}
+	}
+
+	if (!seen_digit) {
+		free(digits);
+		return false;
+	}
+
+	/* Trim leading zeros, but keep at least one digit */
+	size_t first = 0;
+	while (first + 1 < dpos && digits[first] == '0')
+		++first;
+	if (first > 0) {
+		memmove(digits, digits + first, dpos - first);
+		dpos -= first;
+	}
+
+	digits[dpos] = '\0';
+
+	out->digits = digits;
+	out->len = dpos;
+	out->scale = scale;
+	out->negative = negative;
+	return true;
+}
+
+static char *mul_digits(const char *a, size_t la, const char *b, size_t lb, size_t *out_len)
+{
+	if (!a || !b || la == 0 || lb == 0)
+		return NULL;
+
+	size_t n = la + lb;
+	int *acc = (int *)calloc(n, sizeof(int));
+	if (!acc)
+		return NULL;
+
+	for (size_t i = 0; i < la; ++i) {
+		int da = a[la - 1 - i] - '0';
+		for (size_t j = 0; j < lb; ++j) {
+			int db = b[lb - 1 - j] - '0';
+			acc[n - 1 - (i + j)] += da * db;
+		}
+	}
+
+	for (size_t k = n - 1; k > 0; --k) {
+		if (acc[k] >= 10) {
+			acc[k - 1] += acc[k] / 10;
+			acc[k] %= 10;
+		}
+	}
+
+	size_t start = 0;
+	while (start + 1 < n && acc[start] == 0)
+		++start;
+
+	size_t len = n - start;
+	char *digits = (char *)malloc(len + 1);
+	if (!digits) {
+		free(acc);
+		return NULL;
+	}
+
+	for (size_t i = 0; i < len; ++i)
+		digits[i] = (char)('0' + acc[start + i]);
+	digits[len] = '\0';
+
+	free(acc);
+	if (out_len)
+		*out_len = len;
+	return digits;
+}
+
+static bool round_digits(char **digits, size_t *len, int *scale, int desired_scale)
+{
+	if (!digits || !*digits || !len || !scale)
+		return false;
+
+	if (*len <= (size_t)(*scale)) {
+		size_t pad = (size_t)(*scale) - *len + 1;
+		char *tmp = (char *)malloc(*len + pad + 1);
+		if (!tmp)
+			return false;
+		memset(tmp, '0', pad);
+		memcpy(tmp + pad, *digits, *len + 1);
+		free(*digits);
+		*digits = tmp;
+		*len += pad;
+	}
+
+	if (*scale > desired_scale) {
+		int drop = *scale - desired_scale;
+		size_t keep_len = *len - (size_t)drop;
+		char round_digit = (*digits)[keep_len];
+
+		if (round_digit >= '5') {
+			size_t idx = keep_len;
+			while (idx > 0) {
+				--idx;
+				if ((*digits)[idx] < '9') {
+					(*digits)[idx]++;
+					break;
+				}
+				(*digits)[idx] = '0';
+			}
+
+			if (idx == 0 && (*digits)[0] == '0') {
+				char *tmp = (char *)malloc(*len + 2);
+				if (!tmp)
+					return false;
+				tmp[0] = '1';
+				memcpy(tmp + 1, *digits, *len + 1);
+				free(*digits);
+				*digits = tmp;
+				++*len;
+				++keep_len;
+			}
+		}
+
+		(*digits)[keep_len] = '\0';
+		*len = keep_len;
+		*scale = desired_scale;
+	} else if (*scale < desired_scale) {
+		size_t pad = (size_t)(desired_scale - *scale);
+		char *tmp = (char *)malloc(*len + pad + 1);
+		if (!tmp)
+			return false;
+		memcpy(tmp, *digits, *len);
+		memset(tmp + *len, '0', pad);
+		tmp[*len + pad] = '\0';
+		free(*digits);
+		*digits = tmp;
+		*len += pad;
+		*scale = desired_scale;
+	}
+
+	return true;
+}
+
+static void trim_trailing_zeros(char *buf)
+{
+	char *dot = strchr(buf, '.');
+	if (!dot)
+		return;
+
+	char *end = buf + strlen(buf) - 1;
+	while (end > dot && *end == '0')
+		--end;
+
+	if (end == dot)
+		*dot = '\0';
+	else
+		*(end + 1) = '\0';
+}
+
+static bool format_decimal_result(char *digits, size_t len, int scale, bool negative,
+				 char *buf, size_t buflen)
+{
+	if (!digits || !buf || buflen == 0)
+		return false;
+
+	if (len == 1 && digits[0] == '0')
+		negative = false;
+
+	size_t int_len = len - (size_t)scale;
+	size_t needed = len + (scale ? 1 : 0) + (negative ? 1 : 0) + 1;
+	if (needed > buflen)
+		return false;
+
+	size_t pos = 0;
+	if (negative)
+		buf[pos++] = '-';
+
+	memcpy(buf + pos, digits, int_len);
+	pos += int_len;
+	if (scale) {
+		buf[pos++] = '.';
+		memcpy(buf + pos, digits + int_len, (size_t)scale);
+		pos += (size_t)scale;
+	}
+	buf[pos] = '\0';
+
+	trim_trailing_zeros(buf);
+	return true;
+}
+
+static bool eval_decimal_multiply(const char *expr, char *out, size_t out_len)
+{
+	if (!expr || !out || out_len == 0)
+		return false;
+
+	const char *p = expr;
+	while (isspace((unsigned char)*p))
+		++p;
+
+	const char *a_start = p;
+	while (*p && (isdigit((unsigned char)*p) || *p == '.' || *p == '+' || *p == '-'))
+		++p;
+	size_t a_len = (size_t)(p - a_start);
+	if (a_len == 0)
+		return false;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	if (*p != '*')
+		return false;
+	++p;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	const char *b_start = p;
+	while (*p && (isdigit((unsigned char)*p) || *p == '.' || *p == '+' || *p == '-'))
+		++p;
+	size_t b_len = (size_t)(p - b_start);
+	if (b_len == 0)
+		return false;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	if (*p != '\0')
+		return false;
+
+	decnum_t a = {0};
+	decnum_t b = {0};
+	if (!parse_decimal_token(a_start, a_len, &a))
+		return false;
+	if (!parse_decimal_token(b_start, b_len, &b)) {
+		free(a.digits);
+		return false;
+	}
+
+	size_t prod_len = 0;
+	char *prod = mul_digits(a.digits, a.len, b.digits, b.len, &prod_len);
+	if (!prod) {
+		free(a.digits);
+		free(b.digits);
+		return false;
+	}
+
+	int scale = a.scale + b.scale;
+	bool negative = (a.negative != b.negative);
+
+	if (!round_digits(&prod, &prod_len, &scale, 10)) {
+		free(a.digits);
+		free(b.digits);
+		free(prod);
+		return false;
+	}
+
+	bool ok = format_decimal_result(prod, prod_len, scale, negative, out, out_len);
+
+	free(a.digits);
+	free(b.digits);
+	free(prod);
+	return ok;
+}
+
 /* Evaluate arithmetic expression */
 static int eval_expr(char *expr_str, maxfloat_t *result);
 
@@ -611,7 +944,7 @@ static int eval_expr(char *expr_str, maxfloat_t *result)
 /* Format long double removing trailing zeros */
 static void format_result(maxfloat_t result, char *buf, size_t buflen)
 {
-	snprintf(buf, buflen, "%.6Lf", result);
+	snprintf(buf, buflen, "%.10Lf", result);
 
 	/* Find decimal point */
 	char *dot = strchr(buf, '.');
@@ -2552,7 +2885,9 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
-			if (!cfg.expr)
+			if (cfg.expr)
+				remove_thousands_commas(tmp);
+			else
 				remove_commas(tmp);
 
 			if (tmp[0] == '\0') {
@@ -2624,6 +2959,13 @@ int main(int argc, char **argv)
 					continue;
 				}
 
+				if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
+					printf("%s\n", lastres.p);
+					lastres.unit = 0;
+					free(ptr);
+					continue;
+				}
+
 				maxfloat_t result;
 				if (eval_expr(tmp, &result) == 0) {
 					if (result == (long long)result) {
@@ -2660,8 +3002,21 @@ int main(int argc, char **argv)
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
 		if (cfg.expr) {
+			char *tmp = strdup(argv[optind]);
+			if (!tmp)
+				return -1;
+			strstrip(tmp);
+			remove_thousands_commas(tmp);
+
+			if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
+				printf("%s\n", lastres.p);
+				lastres.unit = 0;
+				free(tmp);
+				return 0;
+			}
+
 			maxfloat_t result;
-			if (eval_expr(argv[optind], &result) == 0) {
+			if (eval_expr(tmp, &result) == 0) {
 				if (result == (long long)result) {
 					printf("%lld\n", (long long)result);
 					snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
@@ -2671,8 +3026,10 @@ int main(int argc, char **argv)
 				}
 				/* Store result for next use */
 				lastres.unit = 0;
+				free(tmp);
 				return 0;
 			}
+			free(tmp);
 			return -1;
 		}
 
