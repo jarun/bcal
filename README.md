@@ -41,7 +41,7 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
 - perform general purpose calculations (built-in expression mode)
   - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
   - bitwise operators: AND, OR, XOR, complement, left shift, right shift
-  - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), min, max
+  - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), pow
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse

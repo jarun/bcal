@@ -760,12 +760,12 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 	}
 
 
-	/* min */
-	if (strncmp(&expr[*pos], "min", 3) == 0 && !isalnum(expr[*pos + 3])) {
+	/* pow */
+	if (strncmp(&expr[*pos], "pow", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
 		skip_space(expr, pos);
 		if (expr[*pos] != '(') {
-			log(ERROR, "min requires parenthesis\n");
+			log(ERROR, "pow requires parenthesis\n");
 			return -1;
 		}
 		(*pos)++;
@@ -774,7 +774,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 			return -1;
 		skip_space(expr, pos);
 		if (expr[*pos] != ',') {
-			log(ERROR, "min requires two arguments\n");
+			log(ERROR, "pow requires two arguments\n");
 			return -1;
 		}
 		(*pos)++;
@@ -786,37 +786,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 			return -1;
 		}
 		(*pos)++;
-		*result = (left < right) ? left : right;
-		return 0;
-	}
-
-	/* max */
-	if (strncmp(&expr[*pos], "max", 3) == 0 && !isalnum(expr[*pos + 3])) {
-		*pos += 3;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "max requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		maxfloat_t left, right;
-		if (parse_expr(expr, pos, &left) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ',') {
-			log(ERROR, "max requires two arguments\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, &right) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = (left > right) ? left : right;
+		*result = powl(left, right);
 		return 0;
 	}
 
@@ -3148,14 +3118,13 @@ int main(int argc, char **argv)
 			}
 
 			if (cfg.expr) {
-				if (tmp[0] == 'c') {
+				if (tmp[0] == 'c' && !isalpha(tmp[1])) {
 					convertbase(tmp + 1, false);
 					free(ptr);
 					continue;
 				}
 
-				if (tmp[0] == 'p') {
-					convertbase(tmp + 1, true);
+				if (tmp[0] == 'p' && !isalpha(tmp[1])) {
 					free(ptr);
 					continue;
 				}
