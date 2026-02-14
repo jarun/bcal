@@ -530,6 +530,7 @@ static int parse_expr(const char *expr, int *pos, maxfloat_t *result);
 static int parse_factor(const char *expr, int *pos, maxfloat_t *result);
 static int parse_term(const char *expr, int *pos, maxfloat_t *result);
 static int parse_power(const char *expr, int *pos, maxfloat_t *result);
+static char *fixexpr(char *exp, int *unitless);
 
 /* Skip whitespace */
 static void skip_space(const char *expr, int *pos)
@@ -2350,6 +2351,67 @@ error:
 	return 0;
 }
 
+static bool has_bitwise_ops(const char *expr)
+{
+	if (!expr)
+		return false;
+
+	for (size_t i = 0; expr[i] != '\0'; ++i) {
+		switch (expr[i]) {
+		case '&':
+		case '|':
+		case '^':
+			return true;
+		case '<':
+			if (expr[i + 1] == '<')
+				return true;
+			break;
+		case '>':
+			if (expr[i + 1] == '>')
+				return true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return false;
+}
+
+static int eval_bitwise_expr(char *expr, char *out, size_t out_len)
+{
+	if (!expr || !out || out_len == 0)
+		return -1;
+
+	int unitless = 0;
+	queue *front = NULL, *rear = NULL;
+	char *parsed = fixexpr(expr, &unitless);
+	if (!parsed)
+		return -1;
+
+	int ret = infix2postfix(parsed, &front, &rear);
+	free(parsed);
+	if (ret == -1)
+		return -1;
+
+	int eval_ret = 0;
+	maxuint_t value = eval(&front, &rear, &eval_ret);
+	if (eval_ret == -1)
+		return -1;
+
+	/* Print result in binary, decimal, and hex formats */
+	printf(" (b) ");
+	printbin(value);
+	printf("\n (d) %s\n (h) ",
+		getstr_u128(value, uint_buf));
+	printhex_u128(value);
+	printf("\n");
+
+	/* Store decimal value for lastres */
+	bstrlcpy(out, getstr_u128(value, uint_buf), out_len);
+	return 0;
+}
+
 static int issign(char c)
 {
 	switch (c) {
@@ -2959,6 +3021,15 @@ int main(int argc, char **argv)
 					continue;
 				}
 
+				if (has_bitwise_ops(tmp)) {
+					if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+
+						continue;
+					}
+					free(ptr);
+					continue;
+				}
+
 				if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
 					printf("%s\n", lastres.p);
 					lastres.unit = 0;
@@ -3007,6 +3078,15 @@ int main(int argc, char **argv)
 				return -1;
 			strstrip(tmp);
 			remove_thousands_commas(tmp);
+
+			if (has_bitwise_ops(tmp)) {
+				if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+
+					return 0;
+				}
+				free(tmp);
+				return -1;
+			}
 
 			if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
 				printf("%s\n", lastres.p);
