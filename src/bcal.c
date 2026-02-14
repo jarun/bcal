@@ -66,11 +66,10 @@ typedef struct {
 
 /* Settings */
 typedef struct {
-	uchar bcmode  : 1;
+	uchar expr    : 1;
 	uchar minimal : 1;
 	uchar repl    : 1;
-	uchar calc    : 1;
-	uchar rsvd    : 2; /* Reserved for future usage */
+	uchar rsvd    : 3; /* Reserved for future usage */
 	uchar loglvl  : 2;
 } settings;
 
@@ -87,7 +86,7 @@ static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
-static settings cfg = {0, 0, 0, 0, 0, INFO};
+static settings cfg = {0, 0, 0, 0, INFO};
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -190,7 +189,7 @@ static void remove_commas(char *str)
 	*iter1 = '\0';
 }
 
-/* Evaluate arithmetic expression without bc/calc */
+/* Evaluate arithmetic expression */
 static int eval_expr(char *expr_str, maxfloat_t *result);
 
 /* Forward declarations for recursive descent parser */
@@ -248,7 +247,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = sqrtl(*result);
 		return 0;
 	}
-	
+
 	/* cbrt */
 	if (strncmp(&expr[*pos], "cbrt", 4) == 0 && !isalnum(expr[*pos + 4])) {
 		*pos += 4;
@@ -269,7 +268,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = cbrtl(*result);
 		return 0;
 	}
-	
+
 	/* abs */
 	if (strncmp(&expr[*pos], "abs", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -290,7 +289,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = fabsl(*result);
 		return 0;
 	}
-	
+
 	/* floor */
 	if (strncmp(&expr[*pos], "floor", 5) == 0 && !isalnum(expr[*pos + 5])) {
 		*pos += 5;
@@ -311,7 +310,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = floorl(*result);
 		return 0;
 	}
-	
+
 	/* ceil */
 	if (strncmp(&expr[*pos], "ceil", 4) == 0 && !isalnum(expr[*pos + 4])) {
 		*pos += 4;
@@ -332,7 +331,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = ceill(*result);
 		return 0;
 	}
-	
+
 	/* round */
 	if (strncmp(&expr[*pos], "round", 5) == 0 && !isalnum(expr[*pos + 5])) {
 		*pos += 5;
@@ -353,7 +352,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = roundl(*result);
 		return 0;
 	}
-	
+
 	/* exp */
 	if (strncmp(&expr[*pos], "exp", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -374,7 +373,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = expl(*result);
 		return 0;
 	}
-	
+
 	/* log base 10 */
 	if (strncmp(&expr[*pos], "log", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -399,7 +398,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = log10l(*result);
 		return 0;
 	}
-	
+
 	/* ln natural logarithm */
 	if (strncmp(&expr[*pos], "ln", 2) == 0 && !isalnum(expr[*pos + 2])) {
 		*pos += 2;
@@ -425,7 +424,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
-	
+
 	/* min */
 	if (strncmp(&expr[*pos], "min", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -455,7 +454,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		*result = (left < right) ? left : right;
 		return 0;
 	}
-	
+
 	/* max */
 	if (strncmp(&expr[*pos], "max", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -591,7 +590,7 @@ static int parse_expr(const char *expr, int *pos, maxfloat_t *result)
 static int eval_expr(char *expr_str, maxfloat_t *result)
 {
 	int pos = 0;
-	
+
 	if (!expr_str || !*expr_str) {
 		log(ERROR, "empty expression\n");
 		return -1;
@@ -613,17 +612,17 @@ static int eval_expr(char *expr_str, maxfloat_t *result)
 static void format_result(maxfloat_t result, char *buf, size_t buflen)
 {
 	snprintf(buf, buflen, "%.6Lf", result);
-	
+
 	/* Find decimal point */
 	char *dot = strchr(buf, '.');
 	if (!dot)
 		return;
-	
+
 	/* Find last non-zero digit after decimal point */
 	char *end = buf + strlen(buf) - 1;
 	while (end > dot && *end == '0')
 		end--;
-	
+
 	/* If we stopped at the decimal point, remove it too */
 	if (end == dot) {
 		*dot = '\0';
@@ -1548,7 +1547,7 @@ static void show_basic_sizes()
 static void prompt_help()
 {
 	printf("prompt keys:\n\
- b          toggle bc mode\n\
+ b          toggle numeric expression mode\n\
  r          show result from last operation\n\
  s          show sizes of storage types\n\
  ?          show prompt help\n\
@@ -1557,8 +1556,8 @@ static void prompt_help()
 
 static void usage()
 {
-	printf("usage: bcal [-c N] [-f loc] [-s bytes] [expr]\n\
-            [N [unit]] [-b [expr]] [-m] [-p] [-d] [-h]\n\n\
+	printf("usage: bcal [-b [expr]] [-c N] [-p N]\n\
+	    [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
@@ -1567,13 +1566,13 @@ positional arguments:\n\
             default unit is B (byte), case is ignored\n\
             N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
+ -b [expr]  enter numeric expression mode or evaluate\n\
  -c N       show +ve integer N in binary, decimal, hex\n\
+ -p N       show bit position (reversed if set) and value\n\
  -f loc     convert CHS to LBA or LBA to CHS\n\
             refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
- -b [expr]  enter bc mode or evaluate expression in bc\n\
  -m         show minimal output (e.g. decimal bytes)\n\
- -p N       show bit position (reversed if set) and value\n\
  -d         enable debug information and logs\n\
  -h         show this help\n\n");
 
@@ -2448,9 +2447,6 @@ int main(int argc, char **argv)
 	int opt = 0, operation = 0;
 	ulong sectorsz = SECTOR_SIZE;
 
-	if (getenv("BCAL_USE_CALC"))
-		cfg.calc = true;
-
 	opterr = 0;
 	rl_bind_key('\t', rl_insert);
 
@@ -2496,7 +2492,7 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			cfg.bcmode = 1;
+			cfg.expr = 1;
 			strncpy(prompt, "expr> ", 7);
 			break;
 		case 'd':
@@ -2556,7 +2552,7 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
-			if (!cfg.bcmode)
+			if (!cfg.expr)
 				remove_commas(tmp);
 
 			if (tmp[0] == '\0') {
@@ -2585,8 +2581,8 @@ int main(int argc, char **argv)
 					free(ptr);
 					continue;
 				case 'b':
-					cfg.bcmode ^= 1;
-					if (cfg.bcmode) {
+					cfg.expr ^= 1;
+					if (cfg.expr) {
 						printf("operators: +, -, *, /, ^ (power), sqrt(x)\n");
 						strncpy(prompt, "expr> ", 7);
 					} else
@@ -2615,19 +2611,19 @@ int main(int argc, char **argv)
 				}
 			}
 
-			if (!cfg.bcmode && tmp[0] == 'c') {
+			if (!cfg.expr && tmp[0] == 'c') {
 				convertbase(tmp + 1, false);
 				free(ptr);
 				continue;
 			}
 
-			if (!cfg.bcmode && tmp[0] == 'p') {
+			if (!cfg.expr && tmp[0] == 'p') {
 				convertbase(tmp + 1, true);
 				free(ptr);
 				continue;
 			}
 
-			if (cfg.bcmode) {
+			if (cfg.expr) {
 				maxfloat_t result;
 				if (eval_expr(tmp, &result) == 0) {
 					if (result == (long long)result) {
@@ -2663,7 +2659,7 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
-		if (cfg.bcmode) {
+		if (cfg.expr) {
 			maxfloat_t result;
 			if (eval_expr(argv[optind], &result) == 0) {
 				if (result == (long long)result) {

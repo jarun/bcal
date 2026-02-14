@@ -2,16 +2,12 @@
 .SH NAME
 bcal \- Storage expression calculator.
 .SH SYNOPSIS
-.B bcal [-c N] [-f loc] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-p] [-d] [-h]
+.B bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving binary prefixes, SI/IEC conversion, byte addressing, base conversion, LBA/CHS calculation etc.
 .PP
-It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also invoke \fBcalc\fR (\fIhttp://www.isthe.com/chongo/tech/comp/calc/\fR). To use \fBcalc\fR:
-.PP
-.EX
-.B export BCAL_USE_CALC=1
-.EE
+It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical calculations.
 .PP
 \fBbcal\fR uses [SI and IEC binary prefixes]:
 .I https://en.wikipedia.org/wiki/Binary_prefix
@@ -19,7 +15,10 @@ It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also 
 .SH FEATURES
 .PP
   * evaluate arithmetic expressions involving storage units
-  * perform general purpose calculations (using bc or calc)
+  * perform general purpose calculations (built-in expression mode)
+    - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
+    - bitwise operators: AND, OR, XOR, left shift, right shift
+    - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), min, max
   * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
   * interactive mode with the last valid result stored for reuse
@@ -70,11 +69,17 @@ It invokes GNU \fBbc\fR for non-storage expressions. Alternatively, it can also 
   - max sectors per track: 0x3f (63)
 .PP
 .IP 10. 4
-\fBbc variables\fR: \fIscale\fR = 10, \fIibase\fR = 10. \fBr\fR is synced and can be used in expressions. \fBbc\fR is not called in minimal output mode. To use \fBcalc\fR instead of \fBbc\fR, \fIexport BCAL_USE_CALC=1\fR.
+\fBExpression mode\fR: \fBr\fR is synced and can be used in expressions. The built-in evaluator uses \fIlong double\fR arithmetic.
 .SH OPTIONS
+.TP
+.BI "-b=" [expr]
+Start in numeric expression mode. If expression is provided, evaluate and quit.
 .TP
 .BI "-c=" N
 Show decimal, binary and hex representation of positive integer \fIN\fR.
+.TP
+.BI "-p=" N
+Show bit position (reversed if set) and bit value of a number.
 .TP
 .BI "-f=" loc
 Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS. Please refer to the \fBOperational Notes\fR section for more details.
@@ -82,14 +87,8 @@ Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation o
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.
 .TP
-.BI "-b=" [expr]
-Start in \fBbc\fR mode. If expression is provided, evaluate in \fBbc\fR and quit.
-.TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
-.TP
-.BI "-p"
-Show bit position (reversed if set) and bit value of a number.
 .TP
 .BI "-d"
 Enable debug information and logs.
@@ -99,7 +98,7 @@ Show program help, storage sizes on the system and exit.
 .SH PROMPT KEYS
 .TP
 .BI "b"
-Toggle \fBbc\fR mode.
+Toggle numeric expression mode.
 .TP
 .BI "r"
 Show result from last operation.
@@ -179,14 +178,13 @@ Show binary, decimal and hex representations of a number.
 .EE
 .PP
 .IP 7. 4
-Invoke \fIbc\fR.
+Use expression mode.
 .PP
 .EX
 .IP
 .B $ bcal -b '3.5 * 2.1 + 5.7'
 .B bcal> b  // Interactive mode
-.B bc vars: scale = 10, ibase = 10, last = r
-.B bc> 3.5 * 2.1 + 5.7
+.B expr> 3.5 * 2.1 + 5.7
 .EE
 .PP
 .IP 8. 4

@@ -15,7 +15,7 @@
 
 `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
 
-It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations. Alternatively, it can also invoke the more featured [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) which works better with expressions involving multiple bases.
+It includes a built-in expression mode (`-b`) for general-purpose numerical calculations.
 
 `bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
@@ -38,7 +38,10 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 - REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
-- perform general purpose calculations (using bc or calc)
+- perform general purpose calculations (built-in expression mode)
+  - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
+  - bitwise operators: AND, OR, XOR, left shift, right shift
+  - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), min, max
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse
@@ -54,11 +57,7 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)). It invokes GNU `bc` or `calc` for non-storage expressions.
-
-To use `calc`:
-
-    export BCAL_USE_CALC=1
+`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)).
 
 #### From a package manager
 
@@ -121,14 +120,14 @@ optional arguments:
  -f loc     convert CHS to LBA or LBA to CHS
             refer to the operational notes in man page
  -s bytes   sector size [default 512]
- -b [expr]  enter bc mode or evaluate expression in bc
+ -b [expr]  enter expression mode or evaluate expression
  -m         show minimal output (e.g. decimal bytes)
  -p N       show bit position (reversed if set) and value
  -d         enable debug information and logs
  -h         show this help
 
 prompt keys:
- b          toggle bc mode
+ b          toggle expression mode
  r          show result from last operation
  s          show sizes of storage types
  ?          show prompt help
@@ -156,7 +155,7 @@ prompt keys:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: `scale` = 10, `ibase` = 10. `r` is synced and can be used in expressions. `bc` is not called in minimal output mode.
+- **Expression mode**: `r` is synced and can be used in expressions. The built-in evaluator uses `long double` arithmetic.
 
 ### Examples
 
@@ -194,12 +193,11 @@ prompt keys:
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
        bcal> c 20140115  // Interactive mode
-7. Invoke `bc`.
+7. Use expression mode.
 
        $ bcal -b '3.5 * 2.1 + 5.7'
        bcal> b  // Interactive mode
-       bc vars: scale = 10, ibase = 10, last = r
-       bc> 3.5 * 2.1 + 5.7
+       expr> 3.5 * 2.1 + 5.7
 8. Pipe input.
 
        $ printf '15 kib + 15 gib \n r / 5' | bcal -m
