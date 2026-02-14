@@ -352,7 +352,7 @@ static int try_bc(char *expr)
 	return -1;
 }
 
-static void binprint(maxuint_t n)
+static void printbin(maxuint_t n)
 {
 	int count = MAX_BITS - 1;
 	int pos = MAX_BITS + (MAX_BITS >> 2) - 1;
@@ -2076,7 +2076,7 @@ int convertbase(char *arg)
 	}
 
 	printf(" (b) ");
-	binprint(val);
+	printbin(val);
 	printf("\n (d) %s\n (h) ",
 		getstr_u128(val, uint_buf));
 	printhex_u128(val);
