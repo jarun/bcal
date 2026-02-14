@@ -220,6 +220,10 @@ prompt keys:
 11. Use as a general-purpose calculator.
 
         $ bcal -b
+12. Show bit positions with values.
+
+<img width="1033" height="138" alt="bcal bit position" src="https://github.com/user-attachments/assets/1b4a6c5e-8b3f-4d4b-a4dd-9045689f7dd8" />
+
 
 ### Testing
 
