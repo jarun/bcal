@@ -103,8 +103,8 @@ $ make strip install
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f loc] [-s bytes] [expr]
-            [N [unit]] [-b [expr]] [-m] [-p] [-d] [-h]
+usage: bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes]
+            [expr] [N [unit]] [-m] [-d] [-h]
 
 Storage expression calculator.
 
@@ -116,13 +116,13 @@ positional arguments:
             N can be decimal or '0x' prefixed hex value
 
 optional arguments:
+ -b [expr]  enter expression mode or evaluate expression
  -c N       show +ve integer N in binary, decimal, hex
+ -p N       show bit position (reversed if set) and value
  -f loc     convert CHS to LBA or LBA to CHS
             refer to the operational notes in man page
  -s bytes   sector size [default 512]
- -b [expr]  enter expression mode or evaluate expression
  -m         show minimal output (e.g. decimal bytes)
- -p N       show bit position (reversed if set) and value
  -d         enable debug information and logs
  -h         show this help
 
