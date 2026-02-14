@@ -21,6 +21,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -832,7 +833,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 
 	/* Parse number (decimal or hex) */
 	char *endptr;
-	maxfloat_t val = strtold(&expr[*pos], (char **)&endptr);
+	maxfloat_t val = strtold(&expr[*pos], &endptr);
 	if (endptr == &expr[*pos]) {
 		log(ERROR, "invalid number\n");
 		return -1;
@@ -965,6 +966,20 @@ static void format_result(maxfloat_t result, char *buf, size_t buflen)
 	}
 }
 
+static int is_integral_result(maxfloat_t value, long long *out)
+{
+	long double intpart;
+
+	if (modfl(value, &intpart) != 0.0L)
+		return 0;
+
+	if (intpart < (long double)LLONG_MIN || intpart > (long double)LLONG_MAX)
+		return 0;
+
+	*out = (long long)intpart;
+	return 1;
+}
+
 /* Evaluate expression and print result */
 static int evaluate_expr(char *expr)
 {
@@ -977,9 +992,10 @@ static int evaluate_expr(char *expr)
 
 	maxfloat_t result;
 	if (eval_expr(expr, &result) == 0) {
-		if (result == (long long)result) {
-			printf("%lld\n", (long long)result);
-			snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+		long long int_result;
+		if (is_integral_result(result, &int_result)) {
+			printf("%lld\n", int_result);
+			snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
 		} else {
 			format_result(result, lastres.p, UINT_BUF_LEN);
 			printf("%s\n", lastres.p);
@@ -3039,9 +3055,10 @@ int main(int argc, char **argv)
 
 				maxfloat_t result;
 				if (eval_expr(tmp, &result) == 0) {
-					if (result == (long long)result) {
-						printf("%lld\n", (long long)result);
-						snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+					long long int_result;
+					if (is_integral_result(result, &int_result)) {
+						printf("%lld\n", int_result);
+						snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
 					} else {
 						format_result(result, lastres.p, UINT_BUF_LEN);
 						printf("%s\n", lastres.p);
@@ -3105,9 +3122,10 @@ int main(int argc, char **argv)
 
 			maxfloat_t result;
 			if (eval_expr(tmp, &result) == 0) {
-				if (result == (long long)result) {
-					printf("%lld\n", (long long)result);
-					snprintf(lastres.p, UINT_BUF_LEN, "%lld", (long long)result);
+				long long int_result;
+				if (is_integral_result(result, &int_result)) {
+					printf("%lld\n", int_result);
+					snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
 				} else {
 					format_result(result, lastres.p, UINT_BUF_LEN);
 					printf("%s\n", lastres.p);
