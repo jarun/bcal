@@ -193,22 +193,30 @@ prompt keys:
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
        bcal> c 20140115  // Interactive mode
-7. Use expression mode.
+7. Perform bitwise operations.
+
+       $ bcal -b '0xFF & 0x0F'              // AND: 0xFF AND 0x0F = 15
+       $ bcal -b '0x0F | 0xF0'              // OR: 0x0F OR 0xF0 = 255
+       $ bcal -b '0xFF ^ 0xF0'              // XOR: 0xFF XOR 0xF0 = 15
+       $ bcal -b '0x01 << 3'                // Left shift: 0x01 << 3 = 8
+       $ bcal -b '0x10 >> 2'                // Right shift: 0x10 >> 2 = 4
+       $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'  // Combined operations
+8. Use expression mode.
 
        $ bcal -b '3.5 * 2.1 + 5.7'
        bcal> b  // Interactive mode
        expr> 3.5 * 2.1 + 5.7
-8. Pipe input.
+9. Pipe input.
 
        $ printf '15 kib + 15 gib \n r / 5' | bcal -m
        $ printf '15 + 15 + 2' | bcal -bm
-9. Redirect from file.
+10. Redirect from file.
 
        $ cat expr
        15 gib + 15 kib
        r / 5
        $ bcal -m < expr
-10. Use as a general-purpose calculator.
+11. Use as a general-purpose calculator.
 
         $ bcal -b
 

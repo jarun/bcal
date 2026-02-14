@@ -178,6 +178,19 @@ Show binary, decimal and hex representations of a number.
 .EE
 .PP
 .IP 7. 4
+Perform bitwise operations.
+.PP
+.EX
+.IP
+.B $ bcal -b '0xFF & 0x0F'              // AND: result = 15
+.B $ bcal -b '0x0F | 0xF0'              // OR: result = 255
+.B $ bcal -b '0xFF ^ 0xF0'              // XOR: result = 15
+.B $ bcal -b '0x01 << 3'                // Left shift: result = 8
+.B $ bcal -b '0x10 >> 2'                // Right shift: result = 4
+.B $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'  // Combined operations
+.EE
+.PP
+.IP 8. 4
 Use expression mode.
 .PP
 .EX
@@ -187,7 +200,7 @@ Use expression mode.
 .B expr> 3.5 * 2.1 + 5.7
 .EE
 .PP
-.IP 8. 4
+.IP 9. 4
 Pipe input.
 .PP
 .EX
@@ -196,7 +209,7 @@ Pipe input.
 .B $ printf '15 + 15 + 2' | bcal -bm
 .EE
 .PP
-.IP 9. 4
+.IP 10. 4
 Redirect from file.
 .PP
 .EX
@@ -207,7 +220,7 @@ Redirect from file.
 .B $ bcal -m < expr
 .EE
 .PP
-.IP 10. 4
+.IP 11. 4
 Use as a general-purpose calculator.
 .PP
 .EX
