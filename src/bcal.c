@@ -209,9 +209,8 @@ static void remove_thousands_commas(char *str)
 				while (j > 0 && isalnum((unsigned char)str[j]))
 					j--;
 				/* If we found alphanumeric chars right before '(', it's likely a function */
-				if (j < write - 1 && isalpha((unsigned char)str[j + 1]))
-					is_function = 1;
-				else if (write > 0 && isalpha((unsigned char)str[write - 1]))
+				if ((j < write - 1 && isalpha((unsigned char)str[j + 1])) ||
+				    (write > 0 && isalpha((unsigned char)str[write - 1])))
 					is_function = 1;
 			}
 			if (is_function)
