@@ -1872,8 +1872,8 @@ static void prompt_help()
 
 static void usage()
 {
-	printf("usage: bcal [-b [expr]] [-c N] [-p N]\n\
-	    [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
+	printf("usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]\n\
+	    [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
 Storage expression calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\

@@ -103,8 +103,8 @@ $ make strip install
 #### cmdline options
 
 ```
-usage: bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes]
-            [expr] [N [unit]] [-m] [-d] [-h]
+usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]
+            [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 
 Storage expression calculator.
 
