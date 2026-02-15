@@ -632,90 +632,6 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
-	/* abs */
-	if (strncmp(&expr[*pos], "abs", 3) == 0 && !isalnum(expr[*pos + 3])) {
-		*pos += 3;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "abs requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = fabsl(*result);
-		return 0;
-	}
-
-	/* floor */
-	if (strncmp(&expr[*pos], "floor", 5) == 0 && !isalnum(expr[*pos + 5])) {
-		*pos += 5;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "floor requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = floorl(*result);
-		return 0;
-	}
-
-	/* ceil */
-	if (strncmp(&expr[*pos], "ceil", 4) == 0 && !isalnum(expr[*pos + 4])) {
-		*pos += 4;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "ceil requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = ceill(*result);
-		return 0;
-	}
-
-	/* round */
-	if (strncmp(&expr[*pos], "round", 5) == 0 && !isalnum(expr[*pos + 5])) {
-		*pos += 5;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "round requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = roundl(*result);
-		return 0;
-	}
-
 	/* exp */
 	if (strncmp(&expr[*pos], "exp", 3) == 0 && !isalnum(expr[*pos + 3])) {
 		*pos += 3;
@@ -841,28 +757,10 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 	return 0;
 }
 
-/* Parse power operator (^) - right associative */
-static int parse_power(const char *expr, int *pos, maxfloat_t *result)
-{
-	if (parse_factor(expr, pos, result) == -1)
-		return -1;
-
-	skip_space(expr, pos);
-	if (expr[*pos] == '^') {
-		(*pos)++;
-		maxfloat_t right;
-		if (parse_power(expr, pos, &right) == -1)
-			return -1;
-		*result = powl(*result, right);
-	}
-
-	return 0;
-}
-
-/* Parse multiplication and division */
+	/* Parse multiplication and division */
 static int parse_term(const char *expr, int *pos, maxfloat_t *result)
 {
-	if (parse_power(expr, pos, result) == -1)
+	if (parse_factor(expr, pos, result) == -1)
 		return -1;
 
 	while (1) {
@@ -870,13 +768,13 @@ static int parse_term(const char *expr, int *pos, maxfloat_t *result)
 		if (expr[*pos] == '*') {
 			(*pos)++;
 			maxfloat_t right;
-			if (parse_power(expr, pos, &right) == -1)
+			if (parse_factor(expr, pos, &right) == -1)
 				return -1;
 			*result = *result * right;
 		} else if (expr[*pos] == '/') {
 			(*pos)++;
 			maxfloat_t right;
-			if (parse_power(expr, pos, &right) == -1)
+			if (parse_factor(expr, pos, &right) == -1)
 				return -1;
 			if (right == 0) {
 				log(ERROR, "division by zero\n");

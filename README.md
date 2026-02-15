@@ -39,9 +39,9 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
 - REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
 - perform general purpose calculations (built-in expression mode)
-  - arithmetic operators: addition, subtraction, multiplication, division, modulo, exponentiation
+  - arithmetic operators: addition, subtraction, multiplication, division, modulo
   - bitwise operators: AND, OR, XOR, complement, left shift, right shift
-  - functions: sqrt, cbrt, abs, floor, ceil, round, exp, log (base 10), ln (natural log), pow
+  - functions: sqrt, cbrt, exp, log (base 10), ln (natural log), pow
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
 - interactive mode with the last valid result stored for reuse
