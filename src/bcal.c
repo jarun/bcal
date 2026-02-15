@@ -629,8 +629,10 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
-	/* log base 10 */
+	/* log base */
 	if (strncmp(&expr[*pos], "log", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		maxfloat_t base;
+		maxfloat_t num;
 		*pos += 3;
 		skip_space(expr, pos);
 		if (expr[*pos] != '(') {
@@ -638,7 +640,15 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 			return -1;
 		}
 		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
+		if (parse_expr(expr, pos, &base) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "log requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &num) == -1)
 			return -1;
 		skip_space(expr, pos);
 		if (expr[*pos] != ')') {
@@ -646,11 +656,15 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 			return -1;
 		}
 		(*pos)++;
-		if (*result <= 0) {
+		if (base <= 0 || base == 1) {
+			log(ERROR, "log base must be positive and not 1\n");
+			return -1;
+		}
+		if (num <= 0) {
 			log(ERROR, "log of non-positive number\n");
 			return -1;
 		}
-		*result = log10l(*result);
+		*result = logl(num) / logl(base);
 		return 0;
 	}
 
