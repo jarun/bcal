@@ -3006,6 +3006,14 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
+
+			if (tmp[0] == '\0') {
+				free(ptr);
+				continue;
+			}
+
+			add_history(tmp);
+
 			if (cfg.expr) {
 				if (has_function_call(tmp))
 					remove_thousands_commas(tmp);
@@ -3014,15 +3022,8 @@ int main(int argc, char **argv)
 			} else
 				remove_commas(tmp);
 
-			if (tmp[0] == '\0') {
-				free(ptr);
-				continue;
-			}
-
 			log(DEBUG, "ptr: [%s]\n", ptr);
 			log(DEBUG, "tmp: [%s]\n", ptr);
-
-			add_history(tmp);
 
 			if ((strlen(tmp) == 1) && tmp[1] == '\0') {
 				switch (tmp[0]) {
