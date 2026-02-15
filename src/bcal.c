@@ -773,7 +773,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 	char *endptr;
 	maxfloat_t val = strtold(&expr[*pos], &endptr);
 	if (endptr == &expr[*pos]) {
-		log(ERROR, "invalid number\n");
+		log(ERROR, "invalid operand or unit\n");
 		return -1;
 	}
 	*pos = (int)(endptr - expr);
