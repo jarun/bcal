@@ -219,8 +219,14 @@ prompt keys:
        $ bcal -m < expr
 11. Use as a general-purpose calculator.
 
-        $ bcal -b
-12. Show bit positions with values.
+       $ bcal -b
+12. Use mathematical functions.
+
+       $ bcal -b 'sqrt(17.3)'
+       $ bcal -b 'exp(5.2)'
+       $ bcal -b 'pow(2, 8)'
+       $ bcal -b 'pow(10, 3) + sqrt(9)'
+13. Show bit positions with values.
 
 <img width="1033" height="138" alt="bcal bit position" src="https://github.com/user-attachments/assets/1b4a6c5e-8b3f-4d4b-a4dd-9045689f7dd8" />
 
