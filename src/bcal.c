@@ -190,6 +190,27 @@ static void remove_commas(char *str)
 	*iter1 = '\0';
 }
 
+static bool has_function_call(const char *str)
+{
+	if (!str || !*str)
+		return false;
+
+	for (size_t i = 0; str[i] != '\0'; ++i) {
+		if (isalpha((unsigned char)str[i])) {
+			size_t j = i + 1;
+			while (isalnum((unsigned char)str[j]))
+				++j;
+			while (isspace((unsigned char)str[j]))
+				++j;
+			if (str[j] == '(')
+				return true;
+			i = j;
+		}
+	}
+
+	return false;
+}
+
 static void remove_thousands_commas(char *str)
 {
 	if (!str || !*str)
@@ -2971,9 +2992,12 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
-			if (cfg.expr)
-				remove_thousands_commas(tmp);
-			else
+			if (cfg.expr) {
+				if (has_function_call(tmp))
+					remove_thousands_commas(tmp);
+				else
+					remove_commas(tmp);
+			} else
 				remove_commas(tmp);
 
 			if (tmp[0] == '\0') {
@@ -3108,8 +3132,12 @@ int main(int argc, char **argv)
 		if (!tmp)
 			return -1;
 		strstrip(tmp);
-		if (cfg.expr)
-			remove_thousands_commas(tmp);
+		if (cfg.expr) {
+			if (has_function_call(tmp))
+				remove_thousands_commas(tmp);
+			else
+				remove_commas(tmp);
+		}
 
 		/* Check for bitwise operations first, but only if no units are present */
 		if (has_bitwise_ops(tmp) && !has_units(tmp)) {
