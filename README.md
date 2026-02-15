@@ -213,19 +213,19 @@ prompt keys:
        $ printf '15 + 15 + 2' | bcal -bm
 10. Redirect from file.
 
-       $ cat expr
-       15 gib + 15 kib
-       r / 5
-       $ bcal -m < expr
+        $ cat expr
+        15 gib + 15 kib
+        r / 5
+        $ bcal -m < expr
 11. Use as a general-purpose calculator.
 
-       $ bcal -b
+        $ bcal -b
 12. Use mathematical functions.
 
-       $ bcal -b 'root(2, 17.3)'
-       $ bcal -b 'exp(5.2)'
-       $ bcal -b 'pow(2, 8)'
-       $ bcal -b 'pow(10, 3) + root(2, 9)'
+        $ bcal -b 'root(2, 17.3)'  // square root of 17.3
+        $ bcal -b 'exp(5.2)'
+        $ bcal -b 'pow(2, 8)'
+        $ bcal -b 'pow(10, 3) + root(2, 9)'
 13. Show bit positions with values.
 
 <img width="1033" height="138" alt="bcal bit position" src="https://github.com/user-attachments/assets/1b4a6c5e-8b3f-4d4b-a4dd-9045689f7dd8" />
