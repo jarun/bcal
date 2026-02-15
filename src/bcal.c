@@ -558,7 +558,6 @@ static int eval_expr(char *expr_str, maxfloat_t *result);
 static int parse_expr(const char *expr, int *pos, maxfloat_t *result);
 static int parse_factor(const char *expr, int *pos, maxfloat_t *result);
 static int parse_term(const char *expr, int *pos, maxfloat_t *result);
-static int parse_power(const char *expr, int *pos, maxfloat_t *result);
 static char *fixexpr(char *exp, int *unitless);
 
 /* Skip whitespace */
@@ -568,7 +567,7 @@ static void skip_space(const char *expr, int *pos)
 		(*pos)++;
 }
 
-/* Parse primary expression: numbers, parentheses, sqrt() */
+/* Parse primary expression: numbers, parentheses, functions */
 static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 {
 	skip_space(expr, pos);
@@ -586,51 +585,7 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
-	/* Check for sqrt() function */
-	if (strncmp(&expr[*pos], "sqrt", 4) == 0 && !isalnum(expr[*pos + 4])) {
-		*pos += 4;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "sqrt requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (*result < 0) {
-			log(ERROR, "sqrt of negative number\n");
-			return -1;
-		}
-		*result = sqrtl(*result);
-		return 0;
-	}
 
-	/* cbrt */
-	if (strncmp(&expr[*pos], "cbrt", 4) == 0 && !isalnum(expr[*pos + 4])) {
-		*pos += 4;
-		skip_space(expr, pos);
-		if (expr[*pos] != '(') {
-			log(ERROR, "cbrt requires parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		if (parse_expr(expr, pos, result) == -1)
-			return -1;
-		skip_space(expr, pos);
-		if (expr[*pos] != ')') {
-			log(ERROR, "missing closing parenthesis\n");
-			return -1;
-		}
-		(*pos)++;
-		*result = cbrtl(*result);
-		return 0;
-	}
 
 	/* exp */
 	if (strncmp(&expr[*pos], "exp", 3) == 0 && !isalnum(expr[*pos + 3])) {
@@ -703,6 +658,40 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
+
+	/* root */
+	if (strncmp(&expr[*pos], "root", 4) == 0 && !isalnum(expr[*pos + 4])) {
+		*pos += 4;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "root requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		maxfloat_t n, x;
+		if (parse_expr(expr, pos, &n) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "root requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &x) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (n == 0) {
+			log(ERROR, "root index cannot be zero\n");
+			return -1;
+		}
+		*result = powl(x, 1.0L / n);
+		return 0;
+	}
 
 	/* pow */
 	if (strncmp(&expr[*pos], "pow", 3) == 0 && !isalnum(expr[*pos + 3])) {

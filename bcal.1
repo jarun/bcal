@@ -18,7 +18,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
   * perform general purpose calculations (built-in expression mode)
     - arithmetic operators: addition, subtraction, multiplication, division, modulo
     - bitwise operators: AND, OR, XOR, complement, left shift, right shift
-    - functions: sqrt, cbrt, exp, log (base 10), ln (natural log), pow
+    - functions: exp, log (base 10), ln (natural log), pow, root
   * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
   * interactive mode with the last valid result stored for reuse
@@ -234,10 +234,10 @@ Use mathematical functions.
 .PP
 .EX
 .IP
-.B $ bcal -b 'sqrt(17.3)'
+.B $ bcal -b 'root(2, 17.3)'
 .B $ bcal -b 'exp(5.2)'
 .B $ bcal -b 'pow(2, 8)'
-.B $ bcal -b 'pow(10, 3) + sqrt(9)'
+.B $ bcal -b 'pow(10, 3) + root(2, 9)'
 .EE
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>
