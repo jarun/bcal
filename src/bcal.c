@@ -3079,6 +3079,7 @@ int main(int argc, char **argv)
 				}
 
 				if (tmp[0] == 'p' && !isalpha(tmp[1])) {
+					convertbase(tmp + 1, true);
 					free(ptr);
 					continue;
 				}
