@@ -2975,13 +2975,20 @@ int main(int argc, char **argv)
 		char *ptr = NULL, *tmp = NULL;
 		cfg.repl = 1;
 		int enters = 0;
+		int is_tty = isatty(STDIN_FILENO);
 
 		read_history(NULL);
 
 		printf("q/double Enter -> quit, ? -> help\n");
-		while ((tmp = readline(prompt)) != NULL) {
+		while (1) {
+			/* Manually print prompt for non-TTY mode (e.g., tests with pipes) */
+			if (!is_tty) {
+				printf("%s", prompt);
+				fflush(stdout);
+			}
+			tmp = readline(prompt);
 			if (!tmp)
-				exit(0);
+				break;
 
 			if (program_exit(tmp)) {
 				free(tmp);
