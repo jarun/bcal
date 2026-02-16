@@ -79,7 +79,8 @@ test = [
     ('./bcal', "-c", "340282366920938463463374607431768211455"),       # 54
     ('./bcal', "-c", "0b1111111111111111111111111111111111111111111111111111111111111111"),                                                                   # 55
     ('./bcal', "-c", "0b111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"),  # 56
-    ('./bcal', '-m', "1kib/ 4kb"),                                     # 57
+    ('./bcal', '-p', '0xffffffffffffffffffffffffffffffff'),            # 57 - bit positions of 128-bit number
+    ('./bcal', '-m', "1kib/ 4kb"),                                     # 58
     ('./bcal', '-m', "0kib /4kb"),                                     # 58
     ('./bcal', '-m', "{10+2"),                                         # 59
     ('./bcal', '-m', "10 + 2]"),                                       # 60
@@ -164,30 +165,31 @@ res = [
     b' (b) 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111\n (d) 340282366920938463463374607431768211455\n (h) 0xffffffffffffffffffffffffffffffff\n\n',  # 54
     b' (b) 11111111 11111111 11111111 11111111 11111111 11111111 11111111 11111111\n (d) 18446744073709551615\n (h) 0xffffffffffffffff\n\n',  # 55
     b'ERROR: invalid input\n\n',                     # 56
-    b'WARNING: result truncated\n0\n',               # 57
-    b'0\n',                                          # 58
-    b'ERROR: first brackets only\n',                 # 59
+    b'\n\x1b[7m 31\x1b[0m \x1b[7m 30\x1b[0m \x1b[7m 29\x1b[0m \x1b[7m 28\x1b[0m \x1b[7m 27\x1b[0m \x1b[7m 26\x1b[0m \x1b[7m 25\x1b[0m \x1b[7m 24\x1b[0m \x1b[7m 23\x1b[0m \x1b[7m 22\x1b[0m \x1b[7m 21\x1b[0m \x1b[7m 20\x1b[0m \x1b[7m 19\x1b[0m \x1b[7m 18\x1b[0m \x1b[7m 17\x1b[0m \x1b[7m 16\x1b[0m \x1b[7m 15\x1b[0m \x1b[7m 14\x1b[0m \x1b[7m 13\x1b[0m \x1b[7m 12\x1b[0m \x1b[7m 11\x1b[0m \x1b[7m 10\x1b[0m \x1b[7m  9\x1b[0m \x1b[7m  8\x1b[0m \x1b[7m  7\x1b[0m \x1b[7m  6\x1b[0m \x1b[7m  5\x1b[0m \x1b[7m  4\x1b[0m \x1b[7m  3\x1b[0m \x1b[7m  2\x1b[0m \x1b[7m  1\x1b[0m \x1b[7m  0\x1b[0m \n  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \n\n\x1b[7m 63\x1b[0m \x1b[7m 62\x1b[0m \x1b[7m 61\x1b[0m \x1b[7m 60\x1b[0m \x1b[7m 59\x1b[0m \x1b[7m 58\x1b[0m \x1b[7m 57\x1b[0m \x1b[7m 56\x1b[0m \x1b[7m 55\x1b[0m \x1b[7m 54\x1b[0m \x1b[7m 53\x1b[0m \x1b[7m 52\x1b[0m \x1b[7m 51\x1b[0m \x1b[7m 50\x1b[0m \x1b[7m 49\x1b[0m \x1b[7m 48\x1b[0m \x1b[7m 47\x1b[0m \x1b[7m 46\x1b[0m \x1b[7m 45\x1b[0m \x1b[7m 44\x1b[0m \x1b[7m 43\x1b[0m \x1b[7m 42\x1b[0m \x1b[7m 41\x1b[0m \x1b[7m 40\x1b[0m \x1b[7m 39\x1b[0m \x1b[7m 38\x1b[0m \x1b[7m 37\x1b[0m \x1b[7m 36\x1b[0m \x1b[7m 35\x1b[0m \x1b[7m 34\x1b[0m \x1b[7m 33\x1b[0m \x1b[7m 32\x1b[0m \n  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \n\n\x1b[7m 95\x1b[0m \x1b[7m 94\x1b[0m \x1b[7m 93\x1b[0m \x1b[7m 92\x1b[0m \x1b[7m 91\x1b[0m \x1b[7m 90\x1b[0m \x1b[7m 89\x1b[0m \x1b[7m 88\x1b[0m \x1b[7m 87\x1b[0m \x1b[7m 86\x1b[0m \x1b[7m 85\x1b[0m \x1b[7m 84\x1b[0m \x1b[7m 83\x1b[0m \x1b[7m 82\x1b[0m \x1b[7m 81\x1b[0m \x1b[7m 80\x1b[0m \x1b[7m 79\x1b[0m \x1b[7m 78\x1b[0m \x1b[7m 77\x1b[0m \x1b[7m 76\x1b[0m \x1b[7m 75\x1b[0m \x1b[7m 74\x1b[0m \x1b[7m 73\x1b[0m \x1b[7m 72\x1b[0m \x1b[7m 71\x1b[0m \x1b[7m 70\x1b[0m \x1b[7m 69\x1b[0m \x1b[7m 68\x1b[0m \x1b[7m 67\x1b[0m \x1b[7m 66\x1b[0m \x1b[7m 65\x1b[0m \x1b[7m 64\x1b[0m \n  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \n\n\x1b[7m127\x1b[0m \x1b[7m126\x1b[0m \x1b[7m125\x1b[0m \x1b[7m124\x1b[0m \x1b[7m123\x1b[0m \x1b[7m122\x1b[0m \x1b[7m121\x1b[0m \x1b[7m120\x1b[0m \x1b[7m119\x1b[0m \x1b[7m118\x1b[0m \x1b[7m117\x1b[0m \x1b[7m116\x1b[0m \x1b[7m115\x1b[0m \x1b[7m114\x1b[0m \x1b[7m113\x1b[0m \x1b[7m112\x1b[0m \x1b[7m111\x1b[0m \x1b[7m110\x1b[0m \x1b[7m109\x1b[0m \x1b[7m108\x1b[0m \x1b[7m107\x1b[0m \x1b[7m106\x1b[0m \x1b[7m105\x1b[0m \x1b[7m104\x1b[0m \x1b[7m103\x1b[0m \x1b[7m102\x1b[0m \x1b[7m101\x1b[0m \x1b[7m100\x1b[0m \x1b[7m 99\x1b[0m \x1b[7m 98\x1b[0m \x1b[7m 97\x1b[0m \x1b[7m 96\x1b[0m \n  1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1   1 \n\n\n',  # 57 - bit positions of 128-bit number
+    b'WARNING: result truncated\n0\n',               # 58
+    b'0\n',                                          # 59
     b'ERROR: first brackets only\n',                 # 60
-    b'ERROR: invalid sequence >>>\n',                # 61
-    b'ERROR: invalid operator <\n',                  # 62
-    b'8388608\n',                                    # 63
-    b'1219326312467611632.3609205901\n',             # 64
-    b'36\n',                                         # 65
-    b'36 B\n',                                       # 66
-    b'1354\n',                                       # 67
-    b'1069547520\n',                                 # 68
-    b'WARNING: result truncated\n8391587\n',         # 69
-    b'374 B\n',                                      # 70
-    b'374\n',                                        # 71
-    b'72000000\n',                                   # 72
-    b'1\n',                                          # 73
-    b'7\n',                                          # 74
-    b'6\n',                                          # 75
-    b'16\n',                                         # 76
-    b'2047\n',                                       # 77
-    b'1024\n',                                       # 78
-    b'340282366920938463463374607431768211456\n',    # 79
-    b'124456\n',                                     # 80
+    b'ERROR: first brackets only\n',                 # 61
+    b'ERROR: invalid sequence >>>\n',                # 62
+    b'ERROR: invalid operator <\n',                  # 63
+    b'8388608\n',                                    # 64
+    b'1219326312467611632.3609205901\n',             # 65
+    b'36\n',                                         # 66
+    b'36 B\n',                                       # 67
+    b'1354\n',                                       # 68
+    b'1069547520\n',                                 # 69
+    b'WARNING: result truncated\n8391587\n',         # 70
+    b'374 B\n',                                      # 71
+    b'374\n',                                        # 72
+    b'72000000\n',                                   # 73
+    b'1\n',                                          # 74
+    b'7\n',                                          # 75
+    b'6\n',                                          # 76
+    b'16\n',                                         # 77
+    b'2047\n',                                       # 78
+    b'1024\n',                                       # 79
+    b'340282366920938463463374607431768211456\n',    # 80
+    b'124456\n',                                     # 81
 ]
 
 
@@ -200,3 +202,218 @@ def test_output(item, res):
         assert e.output == res
     else:
         assert out == res
+
+# REPL mode tests
+def test_repl_basic_calculation():
+    """Test basic byte calculation in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'10 mb\nq\n')
+    assert b'10000000 B' in output
+    assert b'bcal>' in output
+
+
+def test_repl_show_last_result():
+    """Test 'r' command to show last result in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'10 mb\nr\nq\n')
+    assert b'10000000 B' in output
+    assert b'r = 10000000 B' in output
+
+
+def test_repl_toggle_expression_mode():
+    """Test 'b' command to toggle general purpose expression mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'b\n5 + 3\nq\n')
+    assert b'general purpose expression mode' in output
+    assert b'8' in output
+
+
+def test_repl_show_sizes():
+    """Test 's' command to show basic sizes in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b's\nq\n')
+    # Output should contain size information
+    assert b'bcal>' in output
+
+
+def test_repl_help():
+    """Test '?' command to show help in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'?\nq\n')
+    assert b'bcal>' in output
+
+
+def test_repl_quit_with_q():
+    """Test 'q' command to quit REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'q\n')
+    # Process should exit cleanly
+    assert proc.returncode == 0
+
+
+def test_repl_double_enter_to_quit():
+    """Test double Enter to quit REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'\n\n')
+    # Process should exit cleanly
+    assert proc.returncode == 0
+
+
+def test_repl_base_conversion_in_expr_mode():
+    """Test 'c' command for base conversion in expression mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'b\nc255\nq\n')
+    assert b'general purpose expression mode' in output
+    # Should show binary, decimal, and hex representations
+    assert b'(b)' in output and b'(d)' in output and b'(h)' in output
+
+
+def test_repl_bit_positions_in_expr_mode():
+    """Test 'p' command for bit positions in expression mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'b\np255\nq\n')
+    assert b'general purpose expression mode' in output
+
+
+def test_repl_multiple_calculations():
+    """Test multiple calculations in sequence in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'1 kb\n1 mb\nq\n')
+    assert b'1000 B' in output
+    assert b'1000000 B' in output
+
+
+def test_repl_calculation_with_operators():
+    """Test calculation with operators in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'10 mb * 2\nq\n')
+    assert b'20000000 B' in output
+
+
+def test_repl_invalid_input():
+    """Test invalid input handling in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'invalid\nq\n')
+    assert b'ERROR' in output or b'invalid' in output
+
+
+def test_repl_empty_line_handling():
+    """Test empty line handling in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'\n10 mb\nq\n')
+    assert b'10000000 B' in output
+
+
+def test_repl_whitespace_handling():
+    """Test whitespace handling in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'  10   mb  \nq\n')
+    assert b'10000000 B' in output
+
+
+def test_repl_bitwise_operations():
+    """Test bitwise operations in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'5 & 3\nq\n')
+    assert b'1' in output
+
+
+def test_repl_division_operation():
+    """Test division operation in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'1 mib / 1 kib\nq\n')
+    assert b'1024' in output
+
+
+def test_repl_switching_between_modes():
+    """Test switching between byte calc and expression mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'10 mb\nb\n5 + 3\nb\n10 kb\nq\n')
+    assert b'10000000 B' in output
+    assert b'general purpose expression mode' in output
+    assert b'8' in output
+    assert b'10000 B' in output
+
+
+# Test existing cases in REPL mode
+# Extract expressions and expected results for REPL testing
+repl_test_cases = [
+    # Byte calculations with -m flag
+    ('10 mb', b'10000000 B\n'),                                              # 0
+    ('10 TiB', b'10995116277760 B\n'),                                       # 1
+    ('.1    KIb', b'102 B\n'),                                               # 2
+    ('.1 KB', b'100 B\n'),                                                   # 3
+    ('0x4         kb   *  2     +   5        mib', b'5250880 B\n'),          # 5
+    ('5*5*5*5     mIB', b'655360000 B\n'),                                   # 6
+    ('5mb*5*5*5', b'625000000 B\n'),                                         # 7
+    ('2kb+3mb/4*5+5*56mb', b'283752000 B\n'),                                # 9
+    ('( 5 * 3) * (4 * 7 b)', b'420 B\n'),                                    # 10
+    ('( 5 * 3 + 8) * (4 * 7 b)', b'644 B\n'),                                # 11
+    ('( 5 * (3 + 8 )) * (4 * 7 b )', b'1540 B\n'),                           # 12
+    ('( 5 ) * 2 mib', b'10485760 B\n'),                                      # 13
+    ('2giB*2/2', b'2147483648 B\n'),                                         # 18
+    ('1miB / 4 kib', b'256\n'),                                              # 19
+    ('(2giB*2)/2kib', b'2097152\n'),                                         # 20
+    (' 1000 ', b'1000 B\n'),                                                 # 40
+    ('0x18mb', b'24000000 B\n'),                                             # 43
+    ('1kib/ 4kb', b'WARNING: result truncated\n0\n'),                        # 57 - no B unit in REPL
+    ('0kib /4kb', b'0\n'),                                                   # 58
+    ('2 >>> 2', b'ERROR: invalid sequence >>>\n'),                           # 61
+    ('(2giB * 2) / (2kib >> 2)', b'8388608\n'),                              # 63
+    ('4 + 3 - 2 + 10 * 5 / 2 + 7 - 6 + 9 - 10 / 5 * 2', b'36\n'),            # 65
+    ('4b + 3b - 2b + 10b * 5 / 2 + 7b - 6b + 9b - 10b / 5 * 2', b'36 B\n'),  # 66
+    ('(2.2giB * 2) / (2.2kib >> 2)', b'8391587\n'),                          # 69 - returns in base format in REPL
+    ('0xbb b * 2', b'374 B\n'),                                              # 70
+    ('5 & 3', b'1\n'),                                                       # 73
+    ('5 | 2', b'7\n'),                                                       # 74
+    ('5 ^ 3', b'6\n'),                                                       # 75
+    ('1 << 8 >> 4', b'16\n'),                                                # 76
+    ('1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 | 256 | 512 | 1024', b'2047\n'),    # 77
+    ('1 << 1 << 1 << 1 << 1 << 1 << 1 << 1 << 1 << 1 << 1', b'1024\n'),      # 78
+]
+
+# Error cases to verify error handling in REPL
+repl_error_cases = [
+    ('10 lb', b'ERROR: unknown unit\n'),                                     # 4
+    ('2mb-3mib', b'ERROR: negative result\n'),                               # 15
+    ('2 mib * -2', b'ERROR: negative token\n'),                              # 16
+    ('((2giB)*(2/2)', b'ERROR: unbalanced expression\n'),                    # 24
+    ('((2giB)*1)/(2/2))', b'ERROR: unbalanced expression\n'),                # 25
+    ('(((2giB)*)2/2)', b'ERROR: invalid token\n'),                           # 27
+    ('(2giB)*2*', b'ERROR: invalid token\n'),                                # 28
+    ('2 / 3 tib', b'ERROR: unit mismatch in /\n'),                           # 39
+]
+
+
+@pytest.mark.parametrize('expr,expected', repl_test_cases)
+def test_repl_existing_cases(expr, expected):
+    """Test existing test cases in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=(expr + '\nq\n').encode())
+    assert expected in output, f"Expected {expected} in output from REPL, got: {output}"
+
+
+@pytest.mark.parametrize('expr,expected', repl_error_cases)
+def test_repl_error_cases(expr, expected):
+    """Test error cases in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=(expr + '\nq\n').encode())
+    assert expected in output, f"Expected {expected} in output from REPL, got: {output}"
+
+
+def test_repl_bit_positions_128bit():
+    """Test bit positions of 128-bit number in REPL expression mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'b\np0xffffffffffffffffffffffffffffffff\nq\n')
+    assert b'general purpose expression mode' in output
+    # Check for bit position numbers spanning all 4 32-bit groups (0-31, 32-63, 64-95, 96-127)
+    assert b'127' in output and b'96' in output and b'63' in output and b'0' in output
+    # All bits should be 1
+    assert b'1   1   1   1   1   1   1   1' in output
+
+
+def test_repl_unit_conversion():
+    """Test unit conversion in REPL mode"""
+    proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    output, _ = proc.communicate(input=b'1 gib\nq\n')
+    assert b'1073741824 B' in output
