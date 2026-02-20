@@ -26,6 +26,7 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
   - [Dependencies](#dependencies)
   - [From a package manager](#from-a-package-manager)
   - [From source](#from-source)
+  - [make options](#make-options)
   - [Termux](#termux)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
@@ -88,6 +89,19 @@ To uninstall, run:
     $ sudo make uninstall
 
 `PREFIX` is supported, in case you want to install to a different location.
+
+##### make options
+
+- `O_NORL=1`: build without GNU Readline (native prompt with history file support).
+- `O_EL=1`: link against BSD Editline instead of Readline.
+- `O_STATIC=1`: build a static binary (forces `O_NORL=1`).
+- `strip`: target to strip the resulting binary after build.
+- `static`: target to build a static binary via `O_STATIC=1`.
+
+To build with musl libc, use `musl-gcc` as the compiler, for example:
+
+       $ CC=musl-gcc make
+       $ CC=musl-gcc make O_STATIC=1
 
 #### Termux
 

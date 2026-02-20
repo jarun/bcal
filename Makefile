@@ -15,6 +15,12 @@ CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
 
 O_EL := 0  # set to use the BSD editline library
 O_NORL := 0  # set to use native input prompt without readline
+O_STATIC := 0  # set to build statically (forces O_NORL)
+
+ifeq ($(strip $(O_STATIC)),1)
+	O_NORL := 1
+	LDFLAGS += -static
+endif
 
 ifeq ($(strip $(O_NORL)),1)
 	CFLAGS += -DNORL
@@ -32,12 +38,16 @@ INCLUDE = -Iinc
 
 bcal: $(SRC)
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(STRIP) bcal
 
 all: bcal
 
+static:
+	$(MAKE) O_STATIC=1
+
 x86: $(SRC)
 	$(CC) -m64 $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
-	strip bcal
+	$(STRIP) bcal
 
 distclean: clean
 	rm -f *~
@@ -66,3 +76,4 @@ clean:
 skip: ;
 
 .PHONY: all x86 distclean install uninstall strip clean
+.PHONY: static
