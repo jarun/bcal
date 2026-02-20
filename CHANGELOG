@@ -1,3 +1,16 @@
+bcal v2.5
+2026-02-20
+
+- remove dependency on external tools (`bc`, `calc`)
+- support general purpose calculations (program option/prompt switch `b`)
+  - arithmetic: addition, subtraction, multiplication, division, modulo
+  - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
+  - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+- add program option/prompt switch `p` to show bit positions with bit value of a number
+- remove commas from input for general purpose calculations
+
+-------------------------------------------------------------------------------
+
 bcal v2.4
 2022-01-24
 

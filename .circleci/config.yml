@@ -3,18 +3,19 @@ version: 2
 jobs:
   compile:
     docker:
-      - image: ubuntu:22.04
+      - image: ubuntu:24.04
         working_directory: ~/bcal
         environment:
           CI_FORCE_TEST: 1
+    parallelism: 4
     steps:
       - run:
           command: |
             apt update -qq
             DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get -y install tzdata
             apt install -y --no-install-recommends git make libreadline-dev
-            apt install -y --no-install-recommends gcc-9 gcc-10 gcc-11 gcc-12
-            apt install -y --no-install-recommends clang-11 clang-12 clang-13 clang-14 clang-15 clang-tidy-15
+            apt install -y --no-install-recommends gcc-9 gcc-10 gcc-11 gcc-12 gcc-13 gcc-14
+            apt install -y --no-install-recommends clang-14 clang-15 clang-16 clang-17 clang-18 clang-tidy-18
       - checkout
       - run:
           command: |
@@ -41,18 +42,13 @@ jobs:
             ls -l bcal
             make clean
             echo
-            echo "########## clang-11 ##########"
-            CC=clang-11 make strip
+            echo "########## gcc-13 ##########"
+            CC=gcc-13 make strip
             ls -l bcal
             make clean
             echo
-            echo "########## clang-12 ##########"
-            CC=clang-12 make strip
-            ls -l bcal
-            make clean
-            echo
-            echo "########## clang-13 ##########"
-            CC=clang-13 make strip
+            echo "########## gcc-14 ##########"
+            CC=gcc-14 make strip
             ls -l bcal
             make clean
             echo
@@ -66,8 +62,23 @@ jobs:
             ls -l bcal
             make clean
             echo
+            echo "########## clang-16 ##########"
+            CC=clang-16 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-17 ##########"
+            CC=clang-17 make strip
+            ls -l bcal
+            make clean
+            echo
+            echo "########## clang-18 ##########"
+            CC=clang-18 make strip
+            ls -l bcal
+            make clean
+            echo
             echo "########## clang-tidy-15 ##########"
-            clang-tidy-15 **/*.h **/*.c -- -Iinc
+            clang-tidy-18 **/*.h **/*.c -- -Iinc
 
   package-and-publish:
     machine: true
@@ -93,7 +104,7 @@ jobs:
       - run:
           name: "publish to GitHub"
           command: |
-            go get github.com/tcnksm/ghr
+            go install github.com/tcnksm/ghr@latest
             ghr -t ${GITHUB_API_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${CIRCLE_TAG} ./dist/
 
 workflows:
