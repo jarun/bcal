@@ -57,7 +57,7 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)).
+`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)). However, readline can be excluded by building with `O_NORL=1`, which uses a native input prompt with history file support instead.
 
 #### From a package manager
 
@@ -80,6 +80,9 @@ Install to default location (`/usr/local`):
 To link to libedit:
 
     $ sudo make O_EL=1 strip install
+To build without readline dependency (uses native input with history file support):
+
+    $ sudo make O_NORL=1 strip install
 To uninstall, run:
 
     $ sudo make uninstall

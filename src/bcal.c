@@ -30,8 +30,14 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <getopt.h>
+#ifndef NORL
 #include <readline/history.h>
 #include <readline/readline.h>
+#else
+#include <termios.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+#endif
 #include "dslib.h"
 #include "log.h"
 
@@ -88,6 +94,284 @@ static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
 static settings cfg = {0, 0, 0, 0, INFO};
+
+#ifdef NORL
+/* Native history implementation */
+#define MAX_HISTORY 50
+#define MAX_INPUT_LEN 4096
+
+static char *history_lines[MAX_HISTORY];
+static int history_count = 0;
+static char history_file_path[PATH_MAX];
+
+/* Get history file path */
+static void get_history_file_path(void)
+{
+	const char *config_home = getenv("XDG_CONFIG_HOME");
+	const char *home = getenv("HOME");
+
+	if (config_home && config_home[0] != '\0') {
+		snprintf(history_file_path, PATH_MAX, "%s/bcal", config_home);
+	} else if (home && home[0] != '\0') {
+		snprintf(history_file_path, PATH_MAX, "%s/.config/bcal", home);
+	} else {
+		history_file_path[0] = '\0';
+		return;
+	}
+
+	/* Create directory if it doesn't exist */
+	mkdir(history_file_path, 0755);
+
+	/* Append history filename */
+	strncat(history_file_path, "/history", PATH_MAX - strlen(history_file_path) - 1);
+}
+
+/* Read history from file */
+static void read_history(const char *unused)
+{
+	(void)unused;
+	FILE *fp;
+	char line[MAX_INPUT_LEN];
+
+	get_history_file_path();
+
+	if (history_file_path[0] == '\0')
+		return;
+
+	fp = fopen(history_file_path, "r");
+	if (!fp)
+		return;
+
+	history_count = 0;
+	while (fgets(line, MAX_INPUT_LEN, fp) && history_count < MAX_HISTORY) {
+		size_t len = strlen(line);
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
+
+		if (line[0] != '\0')
+			history_lines[history_count++] = strdup(line);
+	}
+
+	fclose(fp);
+}
+
+/* Write history to file */
+static void write_history(const char *unused)
+{
+	(void)unused;
+	FILE *fp;
+	int i, start;
+
+	if (history_file_path[0] == '\0')
+		return;
+
+	fp = fopen(history_file_path, "w");
+	if (!fp)
+		return;
+
+	/* Write only the last MAX_HISTORY entries */
+	start = (history_count > MAX_HISTORY) ? (history_count - MAX_HISTORY) : 0;
+	for (i = start; i < history_count; i++) {
+		if (history_lines[i] && history_lines[i][0] != '\0')
+			fprintf(fp, "%s\n", history_lines[i]);
+	}
+
+	fclose(fp);
+}
+
+/* Add line to history */
+static void add_history(const char *line)
+{
+	if (!line || line[0] == '\0')
+		return;
+
+	/* Don't add duplicate of last entry */
+	if (history_count > 0 && strcmp(history_lines[history_count - 1], line) == 0)
+		return;
+
+	/* Free oldest entry if at capacity */
+	if (history_count >= MAX_HISTORY) {
+		free(history_lines[0]);
+		memmove(history_lines, history_lines + 1, (MAX_HISTORY - 1) * sizeof(char *));
+		history_count = MAX_HISTORY - 1;
+	}
+
+	history_lines[history_count++] = strdup(line);
+}
+
+/* Native readline with arrow key support */
+static char *readline(const char *prompt_str)
+{
+	static char buffer[MAX_INPUT_LEN];
+	int pos = 0;
+	int len = 0;
+	int history_pos = history_count;
+	char *saved_input = NULL;
+	int c;
+	struct termios oldattr, newattr;
+	int is_tty = isatty(STDIN_FILENO);
+
+	if (!is_tty) {
+		/* Non-TTY mode: use simple fgets */
+		if (fgets(buffer, MAX_INPUT_LEN, stdin) == NULL)
+			return NULL;
+
+		size_t input_len = strlen(buffer);
+		if (input_len > 0 && buffer[input_len - 1] == '\n')
+			buffer[input_len - 1] = '\0';
+
+		return strdup(buffer);
+	}
+
+	/* Set terminal to raw mode for arrow key capture */
+	tcgetattr(STDIN_FILENO, &oldattr);
+	newattr = oldattr;
+	newattr.c_lflag &= ~(ICANON | ECHO);
+	newattr.c_cc[VMIN] = 1;
+	newattr.c_cc[VTIME] = 0;
+	tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
+
+	/* Print prompt */
+	printf("%s", prompt_str);
+	fflush(stdout);
+
+	buffer[0] = '\0';
+	len = 0;
+	pos = 0;
+
+	while (1) {
+		unsigned char ch;
+		if (read(STDIN_FILENO, &ch, 1) != 1)
+			break;
+		c = ch;
+
+		if (c == '\n' || c == '\r') {
+			/* Enter pressed */
+			printf("\n");
+			break;
+		} else if (c == 127 || c == 8) {
+			/* Backspace */
+			if (pos > 0) {
+				memmove(buffer + pos - 1, buffer + pos, len - pos + 1);
+				pos--;
+				len--;
+
+				/* Redraw line */
+				printf("\r%s%s ", prompt_str, buffer);
+				for (int i = len; i < pos + 1; i++)
+					printf("\b");
+				for (int i = pos; i < len; i++)
+					printf("\b");
+				fflush(stdout);
+			}
+		} else if (c == 27) {
+			/* Escape sequence */
+			if (read(STDIN_FILENO, &ch, 1) != 1)
+				continue;
+			c = ch;
+			if (c == '[') {
+				if (read(STDIN_FILENO, &ch, 1) != 1)
+					continue;
+				c = ch;
+				if (c == 'A') {
+					/* Up arrow */
+					if (history_pos > 0) {
+						if (history_pos == history_count && len > 0) {
+							/* Save current input */
+							if (saved_input)
+								free(saved_input);
+							saved_input = strdup(buffer);
+						}
+
+						history_pos--;
+						strcpy(buffer, history_lines[history_pos]);
+						len = strlen(buffer);
+						pos = len;
+
+						/* Redraw line */
+						printf("\r%s%s\033[K", prompt_str, buffer);
+						fflush(stdout);
+					}
+				} else if (c == 'B') {
+					/* Down arrow */
+					if (history_pos < history_count) {
+						history_pos++;
+						if (history_pos == history_count) {
+							/* Restore saved input */
+							if (saved_input) {
+								strcpy(buffer, saved_input);
+								free(saved_input);
+								saved_input = NULL;
+							} else {
+								buffer[0] = '\0';
+							}
+						} else {
+							strcpy(buffer, history_lines[history_pos]);
+						}
+
+						len = strlen(buffer);
+						pos = len;
+
+						/* Redraw line */
+						printf("\r%s%s\033[K", prompt_str, buffer);
+						fflush(stdout);
+					}
+				} else if (c == 'C') {
+					/* Right arrow */
+					if (pos < len) {
+						pos++;
+						printf("\033[C");
+						fflush(stdout);
+					}
+				} else if (c == 'D') {
+					/* Left arrow */
+					if (pos > 0) {
+						pos--;
+						printf("\033[D");
+						fflush(stdout);
+					}
+				}
+			}
+		} else if (c == 4) {
+			/* Ctrl-D (EOF) */
+			if (len == 0) {
+				printf("\n");
+				tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+				if (saved_input)
+					free(saved_input);
+				return NULL;
+			}
+		} else if (c >= 32 && c < 127) {
+			/* Printable character */
+			if (len < MAX_INPUT_LEN - 1) {
+				memmove(buffer + pos + 1, buffer + pos, len - pos + 1);
+				buffer[pos] = c;
+				pos++;
+				len++;
+
+				/* Redraw from cursor position */
+				printf("%c", c);
+				if (pos < len) {
+					printf("%s", buffer + pos);
+					for (int i = pos; i < len; i++)
+						printf("\b");
+				}
+				fflush(stdout);
+			}
+		}
+	}
+
+	buffer[len] = '\0';
+
+	/* Restore terminal attributes */
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+
+	if (saved_input)
+		free(saved_input);
+
+	return strdup(buffer);
+}
+#endif
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -2902,7 +3186,9 @@ int main(int argc, char **argv)
 	ulong sectorsz = SECTOR_SIZE;
 
 	opterr = 0;
+#ifndef NORL
 	rl_bind_key('\t', rl_insert);
+#endif
 
 	while ((opt = getopt(argc, argv, "bc:df:hmp:s:")) != -1) {
 		switch (opt) {

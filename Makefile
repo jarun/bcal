@@ -14,12 +14,17 @@ LDLIBS_MATH ?= -lm
 CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
 
 O_EL := 0  # set to use the BSD editline library
+O_NORL := 0  # set to use native input prompt without readline
 
-ifeq ($(strip $(O_EL)),1)
+ifeq ($(strip $(O_NORL)),1)
+	CFLAGS += -DNORL
+	LDLIBS += $(LDLIBS_MATH)
+else ifeq ($(strip $(O_EL)),1)
 	LDLIBS += $(LDLIBS_EDITLINE)
+	LDLIBS += $(LDLIBS_MATH)
 else
 	LDLIBS += $(LDLIBS_READLINE)
-LDLIBS += $(LDLIBS_MATH)
+	LDLIBS += $(LDLIBS_MATH)
 endif
 
 SRC = $(wildcard src/*.c)
