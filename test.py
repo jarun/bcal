@@ -221,10 +221,10 @@ def test_repl_show_last_result():
 
 
 def test_repl_toggle_expression_mode():
-    """Test 'b' command to toggle general purpose expression mode"""
+    """Test 'b' command to toggle general-purpose mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n5 + 3\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'8' in output
 
 
@@ -260,19 +260,19 @@ def test_repl_double_enter_to_quit():
 
 
 def test_repl_base_conversion_in_expr_mode():
-    """Test 'c' command for base conversion in expression mode"""
+    """Test 'c' command for base conversion in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc255\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # Should show binary, decimal, and hex representations
     assert b'(b)' in output and b'(d)' in output and b'(h)' in output
 
 
 def test_repl_bit_positions_in_expr_mode():
-    """Test 'p' command for bit positions in expression mode"""
+    """Test 'p' command for bit positions in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np255\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
 
 
 def test_repl_multiple_calculations():
@@ -326,11 +326,11 @@ def test_repl_division_operation():
 
 
 def test_repl_switching_between_modes():
-    """Test switching between byte calc and expression mode"""
+    """Test switching between byte calc and general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'10 mb\nb\n5 + 3\nb\n10 kb\nq\n')
     assert b'10000000 B' in output
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'8' in output
     assert b'10000 B' in output
 
@@ -402,10 +402,10 @@ def test_repl_error_cases(expr, expected):
 
 
 def test_repl_bit_positions_128bit():
-    """Test bit positions of 128-bit number in REPL expression mode"""
+    """Test bit positions of 128-bit number in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np0xffffffffffffffffffffffffffffffff\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # Check for bit position numbers spanning all 4 32-bit groups (0-31, 32-63, 64-95, 96-127)
     assert b'127' in output and b'96' in output and b'63' in output and b'0' in output
     # All bits should be 1
@@ -567,7 +567,7 @@ def test_repl_c_in_storage_mode():
     """Test 'c' command works in default storage (byte calculation) mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'c1024\nq\n')
-    # Should convert without entering expression mode
+    # Should convert without entering general-purpose REPL mode
     assert b'(d) 1024' in output
     assert b'(h) 0x400' in output
 
@@ -576,16 +576,16 @@ def test_repl_p_in_storage_mode():
     """Test 'p' command works in default storage (byte calculation) mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'p1024\nq\n')
-    # Should show bit positions without entering expression mode
+    # Should show bit positions without entering general-purpose REPL mode
     # 1024 = 2^10, so bit 10 should be set
     assert b'10' in output
 
 
 def test_repl_c_and_p_in_expression_mode():
-    """Test 'c' and 'p' commands in expression mode"""
+    """Test 'c' and 'p' commands in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc512\np512\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # 'c512' should convert 512 to different bases
     assert b'(d) 512' in output
     # 'p512' should show bit positions for 512 (2^9)
@@ -611,50 +611,50 @@ def test_repl_p_multiple_conversions():
     assert b'10' in output  # bit position for 1024
 
 
-# Expression mode specific tests for 'c' and 'p' commands
+# general-purpose REPL mode specific tests for 'c' and 'p' commands
 
 def test_repl_c_expr_mode_decimal():
-    """Test 'c' command with decimal input in expression mode"""
+    """Test 'c' command with decimal input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc255\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(b)' in output and b'11111111' in output
     assert b'(d) 255' in output
     assert b'(h) 0xff' in output
 
 
 def test_repl_c_expr_mode_hex():
-    """Test 'c' command with hex input in expression mode"""
+    """Test 'c' command with hex input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc0xabcd\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(d) 43981' in output
     assert b'(h) 0xabcd' in output
 
 
 def test_repl_c_expr_mode_binary():
-    """Test 'c' command with binary input in expression mode"""
+    """Test 'c' command with binary input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc0b10101010\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(d) 170' in output
     assert b'(h) 0xaa' in output
 
 
 def test_repl_c_expr_mode_large_number():
-    """Test 'c' command with large number in expression mode"""
+    """Test 'c' command with large number in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc0xffffffffffffffff\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(d) 18446744073709551615' in output
     assert b'(h) 0xffffffffffffffff' in output
 
 
 def test_repl_c_expr_mode_with_expression_result():
-    """Test 'c' command after expression calculation in expression mode"""
+    """Test 'c' command after expression calculation in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n16 * 16\nc256\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'256' in output
     # 'c256' should convert 256
     assert b'(d) 256' in output
@@ -662,99 +662,99 @@ def test_repl_c_expr_mode_with_expression_result():
 
 
 def test_repl_c_expr_mode_empty_input():
-    """Test 'c' command with empty input in expression mode"""
+    """Test 'c' command with empty input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'invalid input' in output
 
 
 def test_repl_c_expr_mode_invalid_input():
-    """Test 'c' command with invalid input in expression mode"""
+    """Test 'c' command with invalid input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc0x\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'ERROR: invalid input' in output
 
 
 def test_repl_p_expr_mode_simple():
-    """Test 'p' command with simple number in expression mode"""
+    """Test 'p' command with simple number in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np255\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # 255 = 0b11111111, bits 0-7 should be set
     assert b'7' in output and b'0' in output
 
 
 def test_repl_p_expr_mode_hex():
-    """Test 'p' command with hex input in expression mode"""
+    """Test 'p' command with hex input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np0xff00\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # 0xff00 has bits 8-15 set
     assert b'15' in output and b'8' in output
 
 
 def test_repl_p_expr_mode_binary():
-    """Test 'p' command with binary input in expression mode"""
+    """Test 'p' command with binary input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np0b11110000\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # 0b11110000 = 240, bits 4-7 set
     assert b'7' in output and b'4' in output
 
 
 def test_repl_p_expr_mode_power_of_two():
-    """Test 'p' command with power of 2 in expression mode"""
+    """Test 'p' command with power of 2 in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np4096\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # 4096 = 2^12
     assert b'12' in output
 
 
 def test_repl_p_expr_mode_128bit():
-    """Test 'p' command with 128-bit number in expression mode"""
+    """Test 'p' command with 128-bit number in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np0xffffffffffffffffffffffffffffffff\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     # All 128 bits should be set
     assert b'127' in output and b'96' in output and b'63' in output and b'0' in output
 
 
 def test_repl_p_expr_mode_with_expression_result():
-    """Test 'p' command after shift expression calculation in expression mode"""
+    """Test 'p' command after shift expression calculation in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n1 << 8\np256\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'256' in output
     # 'p256' should show bit positions for 256 (bit 8 set)
     assert b'8' in output
 
 
 def test_repl_p_expr_mode_empty_input():
-    """Test 'p' command with empty input in expression mode"""
+    """Test 'p' command with empty input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'invalid input' in output
 
 
 def test_repl_p_expr_mode_invalid_input():
-    """Test 'p' command with invalid input in expression mode"""
+    """Test 'p' command with invalid input in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\np0b\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'ERROR: invalid input' in output
 
 
 def test_repl_switch_modes_with_c_and_p():
-    """Test switching between storage and expression modes using c and p"""
+    """Test switching between storage and general-purpose REPL modes using c and p"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'c100\nb\nc200\nb\nc300\nq\n')
     # Should work in both modes
     assert b'(d) 100' in output
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(d) 200' in output
     assert b'(d) 300' in output
 
@@ -763,7 +763,7 @@ def test_repl_expr_mode_result_then_switch_to_storage():
     """Test using values after switching from expression to storage mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n50 * 5\nb\nc250\np250\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'250' in output
     # After switching back to storage mode, 'c250' and 'p250' should work
     assert b'(d) 250' in output
@@ -776,7 +776,7 @@ def test_repl_c_expr_mode_bitwise_calculation_result():
     """Test 'c' command with result from bitwise expression"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n15 & 7\ncr\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'7' in output  # 15 & 7 = 7
     assert b'(d) 7' in output
     assert b'(h) 0x7' in output
@@ -786,17 +786,17 @@ def test_repl_p_expr_mode_shift_calculation_result():
     """Test 'p' command with result from shift expression"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n1 << 10\npr\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'1024' in output
     # bit 10 should be set
     assert b'10' in output
 
 
 def test_repl_c_and_p_multiple_in_expr_mode():
-    """Test multiple 'c' and 'p' commands in expression mode"""
+    """Test multiple 'c' and 'p' commands in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\nc128\np128\nc256\np256\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'(d) 128' in output
     assert b'(d) 256' in output
     # Check bit positions: 128 = 2^7, 256 = 2^8
@@ -805,10 +805,10 @@ def test_repl_c_and_p_multiple_in_expr_mode():
 
 
 def test_repl_expr_mode_arithmetic_then_convert():
-    """Test arithmetic calculation followed by conversion in expression mode"""
+    """Test arithmetic calculation followed by conversion in general-purpose REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'b\n(100 + 50) * 2\nc300\np300\nq\n')
-    assert b'general purpose expression mode' in output
+    assert b'general-purpose mode' in output
     assert b'300' in output
     assert b'(d) 300' in output
     # 300 = 0x12c = 0b100101100

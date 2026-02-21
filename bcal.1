@@ -5,9 +5,9 @@ bcal \- Storage expression calculator.
 .B bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
-(Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving binary prefixes, SI/IEC conversion, byte addressing, base conversion, LBA/CHS calculation etc.
+(Byte CALculator) is a command-line utility to help with calculations and expressions involving binary prefixes, SI/IEC conversion, byte addressing, base conversion, LBA/CHS calculation etc.
 .PP
-It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical calculations.
+It also supports general-purpose operations (program option \fB-b\fR).
 .PP
 \fBbcal\fR uses [SI and IEC binary prefixes]:
 .I https://en.wikipedia.org/wiki/Binary_prefix
@@ -15,13 +15,13 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
 .SH FEATURES
 .PP
   * evaluate arithmetic expressions involving storage units
-  * perform general purpose calculations (built-in expression mode)
+  * general-purpose operations
     - arithmetic: addition, subtraction, multiplication, division, modulo
     - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
     - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
   * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
-  * interactive mode with the last valid result stored for reuse
+  * REPL mode with the last valid result stored for reuse
   * show the address in bytes
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
@@ -32,7 +32,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBInteractive mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
+\fBREPL mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
 .PP
 .IP 2. 4
 \fBExpression\fR: Expression passed as argument single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: +, -, *, /, %.
@@ -47,7 +47,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 6. 4
-\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
+\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numeric conversions. Floating point operations use \fIlong double\fR. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
 .PP
 .IP 7. 4
 \fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
@@ -76,7 +76,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
 .SH OPTIONS
 .TP
 .BI "-b=" [expr]
-Start in numeric expression mode. If expression is provided, evaluate and quit.
+Start in general-purpose REPL mode. If expression is provided, evaluate and quit.
 .TP
 .BI "-c=" N
 Show decimal, binary and hex representation of positive integer \fIN\fR.
@@ -102,6 +102,12 @@ Show program help, storage sizes on the system and exit.
 .TP
 .BI "b"
 Toggle numeric expression mode.
+.TP
+.BI "c N"
+Show decimal, binary and hex representation of positive integer N.
+.TP
+.BI "p N"
+Show bit position (reversed if set) and bit value of a number.
 .TP
 .BI "r"
 Show result from last operation.
@@ -177,7 +183,7 @@ Show binary, decimal and hex representations of a number.
 .B $ bcal -c 20140115
 .B $ bcal -c 0b1001100110101000001010011
 .B $ bcal -c 0x1335053
-.B bcal> c 20140115  // Interactive mode
+.B bcal> c 20140115  // REPL mode
 .EE
 .PP
 .IP 7. 4
@@ -195,12 +201,14 @@ Perform bitwise operations.
 .EE
 .PP
 .IP 8. 4
-Use expression mode.
+Use as a general-purpose calculator.
 .PP
 .EX
 .IP
-.B $ bcal -b '3.5 * 2.1 + 5.7'
-.B bcal> b  // Interactive mode
+.B $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
+.B $ bcal -b // Start in REPL mode
+.B $ bcal
+.B bcal> b   // Switch to REPL mode
 .B expr> 3.5 * 2.1 + 5.7
 .EE
 .PP
@@ -225,14 +233,6 @@ Redirect from file.
 .EE
 .PP
 .IP 11. 4
-Use as a general-purpose calculator.
-.PP
-.EX
-.IP
-.B $ bcal -b
-.EE
-.PP
-.IP 12. 4
 Use mathematical functions.
 .PP
 .EX

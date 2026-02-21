@@ -15,7 +15,7 @@
 
 `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
 
-It includes a built-in expression mode (`-b`) for general-purpose numerical calculations.
+It also supports general-purpose operations (program option `-b`).
 
 `bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
@@ -39,13 +39,13 @@ It includes a built-in expression mode (`-b`) for general-purpose numerical calc
 
 - REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
-- perform general purpose calculations (built-in expression mode)
+- general-purpose operations
   - arithmetic: addition, subtraction, multiplication, division, modulo
   - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
   - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
-- interactive mode with the last valid result stored for reuse
+- REPL mode with the last valid result stored for reuse
 - show the address in bytes
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
@@ -123,7 +123,7 @@ $ make strip install
 usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]
             [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 
-Storage expression calculator.
+Storage and general-purpose expression calculator.
 
 positional arguments:
  expr       expression in decimal/hex operands
@@ -133,7 +133,8 @@ positional arguments:
             N can be decimal or '0x' prefixed hex value
 
 optional arguments:
- -b [expr]  enter expression mode or evaluate expression
+ -b [expr]  start in general-purpose REPL mode
+            or, evaluate expression and quit
  -c N       show +ve integer N in binary, decimal, hex
  -p N       show bit position with bit value for N
  -f loc     convert CHS to LBA or LBA to CHS
@@ -144,7 +145,7 @@ optional arguments:
  -h         show this help
 
 prompt keys:
- b          toggle expression mode
+ b          toggle general-purpose mode
  c N        show +ve integer N in binary, decimal, hex
  p N        show bit position with bit value for N
  r          show result from last operation
@@ -155,12 +156,12 @@ prompt keys:
 
 #### Operational notes
 
-- **Interactive mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
+- **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
 - **Expression**: Expression passed as argument in single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: `+`, `-`, `*`, `/`, `%`.
 - **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
-- **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numerical conversions. Floating point operations use `long double`. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
+- **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numeric conversions. Floating point operations use `long double`. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
 - **Fractional bytes do not exist** because they can't be addressed. `bcal` shows the floor value of non-integer _bytes_.
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
@@ -212,7 +213,7 @@ prompt keys:
        $ bcal -c 20140115
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
-       bcal> c 20140115  // Interactive mode
+       bcal> c 20140115  // REPL mode
 7. Perform bitwise operations.
 
        $ bcal -b '0xFF & 0x0F'
@@ -222,10 +223,12 @@ prompt keys:
        $ bcal -b '0x01 << 3'
        $ bcal -b '0x10 >> 2'
        $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'
-8. Use expression mode.
+8. Use as a general-purpose calculator.
 
-       $ bcal -b '3.5 * 2.1 + 5.7'
-       bcal> b  // Interactive mode
+       $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
+       $ bcal -b // Start in REPL mode
+       $ bcal
+       bcal> b   // Switch to REPL mode
        expr> 3.5 * 2.1 + 5.7
 9. Pipe input.
 
@@ -237,16 +240,13 @@ prompt keys:
         15 gib + 15 kib
         r / 5
         $ bcal -m < expr
-11. Use as a general-purpose calculator.
-
-        $ bcal -b
-12. Use mathematical functions.
+11. Use mathematical functions.
 
         $ bcal -b 'root(2, 17.3)'  // square root of 17.3
         $ bcal -b 'exp(5.2)'
         $ bcal -b 'pow(2, 8)'
         $ bcal -b 'pow(10, 3) + root(2, 9)'
-13. Show bit positions with values.
+12. Show bit positions with values.
 
 <img width="1033" height="138" alt="bcal bit position" src="https://github.com/user-attachments/assets/1b4a6c5e-8b3f-4d4b-a4dd-9045689f7dd8" />
 

@@ -2147,7 +2147,7 @@ static void show_basic_sizes()
 static void prompt_help()
 {
 	printf("prompt keys:\n\
- b          toggle numeric expression mode\n\
+ b          toggle general-purpose mode\n\
  c N        show +ve integer N in binary, decimal, hex\n\
  p N        show bit position with bit value for N\n\
  r          show result from last operation\n\
@@ -2160,7 +2160,7 @@ static void usage()
 {
 	printf("usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]\n\
 	    [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
-Storage expression calculator.\n\n\
+Storage and general-purpose expression calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
@@ -2168,7 +2168,8 @@ positional arguments:\n\
             default unit is B (byte), case is ignored\n\
             N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
- -b [expr]  enter numeric expression mode or evaluate\n\
+ -b [expr]  start in general-purpose REPL mode\n\
+            or, evaluate expression and quit\n\
  -c N       show +ve integer N in binary, decimal, hex\n\
  -p N       show bit position with bit value for N\n\
  -f loc     convert CHS to LBA or LBA to CHS\n\
