@@ -2162,7 +2162,7 @@ static void usage()
 {
 	printf("usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]\n\
 	    [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
-Storage and general-purpose expression calculator.\n\n\
+Bits, bytes and general-purpose calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
