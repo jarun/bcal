@@ -73,7 +73,7 @@ typedef struct {
 
 /* Settings */
 typedef struct {
-	uchar expr    : 1;
+	uchar maths   : 1;
 	uchar minimal : 1;
 	uchar repl    : 1;
 	uchar rsvd    : 3; /* Reserved for future usage */
@@ -3237,7 +3237,7 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			cfg.expr = 1;
+			cfg.maths = 1;
 			strncpy(prompt, PROMPT_MATHS, 8);
 			break;
 		case 'd':
@@ -3312,7 +3312,7 @@ int main(int argc, char **argv)
 
 			add_history(tmp);
 
-			if (cfg.expr) {
+			if (cfg.maths) {
 				if (has_function_call(tmp))
 					remove_thousands_commas(tmp);
 				else
@@ -3339,15 +3339,10 @@ int main(int argc, char **argv)
 					free(ptr);
 					continue;
 				case 'b':
-					cfg.expr ^= 1;
-					if (cfg.expr) {
-						printf("general-purpose mode\n");
-					strncpy(prompt, PROMPT_MATHS, 8);
-				} else
-					strncpy(prompt, PROMPT_BYTES, 8);
-
-				free(ptr);
-				continue;
+					cfg.maths ^= 1;
+					strncpy(prompt, cfg.maths ? PROMPT_MATHS : PROMPT_BYTES, 8);
+					free(ptr);
+					continue;
 				case 'q':
 					free(ptr);
 					write_history(NULL);
@@ -3377,7 +3372,7 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			if (cfg.expr) {
+			if (cfg.maths) {
 				if (has_bitwise_ops(tmp)) {
 					if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
 
@@ -3442,7 +3437,7 @@ int main(int argc, char **argv)
 		if (!tmp)
 			return -1;
 		strstrip(tmp);
-		if (cfg.expr) {
+		if (cfg.maths) {
 			if (has_function_call(tmp))
 				remove_thousands_commas(tmp);
 			else
@@ -3456,7 +3451,7 @@ int main(int argc, char **argv)
 			return bitwise_ret;
 		}
 
-		if (cfg.expr) {
+		if (cfg.maths) {
 			if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
 				printf("%s\n", lastres.p);
 				lastres.unit = 0;
