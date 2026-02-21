@@ -31,6 +31,7 @@ It also supports general-purpose operations (program option `-b`, prompt key `b`
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
+  - [Environment variables](#environment-variables)
 - [Examples](#examples)
 - [Testing](#testing)
 - [Copyright](#copyright)
@@ -179,6 +180,10 @@ prompt keys:
 - **REPL mode**: `r` is synced and can be used in expressions. The built-in evaluator uses `long double` arithmetic.
 - **History file**: Stored at `$XDG_CONFIG_HOME/bcal/history`, or `$HOME/.config/bcal/history` if `XDG_CONFIG_HOME` is unset.
 
+#### Environment variables
+
+- `BCAL_BIT_ANSI_COLOR_CODE`: ANSI escape code to colorize bit value `1` in `-p` output. Set to empty to disable coloring. Example: `export BCAL_BIT_ANSI_COLOR_CODE=$'\033[1;92m'`.
+
 ### Examples
 
 1. Evaluate arithmetic expression of storage units.
@@ -250,8 +255,7 @@ prompt keys:
         $ bcal -b 'pow(10, 3) + root(2, 9)'
 12. Show bit positions with values.
 
-<img width="1033" height="138" alt="bcal bit position" src="https://github.com/user-attachments/assets/1b4a6c5e-8b3f-4d4b-a4dd-9045689f7dd8" />
-
+<img width="1030" height="152" alt="bcal bit position" src="https://github.com/user-attachments/assets/0cf972ff-9f28-40a8-a879-7c73702d818a" />
 
 ### Testing
 

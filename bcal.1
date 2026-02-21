@@ -73,6 +73,10 @@ It also supports general-purpose operations (program option \fB-b\fR, prompt key
 .PP
 .IP 11. 4
 \fBHistory file\fR: Stored at \fI$XDG_CONFIG_HOME/bcal/history\fR, or \fI$HOME/.config/bcal/history\fR if \fIXDG_CONFIG_HOME\fR is unset.
+.SH ENVIRONMENT
+.TP
+.B BCAL_BIT_ANSI_COLOR_CODE
+ANSI escape code to colorize bit value 1 in \fB-p\fR output. Set to empty to disable coloring. Example: \fBexport BCAL_BIT_ANSI_COLOR_CODE=$'\\033[1;92m'\fR.
 .SH OPTIONS
 .TP
 .BI "-b=" [expr]

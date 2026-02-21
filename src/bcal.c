@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -36,7 +37,6 @@
 #else
 #include <termios.h>
 #include <sys/stat.h>
-#include <stdlib.h>
 #endif
 #include "dslib.h"
 #include "log.h"
@@ -51,6 +51,7 @@
 #define MAX_BITS 128
 #define ALIGNMENT_MASK_4BIT 0xF
 #define ELEMENTS(x) (sizeof(x) / sizeof(*(x)))
+#define BIT_VALUE_1_COLOR_DEFAULT "\033[1;97m"
 
 typedef unsigned char uchar;
 typedef unsigned int uint;
@@ -91,11 +92,20 @@ static char *PASSED = "\0";
 static char *curexpr = NULL;
 static char prompt[9] = "bytes> ";
 
+static const char *bit_value_1_code = BIT_VALUE_1_COLOR_DEFAULT;
+
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
 static settings cfg = {0, 0, 0, 0, INFO};
+
+static void get_bit_value_1_code(void)
+{
+	const char *env_code = getenv("BCAL_BIT_ANSI_COLOR_CODE");
+	if (env_code)
+		bit_value_1_code = env_code;
+}
 
 #ifdef NORL
 /* Native history implementation */
@@ -1279,9 +1289,12 @@ static void printbin_positions(maxuint_t n)
 		for (int bit = end_bit; bit >= start_bit; --bit) {
 			if (bit <= highest_bit) {
 				int bit_value = (int)(n >> bit) & 1;
-				if (bit_value == 1)
-					printf("  \033[1;97m%d\033[0m ", bit_value);
-				else
+				if (bit_value == 1) {
+					if (bit_value_1_code && bit_value_1_code[0] != '\0')
+						printf("  %s%d\033[0m ", bit_value_1_code, bit_value);
+					else
+						printf("  %d ", bit_value);
+				} else
 					printf("  %d ", bit_value);
 			} else
 				printf("    ");  /* Leave blank for bits beyond the value */
@@ -3192,6 +3205,8 @@ int main(int argc, char **argv)
 {
 	int opt = 0, operation = 0;
 	ulong sectorsz = SECTOR_SIZE;
+
+	get_bit_value_1_code();
 
 	opterr = 0;
 #ifndef NORL
