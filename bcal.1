@@ -35,7 +35,7 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
 \fBInteractive mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
 .PP
 .IP 2. 4
-\fBExpression\fR: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: +, -, *, /, % and C bitwise operators (except ~ due to storage width dependency).
+\fBExpression\fR: Expression passed as argument single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: +, -, *, /, %.
 .PP
 .IP 3. 4
 \fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
@@ -69,7 +69,10 @@ It includes a built-in expression mode (\fB-b\fR) for general-purpose numerical 
   - max sectors per track: 0x3f (63)
 .PP
 .IP 10. 4
-\fBExpression mode\fR: \fBr\fR is synced and can be used in expressions. The built-in evaluator uses \fIlong double\fR arithmetic.
+\fBREPL mode\fR: \fBr\fR is synced and can be used in expressions. The built-in evaluator uses \fIlong double\fR arithmetic.
+.PP
+.IP 11. 4
+\fBHistory file\fR: Stored at \fI$XDG_CONFIG_HOME/bcal/history\fR, or \fI$HOME/.config/bcal/history\fR if \fIXDG_CONFIG_HOME\fR is unset.
 .SH OPTIONS
 .TP
 .BI "-b=" [expr]
