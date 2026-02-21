@@ -120,6 +120,9 @@ Show prompt help.
 .TP
 .BI "q, double Enter"
 Quit the program.
+.TP
+.BI "prompt"
+bytes> for storage mode, maths> for general-purpose mode.
 .SH EXAMPLES
 .PP
 .IP 1. 4
@@ -183,7 +186,8 @@ Show binary, decimal and hex representations of a number.
 .B $ bcal -c 20140115
 .B $ bcal -c 0b1001100110101000001010011
 .B $ bcal -c 0x1335053
-.B bcal> c 20140115  // REPL mode
+.B bytes> c 20140115  // REPL mode
+.B maths> c 20140115  // REPL mode
 .EE
 .PP
 .IP 7. 4
@@ -206,10 +210,10 @@ Use as a general-purpose calculator.
 .EX
 .IP
 .B $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
-.B $ bcal -b // Start in REPL mode
+.B $ bcal -b  // Start in general-purpose REPL mode
 .B $ bcal
-.B bcal> b   // Switch to REPL mode
-.B expr> 3.5 * 2.1 + 5.7
+.B bytes> b   // Switch to general-purpose mode
+.B maths> 3.5 * 2.1 + 5.7
 .EE
 .PP
 .IP 9. 4

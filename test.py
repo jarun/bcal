@@ -209,7 +209,7 @@ def test_repl_basic_calculation():
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'10 mb\nq\n')
     assert b'10000000 B' in output
-    assert b'bcal>' in output
+    assert b'bytes>' in output
 
 
 def test_repl_show_last_result():
@@ -233,14 +233,14 @@ def test_repl_show_sizes():
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b's\nq\n')
     # Output should contain size information
-    assert b'bcal>' in output
+    assert b'bytes>' in output
 
 
 def test_repl_help():
     """Test '?' command to show help in REPL mode"""
     proc = subprocess.Popen('./bcal', stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     output, _ = proc.communicate(input=b'?\nq\n')
-    assert b'bcal>' in output
+    assert b'bytes>' in output
 
 
 def test_repl_quit_with_q():

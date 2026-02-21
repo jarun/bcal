@@ -152,6 +152,7 @@ prompt keys:
  s          show sizes of storage types
  ?          show prompt help
  q/double ↵ quit program
+ prompt: bytes> for storage mode, maths> for general-purpose mode
 ```
 
 #### Operational notes
@@ -213,7 +214,8 @@ prompt keys:
        $ bcal -c 20140115
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
-       bcal> c 20140115  // REPL mode
+       bytes> c 20140115  // REPL mode
+       maths> c 20140115  // REPL mode
 7. Perform bitwise operations.
 
        $ bcal -b '0xFF & 0x0F'
@@ -226,9 +228,9 @@ prompt keys:
 8. Use as a general-purpose calculator.
 
        $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
-       $ bcal -b // Start in REPL mode
+       $ bcal -b // Start in geenral-purpose REPL mode
        $ bcal
-       bcal> b   // Switch to REPL mode
+       bcal> b   // Switch to general-purpose mode
        expr> 3.5 * 2.1 + 5.7
 9. Pipe input.
 

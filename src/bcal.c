@@ -83,11 +83,13 @@ typedef struct {
 static char *VERSION = "2.5";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
+static const char *PROMPT_BYTES = "bytes> ";
+static const char *PROMPT_MATHS = "maths> ";
 
 static char *FAILED = "1";
 static char *PASSED = "\0";
 static char *curexpr = NULL;
-static char prompt[8] = "bcal> ";
+static char prompt[9] = "bytes> ";
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
@@ -3236,7 +3238,7 @@ int main(int argc, char **argv)
 			break;
 		case 'b':
 			cfg.expr = 1;
-			strncpy(prompt, "expr> ", 7);
+			strncpy(prompt, PROMPT_MATHS, 8);
 			break;
 		case 'd':
 			cfg.loglvl = DEBUG;
@@ -3340,17 +3342,12 @@ int main(int argc, char **argv)
 					cfg.expr ^= 1;
 					if (cfg.expr) {
 						printf("general-purpose mode\n");
-						strncpy(prompt, "expr> ", 7);
-					} else
-						strncpy(prompt, "bcal> ", 7);
+					strncpy(prompt, PROMPT_MATHS, 8);
+				} else
+					strncpy(prompt, PROMPT_BYTES, 8);
 
-					free(ptr);
-					continue;
-				case '?':
-					prompt_help();
-
-					free(ptr);
-					continue;
+				free(ptr);
+				continue;
 				case 'q':
 					free(ptr);
 					write_history(NULL);
