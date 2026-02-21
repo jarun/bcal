@@ -3339,7 +3339,7 @@ int main(int argc, char **argv)
 				case 'b':
 					cfg.expr ^= 1;
 					if (cfg.expr) {
-						printf("general purpose expression mode\n");
+						printf("general-purpose mode\n");
 						strncpy(prompt, "expr> ", 7);
 					} else
 						strncpy(prompt, "bcal> ", 7);
