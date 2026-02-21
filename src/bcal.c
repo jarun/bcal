@@ -1279,7 +1279,10 @@ static void printbin_positions(maxuint_t n)
 		for (int bit = end_bit; bit >= start_bit; --bit) {
 			if (bit <= highest_bit) {
 				int bit_value = (int)(n >> bit) & 1;
-				printf("  %d ", bit_value);
+				if (bit_value == 1)
+					printf("  \033[1;97m%d\033[0m ", bit_value);
+				else
+					printf("  %d ", bit_value);
 			} else
 				printf("    ");  /* Leave blank for bits beyond the value */
 		}
