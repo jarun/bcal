@@ -135,7 +135,7 @@ positional arguments:
 optional arguments:
  -b [expr]  enter expression mode or evaluate expression
  -c N       show +ve integer N in binary, decimal, hex
- -p N       show bit position (reversed if set) and value
+ -p N       show bit position with bit value for N
  -f loc     convert CHS to LBA or LBA to CHS
             refer to the operational notes in man page
  -s bytes   sector size [default 512]
@@ -145,6 +145,8 @@ optional arguments:
 
 prompt keys:
  b          toggle expression mode
+ c N        show +ve integer N in binary, decimal, hex
+ p N        show bit position with bit value for N
  r          show result from last operation
  s          show sizes of storage types
  ?          show prompt help

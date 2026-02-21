@@ -2148,6 +2148,8 @@ static void prompt_help()
 {
 	printf("prompt keys:\n\
  b          toggle numeric expression mode\n\
+ c N        show +ve integer N in binary, decimal, hex\n\
+ p N        show bit position with bit value for N\n\
  r          show result from last operation\n\
  s          show sizes of storage types\n\
  ?          show prompt help\n\
@@ -2168,7 +2170,7 @@ positional arguments:\n\
 optional arguments:\n\
  -b [expr]  enter numeric expression mode or evaluate\n\
  -c N       show +ve integer N in binary, decimal, hex\n\
- -p N       show bit position (reversed if set) and value\n\
+ -p N       show bit position with bit value for N\n\
  -f loc     convert CHS to LBA or LBA to CHS\n\
             refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
@@ -3364,19 +3366,20 @@ int main(int argc, char **argv)
 				}
 			}
 
+			/* Handle 'c' and 'p' switches in both storage and expression modes */
+			if (tmp[0] == 'c' && !isalpha(tmp[1])) {
+				convertbase(tmp + 1, false);
+				free(ptr);
+				continue;
+			}
+
+			if (tmp[0] == 'p' && !isalpha(tmp[1])) {
+				convertbase(tmp + 1, true);
+				free(ptr);
+				continue;
+			}
+
 			if (cfg.expr) {
-				if (tmp[0] == 'c' && !isalpha(tmp[1])) {
-					convertbase(tmp + 1, false);
-					free(ptr);
-					continue;
-				}
-
-				if (tmp[0] == 'p' && !isalpha(tmp[1])) {
-					convertbase(tmp + 1, true);
-					free(ptr);
-					continue;
-				}
-
 				if (has_bitwise_ops(tmp)) {
 					if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
 
