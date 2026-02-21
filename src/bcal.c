@@ -2121,7 +2121,7 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 
 static void show_basic_sizes()
 {
-	printf("---------------\n Storage sizes\n---------------\n"
+	printf("---------------\ntype       size\n---------------\n"
 		"char       : %lu\n"
 		"short      : %lu\n"
 		"int        : %lu\n"
@@ -2150,12 +2150,12 @@ static void prompt_help()
 {
 	printf("prompt keys:\n\
  b          toggle general-purpose mode\n\
- c N        show +ve integer N in binary, decimal, hex\n\
- p N        show bit position with bit value for N\n\
- r          show result from last operation\n\
- s          show sizes of storage types\n\
- ?          show prompt help\n\
- q/double ↵ quit program\n");
+ c N        convert N to binary, decimal, hex\n\
+ p N        print N as bit position/value pairs\n\
+ r          result from last operation\n\
+ s          sizes of storage types\n\
+ ?          help\n\
+ q/double ↵ quit\n");
 }
 
 static void usage()
@@ -2172,12 +2172,12 @@ positional arguments:\n\
 optional arguments:\n\
  -b [expr]  start in general-purpose REPL mode\n\
             or, evaluate expression and quit\n\
- -c N       show +ve integer N in binary, decimal, hex\n\
- -p N       show bit position with bit value for N\n\
+ -c N       convert N to binary, decimal, hex\n\
+ -p N       print N as bit position/value pairs\n\
  -f loc     convert CHS to LBA or LBA to CHS\n\
             refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
- -m         show minimal output (e.g. decimal bytes)\n\
+ -m         minimal output (e.g. decimal bytes)\n\
  -d         enable debug information and logs\n\
  -h         show this help\n\n");
 
@@ -3270,7 +3270,6 @@ int main(int argc, char **argv)
 
 		read_history(NULL);
 
-		printf("q/double Enter -> quit, ? -> help\n");
 		while (1) {
 			/* Manually print prompt for non-TTY mode (e.g., tests with pipes) */
 			if (!is_tty) {
@@ -3349,7 +3348,10 @@ int main(int argc, char **argv)
 					return 0;
 				case 's':
 					show_basic_sizes();
-
+					free(ptr);
+					continue;
+				case '?':
+					prompt_help();
 					free(ptr);
 					continue;
 				default:
