@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-<a href="https://asciinema.org/a/168719"><img src="https://asciinema.org/a/168719.svg" alt="bcal_asciicast" width="600"/></a>
+<a href="https://github.com/user-attachments/assets/e501edaa-d856-4c84-86fe-cfb56a7aefc9"><img src="https://github.com/user-attachments/assets/0c4f9c7c-7791-4610-9a2a-988add949a6a" alt="bcal_asciicast" width="600"/></a>
 </p>
 
 `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
