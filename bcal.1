@@ -76,7 +76,16 @@ It also supports general-purpose operations (program option \fB-b\fR, prompt key
 .SH ENVIRONMENT
 .TP
 .B BCAL_BIT_ANSI_COLOR_CODE
-ANSI escape code to colorize bit value 1 in \fB-p\fR output. Set to empty to disable coloring. Example: \fBexport BCAL_BIT_ANSI_COLOR_CODE=$'\\033[1;92m'\fR.
+.EX
+ANSI escape code to colorize bit value 1 in \fB-p\fR output. Set to empty to disable coloring. Examples:
+.IP
+// ANSI 8-bit color code
+.B export BCAL_BIT_ANSI_COLOR_CODE=$'\\\033[1;92m'
+// ANSI 256-bit color code
+.B export BCAL_BIT_ANSI_COLOR_CODE=$'\\\u001b[1;38;5;51m'
+// Disable coloring
+.B export BCAL_BIT_ANSI_COLOR_CODE=''
+.EE
 .SH OPTIONS
 .TP
 .BI "-b=" [expr]
@@ -89,7 +98,9 @@ Show decimal, binary and hex representation of positive integer \fIN\fR.
 Show bit position (reversed if set) and bit value of a number.
 .TP
 .BI "-f=" loc
-Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS. Please refer to the \fBOperational Notes\fR section for more details.
+Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS.
+.br
+Please refer to the \fBOperational Notes\fR section for more details.
 .TP
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.

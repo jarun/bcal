@@ -182,7 +182,13 @@ prompt keys:
 
 #### Environment variables
 
-- `BCAL_BIT_ANSI_COLOR_CODE`: ANSI escape code to colorize bit value `1` in `-p` output. Set to empty to disable coloring. Example: `export BCAL_BIT_ANSI_COLOR_CODE=$'\033[1;92m'`.
+- `BCAL_BIT_ANSI_COLOR_CODE`: ANSI escape code to colorize bit value `1` in `-p` output. Set to empty to disable coloring. Examples:
+
+    ```sh
+    export BCAL_BIT_ANSI_COLOR_CODE=$'\033[1;92m'         // ANSI 8-bit color code
+    export BCAL_BIT_ANSI_COLOR_CODE=$'\u001b[1;38;5;51m'  // ANSI 256-bit color code
+    export BCAL_BIT_ANSI_COLOR_CODE=''                    // Disable coloring
+    ```
 
 ### Examples
 
