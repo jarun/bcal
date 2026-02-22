@@ -1278,9 +1278,12 @@ static void printbin_positions(maxuint_t n)
 		/* Print bit positions for this row (MSB to LSB) */
 		for (int bit = end_bit; bit >= start_bit; --bit) {
 			maxuint_t bit_value = (bit <= highest_bit) ? ((n >> bit) & 1) : 0;
-			if (bit_value == 1)
-				printf("\033[7m%3d\033[0m ", bit);
-			else
+			if (bit_value == 1) {
+				if (bit_value_1_code && bit_value_1_code[0] != '\0')
+					printf("\033[7m%3d\033[0m ", bit);
+				else
+					printf("%3d ", bit);
+			} else
 				printf("%3d ", bit);
 		}
 		printf("\n");
