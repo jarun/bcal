@@ -4,21 +4,50 @@ MANDIR = $(DESTDIR)$(PREFIX)/share/man/man1
 DOCDIR = $(DESTDIR)$(PREFIX)/share/doc/bcal
 STRIP ?= strip
 
-CFLAGS ?= -O3
-CFLAGS += -Wall -Wextra -Wno-unused-parameter -Werror
-LDLIBS = -lreadline
+CFLAGS_OPTIMIZATION ?= -O3
+CFLAGS_WARNINGS     ?= -Wall -Wextra -Wno-unused-parameter -Werror
+
+LDLIBS_READLINE ?= -lreadline
+LDLIBS_EDITLINE ?= -ledit
+
+LDLIBS_MATH ?= -lm
+CFLAGS += $(CFLAGS_OPTIMIZATION) $(CFLAGS_WARNINGS)
+
+O_EL := 0  # set to use the BSD editline library
+O_NORL := 0  # set to use native input prompt without readline
+O_STATIC := 0  # set to build statically (forces O_NORL)
+
+ifeq ($(strip $(O_STATIC)),1)
+	O_NORL := 1
+	LDFLAGS += -static
+endif
+
+ifeq ($(strip $(O_NORL)),1)
+	CFLAGS += -DNORL
+	LDLIBS += $(LDLIBS_MATH)
+else ifeq ($(strip $(O_EL)),1)
+	LDLIBS += $(LDLIBS_EDITLINE)
+	LDLIBS += $(LDLIBS_MATH)
+else
+	LDLIBS += $(LDLIBS_READLINE)
+	LDLIBS += $(LDLIBS_MATH)
+endif
 
 SRC = $(wildcard src/*.c)
 INCLUDE = -Iinc
 
 bcal: $(SRC)
-	$(CC) $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(STRIP) bcal
 
 all: bcal
 
+static:
+	$(MAKE) O_STATIC=1
+
 x86: $(SRC)
-	$(CC) -m64 $(CFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
-	strip bcal
+	$(CC) -m64 $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(INCLUDE) -o bcal $(SRC) $(LDLIBS)
+	$(STRIP) bcal
 
 distclean: clean
 	rm -f *~
@@ -46,4 +75,5 @@ clean:
 
 skip: ;
 
-.PHONY: bcal all x86 distclean install uninstall strip clean
+.PHONY: all x86 distclean install uninstall strip clean
+.PHONY: static

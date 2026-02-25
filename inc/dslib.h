@@ -124,7 +124,7 @@ static void cleanqueue(queue **front)
 	}
 }
 
-#if 0
+/*
 static void printstack(stack *top)
 {
 	stack *i;
@@ -154,4 +154,4 @@ static void printqueue(queue *front)
 
 	printf("\n");
 }
-#endif
+*/

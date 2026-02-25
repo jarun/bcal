@@ -20,16 +20,26 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <math.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <getopt.h>
+#ifndef NORL
 #include <readline/history.h>
 #include <readline/readline.h>
+#else
+#include <termios.h>
+#include <sys/stat.h>
+#endif
 #include "dslib.h"
 #include "log.h"
-
-#define TRUE 1
-#define FALSE !TRUE
 
 #define SECTOR_SIZE 512 /* 0x200 */
 #define MAX_HEAD 16 /* 0x10 */
@@ -39,9 +49,10 @@
 #define FLOAT_WIDTH 40
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 #define MAX_BITS 128
-#define _ALIGNMENT_MASK 0xF
+#define ALIGNMENT_MASK_4BIT 0xF
+#define ELEMENTS(x) (sizeof(x) / sizeof(*(x)))
+#define BIT_VALUE_1_COLOR_DEFAULT "\033[1;97m"
 
-typedef unsigned char bool;
 typedef unsigned char uchar;
 typedef unsigned int uint;
 typedef unsigned long ulong;
@@ -63,27 +74,316 @@ typedef struct {
 
 /* Settings */
 typedef struct {
-	uchar bcmode  : 1;
+	uchar maths   : 1;
 	uchar minimal : 1;
 	uchar repl    : 1;
 	uchar rsvd    : 3; /* Reserved for future usage */
 	uchar loglvl  : 2;
 } settings;
 
-static char *VERSION = "2.1";
+static char *VERSION = "2.5";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
+static const char *PROMPT_BYTES = "bytes> ";
+static const char *PROMPT_MATHS = "maths> ";
 
 static char *FAILED = "1";
 static char *PASSED = "\0";
 static char *curexpr = NULL;
-static char prompt[8] = "bcal> ";
+static char prompt[9] = "bytes> ";
+
+static const char *bit_value_1_code = BIT_VALUE_1_COLOR_DEFAULT;
 
 static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
 static settings cfg = {0, 0, 0, 0, INFO};
+
+static void get_bit_value_1_code(void)
+{
+	const char *env_code = getenv("BCAL_BIT_ANSI_COLOR_CODE");
+	if (env_code)
+		bit_value_1_code = env_code;
+}
+
+#ifdef NORL
+/* Native history implementation */
+#define MAX_HISTORY 50
+#define MAX_INPUT_LEN 4096
+
+static char *history_lines[MAX_HISTORY];
+static int history_count = 0;
+static char history_file_path[PATH_MAX];
+
+/* Get history file path */
+static void get_history_file_path(void)
+{
+	const char *config_home = getenv("XDG_CONFIG_HOME");
+	const char *home = getenv("HOME");
+
+	if (config_home && config_home[0] != '\0') {
+		snprintf(history_file_path, PATH_MAX, "%s/bcal", config_home);
+	} else if (home && home[0] != '\0') {
+		snprintf(history_file_path, PATH_MAX, "%s/.config/bcal", home);
+	} else {
+		history_file_path[0] = '\0';
+		return;
+	}
+
+	/* Create directory if it doesn't exist */
+	mkdir(history_file_path, 0755);
+
+	/* Append history filename */
+	strncat(history_file_path, "/history", PATH_MAX - strlen(history_file_path) - 1);
+}
+
+/* Read history from file */
+static void read_history(const char *unused)
+{
+	(void)unused;
+	FILE *fp;
+	char line[MAX_INPUT_LEN];
+
+	get_history_file_path();
+
+	if (history_file_path[0] == '\0')
+		return;
+
+	fp = fopen(history_file_path, "r");
+	if (!fp)
+		return;
+
+	history_count = 0;
+	while (fgets(line, MAX_INPUT_LEN, fp) && history_count < MAX_HISTORY) {
+		size_t len = strlen(line);
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
+
+		if (line[0] != '\0')
+			history_lines[history_count++] = strdup(line);
+	}
+
+	fclose(fp);
+}
+
+/* Write history to file */
+static void write_history(const char *unused)
+{
+	(void)unused;
+	FILE *fp;
+	int i, start;
+
+	if (history_file_path[0] == '\0')
+		return;
+
+	fp = fopen(history_file_path, "w");
+	if (!fp)
+		return;
+
+	/* Write only the last MAX_HISTORY entries */
+	start = (history_count > MAX_HISTORY) ? (history_count - MAX_HISTORY) : 0;
+	for (i = start; i < history_count; i++) {
+		if (history_lines[i] && history_lines[i][0] != '\0')
+			fprintf(fp, "%s\n", history_lines[i]);
+	}
+
+	fclose(fp);
+}
+
+/* Add line to history */
+static void add_history(const char *line)
+{
+	if (!line || line[0] == '\0')
+		return;
+
+	/* Don't add duplicate of last entry */
+	if (history_count > 0 && strcmp(history_lines[history_count - 1], line) == 0)
+		return;
+
+	/* Free oldest entry if at capacity */
+	if (history_count >= MAX_HISTORY) {
+		free(history_lines[0]);
+		memmove(history_lines, history_lines + 1, (MAX_HISTORY - 1) * sizeof(char *));
+		history_count = MAX_HISTORY - 1;
+	}
+
+	history_lines[history_count++] = strdup(line);
+}
+
+/* Native readline with arrow key support */
+static char *readline(const char *prompt_str)
+{
+	static char buffer[MAX_INPUT_LEN];
+	int pos = 0;
+	int len = 0;
+	int history_pos = history_count;
+	char *saved_input = NULL;
+	int c;
+	struct termios oldattr, newattr;
+	int is_tty = isatty(STDIN_FILENO);
+
+	if (!is_tty) {
+		/* Non-TTY mode: use simple fgets */
+		if (fgets(buffer, MAX_INPUT_LEN, stdin) == NULL)
+			return NULL;
+
+		size_t input_len = strlen(buffer);
+		if (input_len > 0 && buffer[input_len - 1] == '\n')
+			buffer[input_len - 1] = '\0';
+
+		return strdup(buffer);
+	}
+
+	/* Set terminal to raw mode for arrow key capture */
+	tcgetattr(STDIN_FILENO, &oldattr);
+	newattr = oldattr;
+	newattr.c_lflag &= ~(ICANON | ECHO);
+	newattr.c_cc[VMIN] = 1;
+	newattr.c_cc[VTIME] = 0;
+	tcsetattr(STDIN_FILENO, TCSANOW, &newattr);
+
+	/* Print prompt */
+	printf("%s", prompt_str);
+	fflush(stdout);
+
+	buffer[0] = '\0';
+	len = 0;
+	pos = 0;
+
+	while (1) {
+		unsigned char ch;
+		if (read(STDIN_FILENO, &ch, 1) != 1)
+			break;
+		c = ch;
+
+		if (c == '\n' || c == '\r') {
+			/* Enter pressed */
+			printf("\n");
+			break;
+		} else if (c == 127 || c == 8) {
+			/* Backspace */
+			if (pos > 0) {
+				memmove(buffer + pos - 1, buffer + pos, len - pos + 1);
+				pos--;
+				len--;
+
+				/* Redraw line */
+				printf("\r%s%s ", prompt_str, buffer);
+				for (int i = len; i < pos + 1; i++)
+					printf("\b");
+				for (int i = pos; i < len; i++)
+					printf("\b");
+				fflush(stdout);
+			}
+		} else if (c == 27) {
+			/* Escape sequence */
+			if (read(STDIN_FILENO, &ch, 1) != 1)
+				continue;
+			c = ch;
+			if (c == '[') {
+				if (read(STDIN_FILENO, &ch, 1) != 1)
+					continue;
+				c = ch;
+				if (c == 'A') {
+					/* Up arrow */
+					if (history_pos > 0) {
+						if (history_pos == history_count && len > 0) {
+							/* Save current input */
+							if (saved_input)
+								free(saved_input);
+							saved_input = strdup(buffer);
+						}
+
+						history_pos--;
+						strcpy(buffer, history_lines[history_pos]);
+						len = strlen(buffer);
+						pos = len;
+
+						/* Redraw line */
+						printf("\r%s%s\033[K", prompt_str, buffer);
+						fflush(stdout);
+					}
+				} else if (c == 'B') {
+					/* Down arrow */
+					if (history_pos < history_count) {
+						history_pos++;
+						if (history_pos == history_count) {
+							/* Restore saved input */
+							if (saved_input) {
+								strcpy(buffer, saved_input);
+								free(saved_input);
+								saved_input = NULL;
+							} else {
+								buffer[0] = '\0';
+							}
+						} else {
+							strcpy(buffer, history_lines[history_pos]);
+						}
+
+						len = strlen(buffer);
+						pos = len;
+
+						/* Redraw line */
+						printf("\r%s%s\033[K", prompt_str, buffer);
+						fflush(stdout);
+					}
+				} else if (c == 'C') {
+					/* Right arrow */
+					if (pos < len) {
+						pos++;
+						printf("\033[C");
+						fflush(stdout);
+					}
+				} else if (c == 'D') {
+					/* Left arrow */
+					if (pos > 0) {
+						pos--;
+						printf("\033[D");
+						fflush(stdout);
+					}
+				}
+			}
+		} else if (c == 4) {
+			/* Ctrl-D (EOF) */
+			if (len == 0) {
+				printf("\n");
+				tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+				if (saved_input)
+					free(saved_input);
+				return NULL;
+			}
+		} else if (c >= 32 && c < 127) {
+			/* Printable character */
+			if (len < MAX_INPUT_LEN - 1) {
+				memmove(buffer + pos + 1, buffer + pos, len - pos + 1);
+				buffer[pos] = c;
+				pos++;
+				len++;
+
+				/* Redraw from cursor position */
+				printf("%c", c);
+				if (pos < len) {
+					printf("%s", buffer + pos);
+					for (int i = pos; i < len; i++)
+						printf("\b");
+				}
+				fflush(stdout);
+			}
+		}
+	}
+
+	buffer[len] = '\0';
+
+	/* Restore terminal attributes */
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+
+	if (saved_input)
+		free(saved_input);
+
+	return strdup(buffer);
+}
+#endif
 
 static void debug_log(const char *func, int level, const char *format, ...)
 {
@@ -117,7 +417,7 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	static ulong *s, *d;
 	static size_t len, blocks;
 	static const uint lsize = sizeof(ulong);
-	static const uint _WSHIFT = (sizeof(ulong) == 8) ? 3 : 2;
+	static const uint WORD_SHIFT = (sizeof(ulong) == 8) ? 3 : 2;
 
 	if (!src || !dest || !n)
 		return 0;
@@ -133,10 +433,11 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	 * To enable -O3 ensure src and dest are 16-byte aligned
 	 * More info: http://www.felixcloutier.com/x86/MOVDQA.html
 	 */
-	if ((n >= lsize) && (((ulong)src & _ALIGNMENT_MASK) == 0 && ((ulong)dest & _ALIGNMENT_MASK) == 0)) {
+	if ((n >= lsize) && (((ulong)src & ALIGNMENT_MASK_4BIT) == 0
+	    && ((ulong)dest & ALIGNMENT_MASK_4BIT) == 0)) {
 		s = (ulong *)src;
 		d = (ulong *)dest;
-		blocks = n >> _WSHIFT;
+		blocks = n >> WORD_SHIFT;
 		n &= lsize - 1;
 
 		while (blocks) {
@@ -147,7 +448,7 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 
 		if (!n) {
 			dest = (char *)d;
-			*--dest = '\0';
+			*--dest = '\0'; // NOLINT
 			return len;
 		}
 
@@ -164,16 +465,740 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 	return len;
 }
 
-/*
- * Try to evaluate en expression using bc
- * If argument is NULL, global curexpr is picked
- */
-static int try_bc(char *expr)
+static bool program_exit(const char *str)
 {
-	pid_t pid;
-	int pipe_pc[2], pipe_cp[2], ret;
-	size_t len, count = 0;
+	if (!strcmp(str, "exit") || !strcmp(str, "quit"))
+		return true;
+	return false;
+}
 
+static void remove_commas(char *str)
+{
+	if (!str || !*str)
+		return;
+
+	char *iter1, *iter2;
+
+	for (iter1 = iter2 = str; *iter2; iter2++)
+		if (*iter2 != ',')
+			*iter1++ = *iter2;
+
+	*iter1 = '\0';
+}
+
+static bool has_function_call(const char *str)
+{
+	if (!str || !*str)
+		return false;
+
+	for (size_t i = 0; str[i] != '\0'; ++i) {
+		if (isalpha((unsigned char)str[i])) {
+			size_t j = i + 1;
+			while (isalnum((unsigned char)str[j]))
+				++j;
+			while (isspace((unsigned char)str[j]))
+				++j;
+			if (str[j] == '(')
+				return true;
+			i = j;
+		}
+	}
+
+	return false;
+}
+
+static void remove_thousands_commas(char *str)
+{
+	if (!str || !*str)
+		return;
+
+	size_t read = 0;
+	size_t write = 0;
+	int func_paren_depth = 0;
+
+	while (str[read] != '\0') {
+		if (str[read] == '(') {
+			/* Check if this is a function call by looking back for an identifier */
+			int is_function = 0;
+			if (write > 0) {
+				size_t j = write - 1;
+				/* Skip back over alphanumeric characters */
+				while (j > 0 && isalnum((unsigned char)str[j]))
+					j--;
+				/* If we found alphanumeric chars right before '(', it's likely a function */
+				if ((j < write - 1 && isalpha((unsigned char)str[j + 1])) ||
+				    (write > 0 && isalpha((unsigned char)str[write - 1])))
+					is_function = 1;
+			}
+			if (is_function)
+				func_paren_depth++;
+			str[write++] = str[read++];
+		} else if (str[read] == ')') {
+			if (func_paren_depth > 0)
+				func_paren_depth--;
+			str[write++] = str[read++];
+		} else if (str[read] == ',') {
+			/* Don't process comma if we're inside a function call */
+			if (func_paren_depth > 0) {
+				str[write++] = str[read++];
+			} else {
+				/* Check if this is a thousands separator */
+				if (read > 0 && isdigit((unsigned char)str[read - 1]) &&
+				    isdigit((unsigned char)str[read + 1])) {
+					size_t k = read + 1;
+					int digits = 0;
+
+					while (isdigit((unsigned char)str[k])) {
+						++digits;
+						++k;
+						if (digits > 3)
+							break;
+					}
+
+					if (digits == 3) {
+						++read;
+						continue;
+					}
+				}
+				str[write++] = str[read++];
+			}
+		} else {
+			str[write++] = str[read++];
+		}
+	}
+
+	str[write] = '\0';
+}
+
+typedef struct {
+	char *digits;
+	size_t len;
+	int scale;
+	bool negative;
+} decnum_t;
+
+static bool parse_decimal_token(const char *start, size_t len, decnum_t *out)
+{
+	if (!start || !out || len == 0)
+		return false;
+
+	bool negative = false;
+	bool seen_dot = false;
+	bool seen_digit = false;
+	int scale = 0;
+	size_t i = 0;
+
+	if (start[i] == '+' || start[i] == '-') {
+		negative = (start[i] == '-');
+		++i;
+		if (i >= len)
+			return false;
+	}
+
+	char *digits = (char *)malloc(len + 1);
+	if (!digits)
+		return false;
+
+	size_t dpos = 0;
+	for (; i < len; ++i) {
+		unsigned char ch = (unsigned char)start[i];
+		if (isdigit(ch)) {
+			digits[dpos++] = (char)ch;
+			seen_digit = true;
+			if (seen_dot)
+				++scale;
+		} else if (ch == '.' && !seen_dot) {
+			seen_dot = true;
+		} else {
+			free(digits);
+			return false;
+		}
+	}
+
+	if (!seen_digit) {
+		free(digits);
+		return false;
+	}
+
+	/* Trim leading zeros, but keep at least one digit */
+	size_t first = 0;
+	while (first + 1 < dpos && digits[first] == '0')
+		++first;
+	if (first > 0) {
+		memmove(digits, digits + first, dpos - first);
+		dpos -= first;
+	}
+
+	digits[dpos] = '\0';
+
+	out->digits = digits;
+	out->len = dpos;
+	out->scale = scale;
+	out->negative = negative;
+	return true;
+}
+
+static char *mul_digits(const char *a, size_t la, const char *b, size_t lb, size_t *out_len)
+{
+	if (!a || !b || la == 0 || lb == 0)
+		return NULL;
+
+	size_t n = la + lb;
+	int *acc = (int *)calloc(n, sizeof(int));
+	if (!acc)
+		return NULL;
+
+	for (size_t i = 0; i < la; ++i) {
+		int da = a[la - 1 - i] - '0';
+		for (size_t j = 0; j < lb; ++j) {
+			int db = b[lb - 1 - j] - '0';
+			acc[n - 1 - (i + j)] += da * db;
+		}
+	}
+
+	for (size_t k = n - 1; k > 0; --k) {
+		if (acc[k] >= 10) {
+			acc[k - 1] += acc[k] / 10;
+			acc[k] %= 10;
+		}
+	}
+
+	size_t start = 0;
+	while (start + 1 < n && acc[start] == 0)
+		++start;
+
+	size_t len = n - start;
+	char *digits = (char *)malloc(len + 1);
+	if (!digits) {
+		free(acc);
+		return NULL;
+	}
+
+	for (size_t i = 0; i < len; ++i)
+		digits[i] = (char)('0' + acc[start + i]);
+	digits[len] = '\0';
+
+	free(acc);
+	if (out_len)
+		*out_len = len;
+	return digits;
+}
+
+static bool round_digits(char **digits, size_t *len, int *scale, int desired_scale)
+{
+	if (!digits || !*digits || !len || !scale)
+		return false;
+
+	if (*len <= (size_t)(*scale)) {
+		size_t pad = (size_t)(*scale) - *len + 1;
+		char *tmp = (char *)malloc(*len + pad + 1);
+		if (!tmp)
+			return false;
+		memset(tmp, '0', pad);
+		memcpy(tmp + pad, *digits, *len + 1);
+		free(*digits);
+		*digits = tmp;
+		*len += pad;
+	}
+
+	if (*scale > desired_scale) {
+		int drop = *scale - desired_scale;
+		size_t keep_len = *len - (size_t)drop;
+		char round_digit = (*digits)[keep_len];
+
+		if (round_digit >= '5') {
+			size_t idx = keep_len;
+			while (idx > 0) {
+				--idx;
+				if ((*digits)[idx] < '9') {
+					(*digits)[idx]++;
+					break;
+				}
+				(*digits)[idx] = '0';
+			}
+
+			if (idx == 0 && (*digits)[0] == '0') {
+				char *tmp = (char *)malloc(*len + 2);
+				if (!tmp)
+					return false;
+				tmp[0] = '1';
+				memcpy(tmp + 1, *digits, *len + 1);
+				free(*digits);
+				*digits = tmp;
+				++*len;
+				++keep_len;
+			}
+		}
+
+		(*digits)[keep_len] = '\0';
+		*len = keep_len;
+		*scale = desired_scale;
+	} else if (*scale < desired_scale) {
+		size_t pad = (size_t)(desired_scale - *scale);
+		char *tmp = (char *)malloc(*len + pad + 1);
+		if (!tmp)
+			return false;
+		memcpy(tmp, *digits, *len);
+		memset(tmp + *len, '0', pad);
+		tmp[*len + pad] = '\0';
+		free(*digits);
+		*digits = tmp;
+		*len += pad;
+		*scale = desired_scale;
+	}
+
+	return true;
+}
+
+static void trim_trailing_zeros(char *buf)
+{
+	char *dot = strchr(buf, '.');
+	if (!dot)
+		return;
+
+	char *end = buf + strlen(buf) - 1;
+	while (end > dot && *end == '0')
+		--end;
+
+	if (end == dot)
+		*dot = '\0';
+	else
+		*(end + 1) = '\0';
+}
+
+static bool format_decimal_result(char *digits, size_t len, int scale, bool negative,
+				 char *buf, size_t buflen)
+{
+	if (!digits || !buf || buflen == 0)
+		return false;
+
+	if (len == 1 && digits[0] == '0')
+		negative = false;
+
+	size_t int_len = len - (size_t)scale;
+	size_t needed = len + (scale ? 1 : 0) + (negative ? 1 : 0) + 1;
+	if (needed > buflen)
+		return false;
+
+	size_t pos = 0;
+	if (negative)
+		buf[pos++] = '-';
+
+	memcpy(buf + pos, digits, int_len);
+	pos += int_len;
+	if (scale) {
+		buf[pos++] = '.';
+		memcpy(buf + pos, digits + int_len, (size_t)scale);
+		pos += (size_t)scale;
+	}
+	buf[pos] = '\0';
+
+	trim_trailing_zeros(buf);
+	return true;
+}
+
+static bool eval_decimal_multiply(const char *expr, char *out, size_t out_len)
+{
+	if (!expr || !out || out_len == 0)
+		return false;
+
+	const char *p = expr;
+	while (isspace((unsigned char)*p))
+		++p;
+
+	const char *a_start = p;
+	while (*p && (isdigit((unsigned char)*p) || *p == '.' || *p == '+' || *p == '-'))
+		++p;
+	size_t a_len = (size_t)(p - a_start);
+	if (a_len == 0)
+		return false;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	if (*p != '*')
+		return false;
+	++p;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	const char *b_start = p;
+	while (*p && (isdigit((unsigned char)*p) || *p == '.' || *p == '+' || *p == '-'))
+		++p;
+	size_t b_len = (size_t)(p - b_start);
+	if (b_len == 0)
+		return false;
+
+	while (isspace((unsigned char)*p))
+		++p;
+	if (*p != '\0')
+		return false;
+
+	decnum_t a = {0};
+	decnum_t b = {0};
+	if (!parse_decimal_token(a_start, a_len, &a))
+		return false;
+	if (!parse_decimal_token(b_start, b_len, &b)) {
+		free(a.digits);
+		return false;
+	}
+
+	size_t prod_len = 0;
+	char *prod = mul_digits(a.digits, a.len, b.digits, b.len, &prod_len);
+	if (!prod) {
+		free(a.digits);
+		free(b.digits);
+		return false;
+	}
+
+	int scale = a.scale + b.scale;
+	bool negative = (a.negative != b.negative);
+
+	if (!round_digits(&prod, &prod_len, &scale, 10)) {
+		free(a.digits);
+		free(b.digits);
+		free(prod);
+		return false;
+	}
+
+	bool ok = format_decimal_result(prod, prod_len, scale, negative, out, out_len);
+
+	free(a.digits);
+	free(b.digits);
+	free(prod);
+	return ok;
+}
+
+/* Evaluate arithmetic expression */
+static int eval_expr(char *expr_str, maxfloat_t *result);
+
+/* Forward declarations for recursive descent parser */
+static int parse_expr(const char *expr, int *pos, maxfloat_t *result);
+static int parse_factor(const char *expr, int *pos, maxfloat_t *result);
+static int parse_term(const char *expr, int *pos, maxfloat_t *result);
+static char *fixexpr(char *exp, int *unitless);
+
+/* Skip whitespace */
+static void skip_space(const char *expr, int *pos)
+{
+	while (expr[*pos] && isspace(expr[*pos]))
+		(*pos)++;
+}
+
+/* Parse primary expression: numbers, parentheses, functions */
+static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
+{
+	skip_space(expr, pos);
+
+	if (expr[*pos] == '(') {
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		return 0;
+	}
+
+
+
+	/* exp */
+	if (strncmp(&expr[*pos], "exp", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "exp requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = expl(*result);
+		return 0;
+	}
+
+	/* log base */
+	if (strncmp(&expr[*pos], "log", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		maxfloat_t base;
+		maxfloat_t num;
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "log requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &base) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "log requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &num) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (base <= 0 || base == 1) {
+			log(ERROR, "log base must be positive and not 1\n");
+			return -1;
+		}
+		if (num <= 0) {
+			log(ERROR, "log of non-positive number\n");
+			return -1;
+		}
+		*result = logl(num) / logl(base);
+		return 0;
+	}
+
+	/* ln natural logarithm */
+	if (strncmp(&expr[*pos], "ln", 2) == 0 && !isalnum(expr[*pos + 2])) {
+		*pos += 2;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "ln requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, result) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (*result <= 0) {
+			log(ERROR, "ln of non-positive number\n");
+			return -1;
+		}
+		*result = logl(*result);
+		return 0;
+	}
+
+
+	/* root */
+	if (strncmp(&expr[*pos], "root", 4) == 0 && !isalnum(expr[*pos + 4])) {
+		*pos += 4;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "root requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		maxfloat_t n, x;
+		if (parse_expr(expr, pos, &n) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "root requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &x) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		if (n == 0) {
+			log(ERROR, "root index cannot be zero\n");
+			return -1;
+		}
+		*result = powl(x, 1.0L / n);
+		return 0;
+	}
+
+	/* pow */
+	if (strncmp(&expr[*pos], "pow", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "pow requires parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		maxfloat_t left, right;
+		if (parse_expr(expr, pos, &left) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ',') {
+			log(ERROR, "pow requires two arguments\n");
+			return -1;
+		}
+		(*pos)++;
+		if (parse_expr(expr, pos, &right) == -1)
+			return -1;
+		skip_space(expr, pos);
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+		(*pos)++;
+		*result = powl(left, right);
+		return 0;
+	}
+
+	/* Check for 'r' - reference to last result */
+	if (expr[*pos] == 'r' && !isalnum(expr[*pos + 1])) {
+		(*pos)++;
+		if (lastres.p[0] == '\0') {
+			log(ERROR, "no result stored\n");
+			return -1;
+		}
+		*result = strtold(lastres.p, NULL);
+		return 0;
+	}
+
+	/* Parse number (decimal or hex) */
+	char *endptr;
+	maxfloat_t val = strtold(&expr[*pos], &endptr);
+	if (endptr == &expr[*pos]) {
+		log(ERROR, "invalid operand or unit\n");
+		return -1;
+	}
+	*pos = (int)(endptr - expr);
+	*result = val;
+	return 0;
+}
+
+	/* Parse multiplication and division */
+static int parse_term(const char *expr, int *pos, maxfloat_t *result)
+{
+	if (parse_factor(expr, pos, result) == -1)
+		return -1;
+
+	while (1) {
+		skip_space(expr, pos);
+		if (expr[*pos] == '*') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_factor(expr, pos, &right) == -1)
+				return -1;
+			*result = *result * right;
+		} else if (expr[*pos] == '/') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_factor(expr, pos, &right) == -1)
+				return -1;
+			if (right == 0) {
+				log(ERROR, "division by zero\n");
+				return -1;
+			}
+			*result = *result / right;
+		} else {
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/* Parse addition and subtraction */
+static int parse_expr(const char *expr, int *pos, maxfloat_t *result)
+{
+	if (parse_term(expr, pos, result) == -1)
+		return -1;
+
+	while (1) {
+		skip_space(expr, pos);
+		if (expr[*pos] == '+') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_term(expr, pos, &right) == -1)
+				return -1;
+			*result = *result + right;
+		} else if (expr[*pos] == '-') {
+			(*pos)++;
+			maxfloat_t right;
+			if (parse_term(expr, pos, &right) == -1)
+				return -1;
+			*result = *result - right;
+		} else {
+			break;
+		}
+	}
+
+	return 0;
+}
+
+/* Evaluate arithmetic expression */
+static int eval_expr(char *expr_str, maxfloat_t *result)
+{
+	int pos = 0;
+
+	if (!expr_str || !*expr_str) {
+		log(ERROR, "empty expression\n");
+		return -1;
+	}
+
+	if (parse_expr(expr_str, &pos, result) == -1)
+		return -1;
+
+	skip_space(expr_str, &pos);
+	if (expr_str[pos] != '\0') {
+		log(ERROR, "unexpected character in expression\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/* Format long double removing trailing zeros */
+static void format_result(maxfloat_t result, char *buf, size_t buflen)
+{
+	snprintf(buf, buflen, "%.10Lf", result);
+
+	/* Find decimal point */
+	char *dot = strchr(buf, '.');
+	if (!dot)
+		return;
+
+	/* Find last non-zero digit after decimal point */
+	char *end = buf + strlen(buf) - 1;
+	while (end > dot && *end == '0')
+		end--;
+
+	/* If we stopped at the decimal point, remove it too */
+	if (end == dot) {
+		*dot = '\0';
+	} else {
+		*(end + 1) = '\0';
+	}
+}
+
+static int is_integral_result(maxfloat_t value, long long *out)
+{
+	long double intpart;
+
+	if (modfl(value, &intpart) != 0.0L)
+		return 0;
+
+	if (intpart < (long double)LLONG_MIN || intpart > (long double)LLONG_MAX)
+		return 0;
+
+	*out = (long long)intpart;
+	return 1;
+}
+
+/* Evaluate expression and print result */
+static int evaluate_expr(char *expr)
+{
 	if (!expr) {
 		if (curexpr)
 			expr = curexpr;
@@ -181,132 +1206,104 @@ static int try_bc(char *expr)
 			return -1;
 	}
 
-	log(DEBUG, "expression: \"%s\"\n", expr);
-
-	if (pipe(pipe_pc) == -1 || pipe(pipe_cp) == -1) {
-		log(ERROR, "pipe()!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	pid = fork();
-
-	if (pid == -1) {
-		log(ERROR, "fork() failed!\n");
-		return -1;
-	}
-
-	if (pid == 0) { /* child */
-		close(STDOUT_FILENO);
-		close(STDIN_FILENO);
-		close(pipe_pc[1]); // Close writing end
-		close(pipe_cp[0]); // Close reading end
-
-		dup2(pipe_pc[0], STDIN_FILENO); // Take stdin from parent
-		dup2(pipe_cp[1], STDOUT_FILENO); // Give stdout to parent
-		dup2(pipe_cp[1], STDERR_FILENO); // Give stderr to parent
-
-		ret = execlp("bc", "bc", (char*) NULL);
-		log(ERROR, "execlp() failed!\n");
-		exit(ret);
-	}
-
-	/* parent */
-	if (write(pipe_pc[1], "scale=10\n", 9) != 9) {
-		log(ERROR, "write(1)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-#ifdef __GNU_LIBRARY__
-	if (write(pipe_pc[1], "last=", 5) != 5) {
-		log(ERROR, "write(2)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (lastres.p[0]) {
-		ret = strlen(lastres.p);
-		if (write(pipe_pc[1], lastres.p, ret) != ret) {
-			log(ERROR, "write(3)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
-	} else {
-		if (write(pipe_pc[1], "0", 1) != 1) {
-			log(ERROR, "write(4)! [%s]\n", strerror(errno));
-			exit(-1);
-		}
-	}
-
-	if (write(pipe_pc[1], "\n", 1) != 1) {
-		log(ERROR, "write(5)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-#endif
-
-	ret = strlen(expr);
-	if (write(pipe_pc[1], expr, ret) != ret) {
-		log(ERROR, "write(6)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	if (write(pipe_pc[1], "\n", 1) != 1) {
-		log(ERROR, "write(7)! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	static char buffer[128];
-
-	ret = read(pipe_cp[0], buffer, sizeof(buffer) - 1);
-	if (ret == -1) {
-		log(ERROR, "read()! [%s]\n", strerror(errno));
-		exit(-1);
-	}
-
-	buffer[ret] = '\0';
-
-	if (buffer[0] != '(') {
-		printf("%s", buffer);
-		len = bstrlcpy(lastres.p, buffer, NUM_LEN);
-
-		/* remove newline appended at the end of result by bc */
-		(len >= 2) ? (len -= 2) : (len = 0);
-		lastres.p[len] = '\0';
-
-		/* Trim the decimal part, if any */
-		while (count < len) {
-			if (lastres.p[count] == '.') {
-				lastres.p[count] = '\0';
-				break;
-			}
-
-			++count;
+	maxfloat_t result;
+	if (eval_expr(expr, &result) == 0) {
+		long long int_result;
+		if (is_integral_result(result, &int_result)) {
+			printf("%lld\n", int_result);
+			snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+		} else {
+			format_result(result, lastres.p, UINT_BUF_LEN);
+			printf("%s\n", lastres.p);
 		}
 		lastres.unit = 0;
-		log(DEBUG, "result: %s %d\n", lastres.p, lastres.unit);
 		return 0;
 	}
-
-	log(ERROR, "invalid expression\n");
 	return -1;
 }
 
-static void binprint(maxuint_t n)
+static void printbin(maxuint_t n)
 {
 	int count = MAX_BITS - 1;
-	char binstr[MAX_BITS + 1] = {0};
+	int pos = MAX_BITS + (MAX_BITS >> 2) - 1;
+	char binstr[MAX_BITS + (MAX_BITS >> 2) + 1] = {0};
 
 	if (!n) {
-		printf("0b0");
+		printf("0");
 		return;
 	}
 
 	while (n && count >= 0) {
-		binstr[count] = "01"[n & 1];
-		--count;
+		binstr[pos] = "01"[n & 1];
+		--pos;
 		n >>= 1;
+		if (n && count && !(count & 7)) {
+			binstr[pos] = ' ';
+			--pos;
+		}
+		--count;
 	}
 
-	++count;
+	++pos;
 
-	printf("0b%s", binstr + count);
+	printf("%s", binstr + pos);
+}
+
+static void printbin_positions(maxuint_t n)
+{
+	if (!n) {
+		printf("0");
+		return;
+	}
+
+	printf("\n");
+
+	/* Find the highest bit position */
+	int highest_bit = 0;
+	maxuint_t temp = n;
+	while (temp) {
+		highest_bit++;
+		temp >>= 1;
+	}
+	highest_bit--; /* Adjust to 0-based */
+
+	/* Print positions 0-31, 32-63, etc. Always print all positions in each row */
+	for (int start_bit = 0; start_bit <= 127; start_bit += 32) {
+		int end_bit = start_bit + 31;
+
+		/* Skip rows where no bits exist in the value */
+		if (start_bit > highest_bit)
+			break;
+
+		/* Print bit positions for this row (MSB to LSB) */
+		for (int bit = end_bit; bit >= start_bit; --bit) {
+			maxuint_t bit_value = (bit <= highest_bit) ? ((n >> bit) & 1) : 0;
+			if (bit_value == 1) {
+				if (bit_value_1_code && bit_value_1_code[0] != '\0')
+					printf("\033[7m%3d\033[0m ", bit);
+				else
+					printf("%3d ", bit);
+			} else
+				printf("%3d ", bit);
+		}
+		printf("\n");
+
+		/* Print bit values for this row (MSB to LSB) - only if bit exists in value */
+		for (int bit = end_bit; bit >= start_bit; --bit) {
+			if (bit <= highest_bit) {
+				int bit_value = (int)(n >> bit) & 1;
+				if (bit_value == 1) {
+					if (bit_value_1_code && bit_value_1_code[0] != '\0')
+						printf("  %s%d\033[0m ", bit_value_1_code, bit_value);
+					else
+						printf("  %d ", bit_value);
+				} else
+					printf("  %d ", bit_value);
+			} else
+				printf("    ");  /* Leave blank for bits beyond the value */
+		}
+		printf("\n\n");
+	}
 }
 
 static char *getstr_u128(maxuint_t n, char *buf)
@@ -341,7 +1338,7 @@ static char *getstr_f128(maxfloat_t val, char *buf)
 
 static void printval(maxfloat_t val, char *unit)
 {
-	if (val - (maxuint_t)val == 0)
+	if (val - (maxuint_t)val == 0) // NOLINT
 		printf("%40s %s\n", getstr_u128((maxuint_t)val, uint_buf), unit);
 	else
 		printf("%s %s\n", getstr_f128(val, float_buf), unit);
@@ -394,31 +1391,31 @@ static bool ischarvalid(char ch, uint base, uint *val)
 	{
 		if (ch == '0' || ch == '1') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 	} else if (base == 16) {
 		if (ch >= '0' && ch <= '9') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 
 		if (ch >= 'a' && ch <= 'f') {
 			*val = (ch - 'a') + 10;
-			return TRUE;
+			return true;
 		}
 
 		if (ch >= 'A' && ch <= 'F') {
 			*val = (ch - 'A') + 10;
-			return TRUE;
+			return true;
 		}
 	} else if (base == 10) {
 		if (ch >= '0' && ch <= '9') {
 			*val = ch - '0';
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 /*
@@ -506,6 +1503,52 @@ static maxuint_t strtouquad(char *token, char **pch)
 	return val;
 }
 
+static bool parse_prefixed_uint(const char *token, maxuint_t *val, char **endptr)
+{
+	if (!token || !*token || !val || !endptr)
+		return false;
+
+	uint base = 10, multiplier = 0, digit = 0, bits_used = 0;
+	uint max_bit_len = sizeof(maxuint_t) << 3;
+
+	if (token[0] == '0') {
+		if (token[1] == 'b' || token[1] == 'B') {
+			base = 2;
+			multiplier = 1;
+		} else if (token[1] == 'x' || token[1] == 'X') {
+			base = 16;
+			multiplier = 4;
+		}
+	}
+
+	if (base != 2 && base != 16)
+		return false;
+
+	const char *ptr = token + 2;
+	if (!*ptr) {
+		*endptr = (char *)ptr;
+		return false;
+	}
+
+	maxuint_t res = 0;
+	bool seen_digit = false;
+	while (*ptr && ischarvalid(*ptr, base, &digit)) {
+		seen_digit = true;
+		if (bits_used == max_bit_len)
+			return false;
+		res = (res << multiplier) + digit;
+		++bits_used;
+		++ptr;
+	}
+
+	if (!seen_digit)
+		return false;
+
+	*val = res;
+	*endptr = (char *)ptr;
+	return true;
+}
+
 static maxuint_t convertbyte(char *buf, int *ret)
 {
 	maxfloat_t val;
@@ -529,31 +1572,31 @@ static maxuint_t convertbyte(char *buf, int *ret)
 	/* Convert and print in IEC standard units */
 
 	printf("\n            IEC standard (base 2)\n\n");
-	val = bytes / (maxfloat_t)1024;
+	val = (maxfloat_t)bytes / 1024;
 	printval(val, "KiB");
 
-	val = bytes / (maxfloat_t)(1 << 20);
+	val = (maxfloat_t)bytes / (1 << 20);
 	printval(val, "MiB");
 
-	val = bytes / (maxfloat_t)(1 << 30);
+	val = (maxfloat_t)bytes / (1 << 30);
 	printval(val, "GiB");
 
-	val = bytes / (maxfloat_t)((maxuint_t)1 << 40);
+	val = (maxfloat_t)bytes / ((unsigned long long)1 << 40);
 	printval(val, "TiB");
 
 	/* Convert and print in SI standard values */
 
 	printf("\n            SI standard (base 10)\n\n");
-	val = bytes / (maxfloat_t)1000;
+	val = (maxfloat_t)bytes / 1000;
 	printval(val, "kB");
 
-	val = bytes / (maxfloat_t)1000000;
+	val = (maxfloat_t)bytes / 1000000;
 	printval(val, "MB");
 
-	val = bytes / (maxfloat_t)1000000000;
+	val = (maxfloat_t)bytes / 1000000000;
 	printval(val, "GB");
 
-	val = bytes / (maxfloat_t)1000000000000;
+	val = (maxfloat_t)bytes / 1000000000000;
 	printval(val, "TB");
 
 	return bytes;
@@ -982,37 +2025,36 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 	/* Fail if CHS is omitted */
 	if (token_no < 3) {
 		log(ERROR, "CHS missing\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[3]) {
 		log(ERROR, "MAX_HEAD = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[4]) {
 		log(ERROR, "MAX_SECTOR = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[2]) {
 		log(ERROR, "S = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (param[1] > param[3]) {
 		log(ERROR, "H > MAX_HEAD\n");
-		return FALSE;
+		return false;
 	}
 
 	if (param[2] > param[4]) {
 		log(ERROR, "S > MAX_SECTOR\n");
-		return FALSE;
+		return false;
 	}
 
-
-	*lba = param[3] * param[4] * param[0]; /* MH * MS * C */
-	*lba += param[4] * param[1]; /* MS * H */
+	*lba = (maxuint_t)param[3] * param[4] * param[0]; /* MH * MS * C */
+	*lba += (maxuint_t)param[4] * param[1]; /* MS * H */
 
 	*lba += param[2] - 1; /* S - 1 */
 
@@ -1020,7 +2062,7 @@ static bool chs2lba(char *chs, maxuint_t *lba)
 	printf("  C:%lu  H:%lu  S:%lu  MAX_HEAD:%lu  MAX_SECTOR:%lu\n",
 		param[0], param[1], param[2], param[3], param[4]);
 
-	return TRUE;
+	return true;
 }
 
 static bool lba2chs(char *lba, t_chs *p_chs)
@@ -1059,17 +2101,17 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	/* Fail if LBA is omitted */
 	if (!token_no) {
 		log(ERROR, "LBA missing\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[1]) {
 		log(ERROR, "MAX_HEAD = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	if (!param[2]) {
 		log(ERROR, "MAX_SECTOR = 0\n");
-		return FALSE;
+		return false;
 	}
 
 	/* L / (MS * MH) */
@@ -1078,14 +2120,14 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	p_chs->h = (ulong)((param[0] / param[2]) % param[1]);
 	if (p_chs->h > MAX_HEAD) {
 		log(ERROR, "H > MAX_HEAD\n");
-		return FALSE;
+		return false;
 	}
 
 	/* (L % MS) + 1 */
 	p_chs->s = (ulong)((param[0] % param[2]) + 1);
 	if (p_chs->s > MAX_SECTOR) {
 		log(ERROR, "S > MAX_SECTOR\n");
-		return FALSE;
+		return false;
 	}
 
 	printf("\033[1mLBA2CHS\033[0m\n  LBA:%s  ",
@@ -1093,12 +2135,12 @@ static bool lba2chs(char *lba, t_chs *p_chs)
 	printf("MAX_HEAD:%s  ", getstr_u128(param[1], uint_buf));
 	printf("MAX_SECTOR:%s\n", getstr_u128(param[2], uint_buf));
 
-	return TRUE;
+	return true;
 }
 
 static void show_basic_sizes()
 {
-	printf("---------------\n Storage sizes\n---------------\n"
+	printf("---------------\ntype       size\n---------------\n"
 		"char       : %lu\n"
 		"short      : %lu\n"
 		"int        : %lu\n"
@@ -1126,31 +2168,35 @@ static void show_basic_sizes()
 static void prompt_help()
 {
 	printf("prompt keys:\n\
- b          toggle bc mode\n\
- r          show result from last operation\n\
- s          show sizes of storage types\n\
- ?          show prompt help\n\
- q/double ↵ quit program\n");
+ b          toggle general-purpose mode\n\
+ c N        convert N to binary, decimal, hex\n\
+ p N        print N as bit position/value pairs\n\
+ r          result from last operation\n\
+ s          sizes of storage types\n\
+ ?          help\n\
+ q/double ↵ quit\n");
 }
 
 static void usage()
 {
-	printf("usage: bcal [-c N] [-f loc] [-s bytes] [expr]\n\
-            [N [unit]] [-b [expr]] [-m] [-d] [-h]\n\n\
-Storage expression calculator.\n\n\
+	printf("usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]\n\
+	    [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
+Bits, bytes and general-purpose calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB\n\
-            see https://wiki.ubuntu.com/UnitsPolicy\n\
+            https://en.wikipedia.org/wiki/Binary_prefix\n\
             default unit is B (byte), case is ignored\n\
             N can be decimal or '0x' prefixed hex value\n\n\
 optional arguments:\n\
- -c N       show +ve integer N in binary, decimal, hex\n\
+ -b [expr]  start in general-purpose REPL mode\n\
+            or, evaluate expression and quit\n\
+ -c N       convert N to binary, decimal, hex\n\
+ -p N       print N as bit position/value pairs\n\
  -f loc     convert CHS to LBA or LBA to CHS\n\
             refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
- -b [expr]  enter bc mode or evaluate expression in bc\n\
- -m         show minimal output (e.g. decimal bytes)\n\
+ -m         minimal output (e.g. decimal bytes)\n\
  -d         enable debug information and logs\n\
  -h         show this help\n\n");
 
@@ -1164,7 +2210,7 @@ Webpage: https://github.com/jarun/bcal\n", VERSION);
 
 static int bstricmp(const char *s1, const char *s2)
 {
-	while (*s1 && (tolower(*s1) == tolower(*s2))) {
+	while ((int)*s1 && (tolower((int)*s1) == tolower((int)*s2))) {
 		++s1;
 		++s2;
 	}
@@ -1196,11 +2242,34 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 	if (*isunit != 1)
 		*isunit = 0;
 
+	if (numstr[0] == '0' &&
+	    (numstr[1] == 'x' || numstr[1] == 'X' ||
+	     numstr[1] == 'b' || numstr[1] == 'B')) {
+		char *pch = NULL;
+		maxuint_t val = 0;
+		if (!parse_prefixed_uint(numstr, &val, &pch)) {
+			log(ERROR, "invalid token\n");
+			*out = -1;
+			return 0;
+		}
+		if (*pch == '\0')
+			return val;
+		if (!isalpha((unsigned char)*pch)) {
+			log(ERROR, "invalid token\n");
+			*out = -1;
+			return 0;
+		}
+		byte_metric = (maxfloat_t)val;
+		punit = pch;
+		goto parse_unit;
+	}
+
 	byte_metric = strtold(numstr, &punit);
 	log(DEBUG, "byte_metric: %Lf\n", byte_metric);
 	if (*numstr != '\0' && *punit == '\0')
 		return (maxuint_t)byte_metric;
 
+parse_unit:
 	log(DEBUG, "punit: %s\n", punit);
 
 	count = ARRAY_SIZE(units);
@@ -1212,7 +2281,7 @@ static maxuint_t unitconv(Data bunit, char *isunit, int *out)
 		if (cfg.minimal)
 			log(ERROR, "unknown unit\n");
 		else
-			try_bc(NULL);
+			evaluate_expr(NULL);
 
 		*out = -1;
 		return 0;
@@ -1262,6 +2331,8 @@ static int priority(char sign) /* Get the priority of operators, higher priprity
 	case '%':
 	case '/':
 	case '*': return 6;
+	case '~': return 7;
+	default : return 0;
 	}
 
 	return 0;
@@ -1274,7 +2345,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 	char *token = strtok(exp, " ");
 	static Data tokenData, ct;
 	int balanced = 0;
-	bool tokenize = TRUE;
+	bool tokenize = true;
 
 	tokenData.p[0] = '\0';
 	tokenData.unit = 0;
@@ -1297,6 +2368,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		case '&':
 		case '|':
 		case '^':
+		case '~':
 			if (token[1] != '\0') {
 				log(ERROR, "invalid token terminator\n");
 				emptystack(&op);
@@ -1305,7 +2377,8 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 			}
 
 			while (!isempty(op) && top(op)[0] != '(' &&
-			       priority(token[0]) <= priority(top(op)[0])) {
+				       ((token[0] == '~' && priority(token[0]) < priority(top(op)[0])) ||
+				        (token[0] != '~' && priority(token[0]) <= priority(top(op)[0])))) {
 				/* Pop from operator stack */
 				pop(&op, &ct);
 				/* Insert to Queue */
@@ -1347,7 +2420,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 				tokenData.unit = 1;
 				log(DEBUG, "unit found\n");
 			} else
-				tokenize = FALSE; /* We already toknized here */
+				tokenize = false; /* We already toknized here */
 
 			/* Enqueue operands */
 			log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
@@ -1359,7 +2432,7 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 		if (tokenize)
 			token = strtok(NULL, " ");
 		else
-			tokenize = TRUE;
+			tokenize = true;
 
 		log(DEBUG, "token: %s\n", token);
 	}
@@ -1432,7 +2505,21 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		dequeue(front, rear, &arg);
 
 		/* Check if arg is an operator */
-		if (strlen(arg.p) == 1 && !isdigit(arg.p[0])) {
+		if (strlen(arg.p) == 1 && !isdigit((int)arg.p[0])) {
+			if (arg.p[0] == '~') {
+				pop(&est, &raw_a);
+
+				a = unitconv(raw_a, &raw_a.unit, out);
+				if (*out == -1)
+					return 0;
+
+				c = ~a;
+				raw_c.unit = raw_a.unit ? 1 : 0;
+				bstrlcpy(raw_c.p, getstr_u128(c, uint_buf), NUM_LEN);
+				push(&est, raw_c);
+				continue;
+			}
+
 			pop(&est, &raw_b);
 			pop(&est, &raw_a);
 
@@ -1481,6 +2568,8 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 						break;
 					case '^':
 						c = a ^ b;
+						break;
+					default:
 						break;
 					}
 
@@ -1553,7 +2642,8 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 					break;
 				}
 
-				log(ERROR, "unit mismatch in modulo\n");
+				log(ERROR, "unit mismatch in modulo\n"); // fallthrough
+			default:
 				goto error;
 			}
 
@@ -1582,12 +2672,108 @@ static maxuint_t eval(queue **front, queue **rear, int *out)
 		*out = 1;
 
 	/* Convert string to integer */
-	return strtoull(res.p, NULL, 0);
+	char *pch = NULL;
+	maxuint_t val = strtouquad(res.p, &pch);
+	if (*pch) {
+		*out = -1;
+		return 0;
+	}
+	return val;
 
 error:
 	*out = -1;
 	emptystack(&est);
 	cleanqueue(front);
+	return 0;
+}
+
+static bool has_bitwise_ops(const char *expr)
+{
+	if (!expr)
+		return false;
+
+	for (size_t i = 0; expr[i] != '\0'; ++i) {
+		switch (expr[i]) {
+		case '&':
+		case '|':
+		case '^':
+		case '~':
+			return true;
+		case '<':
+			if (expr[i + 1] == '<')
+				return true;
+			break;
+		case '>':
+			if (expr[i + 1] == '>')
+				return true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return false;
+}
+
+static bool has_units(const char *expr)
+{
+	if (!expr)
+		return false;
+
+	for (size_t i = 0; i < ARRAY_SIZE(units); ++i) {
+		/* Check if unit keyword exists in expression
+		 * Units must not be followed by alphanumeric characters */
+		size_t unit_len = strlen(units[i]);
+		const char *pos = expr;
+		while ((pos = strstr(pos, units[i])) != NULL) {
+			char after = *(pos + unit_len);
+			/* Unit found if it's not followed by alphanumeric */
+			if (!isalnum((unsigned char)after)) {
+				return true;
+			}
+			pos++;
+		}
+	}
+
+	return false;
+}
+
+static int eval_bitwise_expr(char *expr, char *out, size_t out_len)
+{
+	if (!expr || !out || out_len == 0)
+		return -1;
+
+	int unitless = 0;
+	queue *front = NULL, *rear = NULL;
+	char *parsed = fixexpr(expr, &unitless);
+	if (!parsed)
+		return -1;
+
+	int ret = infix2postfix(parsed, &front, &rear);
+	free(parsed);
+	if (ret == -1)
+		return -1;
+
+	int eval_ret = 0;
+	maxuint_t value = eval(&front, &rear, &eval_ret);
+	if (eval_ret == -1)
+		return -1;
+
+	/* Print result based on minimal mode setting */
+	if (cfg.minimal) {
+		printf("%s\n", getstr_u128(value, uint_buf));
+	} else {
+		/* Print result in binary, decimal, and hex formats */
+		printf(" (b) ");
+		printbin(value);
+		printf("\n (d) %s\n (h) ",
+			getstr_u128(value, uint_buf));
+		printhex_u128(value);
+		printf("\n");
+	}
+
+	/* Store decimal value for lastres */
+	bstrlcpy(out, getstr_u128(value, uint_buf), out_len);
 	return 0;
 }
 
@@ -1604,6 +2790,7 @@ static int issign(char c)
 	case '&':
 	case '|':
 	case '^':
+	case '~':
 		return 1;
 	default:
 		return 0;
@@ -1611,7 +2798,7 @@ static int issign(char c)
 }
 
 /* Check if a char is operator or not */
-static int isoperator(char c)
+static int isoperator(int c)
 {
 	switch (c) {
 	case '+':
@@ -1624,14 +2811,15 @@ static int isoperator(char c)
 	case '&':
 	case '|':
 	case '^':
+	case '~':
 	case '(':
 	case ')': return 1;
 	default: return 0;
 	}
 }
 
-#if 0
 /* Check if valid storage arithmetic expression */
+/*
 static int checkexp(char *exp)
 {
 	while (*exp) {
@@ -1643,7 +2831,7 @@ static int checkexp(char *exp)
 
 	return 0;
 }
-#endif
+*/
 
 /* Trim ending newline and whitespace from both ends, in place */
 static void strstrip(char *s)
@@ -1651,16 +2839,16 @@ static void strstrip(char *s)
 	if (!s || !*s)
 		return;
 
-	int len = strlen(s) - 1;
+	int len = (int)strlen(s) - 1;
 
 	if (s[len] == '\n')
 		--len;
-	while (len >= 0 && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
+	while (len >= 0 && (isspace((int)s[len]) || s[len] == '\"' || s[len] == '\''))
 		--len;
 	s[len + 1] = '\0';
 
 	len = 0;
-	while (s[len] && (isspace(s[len]) || s[len] == '\"' || s[len] == '\''))
+	while (s[len] && (isspace((int)s[len]) || s[len] == '\"' || s[len] == '\''))
 		++len;
 
 	if (len) {
@@ -1680,7 +2868,7 @@ static void removeinnerspaces(char *s)
 
 	while (*s != '\0') {
 		/* We should not combine 0xn b*/
-		if (!isspace(*s) || (*(s + 1) == 'b')) {
+		if (!isspace((int)*s) || (*(s + 1) == 'b')) {
 			*p = *s;
 			++p;
 		}
@@ -1701,13 +2889,13 @@ static char *fixexpr(char *exp, int *unitless)
 	strstrip(exp);
 	removeinnerspaces(exp);
 
-#if 0
+	/*
 	if (!checkexp(exp)) {
 		log(DEBUG, "no unit in expression [%s]\n", exp);
 		*unitless = 1;
 		return NULL;
 	}
-#endif
+	*/
 
 	int i = 0, j = 0;
 	char *parsed = (char *)calloc(1, 2 * strlen(exp) * sizeof(char));
@@ -1728,17 +2916,17 @@ static char *fixexpr(char *exp, int *unitless)
 			return NULL;
 		}
 
-		if (isoperator(exp[i]) && isalpha(exp[i + 1]) && (exp[i + 1] != 'r')) {
+		if (isoperator((int)exp[i]) && isalpha((int)exp[i + 1]) && (exp[i + 1] != 'r')) {
 			log(ERROR, "invalid expression\n");
 			free(parsed);
 			return NULL;
 		}
 
-		if ((isdigit(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && (isdigit(exp[i + 1]) ||
-		     isoperator(exp[i + 1]))) ||
-		    (isalpha(exp[i]) && isoperator(exp[i + 1])) ||
-		    (isoperator(exp[i]) && (exp[i + 1] == 'r'))) {
+		if ((isdigit((int)exp[i]) && isoperator((int)exp[i + 1])) ||
+		    (isoperator((int)exp[i]) && (isdigit((int)exp[i + 1]) ||
+		     isoperator((int)exp[i + 1]))) ||
+		    (isalpha((int)exp[i]) && isoperator((int)exp[i + 1])) ||
+		    (isoperator((int)exp[i]) && ((int)exp[i + 1] == 'r'))) {
 			if (exp[i] == '<' || exp[i] == '>') { /* handle shift operators << and >> */
 				if (prev != exp[i] && exp[i] != exp[i + 1]) {
 					log(ERROR, "invalid operator %c\n", exp[i]);
@@ -1807,10 +2995,10 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 	}
 
 	if (!unit) {
-		int unitchars = 0, len = strlen(value);
+		int unitchars = 0, len = (int)strlen(value);
 
 		while (len) {
-			if (!isalpha(value[len - 1]))
+			if (!isalpha((int)value[len - 1]))
 				break;
 
 			++unitchars;
@@ -1885,7 +3073,7 @@ static int convertunit(char *value, char *unit, ulong sectorsz)
 		if (cfg.minimal || unit) /* For running python test cases */
 			log(ERROR, "malformed input\n");
 		else
-			return try_bc(NULL);
+			return evaluate_expr(NULL);
 
 		return -1;
 	}
@@ -1977,7 +3165,7 @@ static int evaluate(char *exp, ulong sectorsz)
 	return 0;
 }
 
-int convertbase(char *arg)
+int convertbase(char *arg, bool bitposition)
 {
 	char *pch;
 
@@ -2002,12 +3190,16 @@ int convertbase(char *arg)
 		return -1;
 	}
 
-	printf(" (b) ");
-	binprint(val);
-	printf("\n (d) %s\n (h) ",
-		getstr_u128(val, uint_buf));
-	printhex_u128(val);
-	printf("\n");
+	if (bitposition)
+		printbin_positions(val);
+	else {
+		printf(" (b) ");
+		printbin(val);
+		printf("\n (d) %s\n (h) ",
+			getstr_u128(val, uint_buf));
+		printhex_u128(val);
+		printf("\n");
+	}
 
 	return 0;
 }
@@ -2017,22 +3209,24 @@ int main(int argc, char **argv)
 	int opt = 0, operation = 0;
 	ulong sectorsz = SECTOR_SIZE;
 
-	opterr = 0;
-	rl_bind_key('\t', rl_insert);
+	get_bit_value_1_code();
 
-	while ((opt = getopt(argc, argv, "bc:df:hms:")) != -1) {
+	opterr = 0;
+#ifndef NORL
+	rl_bind_key('\t', rl_insert);
+#endif
+
+	while ((opt = getopt(argc, argv, "bc:df:hmp:s:")) != -1) {
 		switch (opt) {
 		case 'c':
-		{
 			operation = 1;
-			convertbase(optarg);
+			convertbase(optarg, false);
 			printf("\n");
 			break;
-		}
 		case 'f':
 			operation = 1;
 
-			if (tolower(*optarg) == 'c') {
+			if (tolower((int)*optarg) == 'c') {
 				maxuint_t lba = 0;
 
 				if (chs2lba(optarg + 1, &lba)) {
@@ -2041,7 +3235,7 @@ int main(int argc, char **argv)
 					printhex_u128(lba);
 					printf("\n\n");
 				}
-			} else if (tolower(*optarg) == 'l') {
+			} else if (tolower((int)*optarg) == 'l') {
 				t_chs chs;
 
 				if (lba2chs(optarg + 1, &chs)) {
@@ -2064,14 +3258,18 @@ int main(int argc, char **argv)
 			sectorsz = strtoul_b(optarg);
 			break;
 		case 'b':
-			cfg.bcmode = 1;
-			strncpy(prompt, "bc> ", 5);
+			cfg.maths = 1;
+			strncpy(prompt, PROMPT_MATHS, 8);
 			break;
 		case 'd':
 			cfg.loglvl = DEBUG;
 			log(DEBUG, "bcal v%s\n", VERSION);
 			log(DEBUG, "maxuint_t is %lu bytes\n", sizeof(maxuint_t));
-
+			break;
+		case 'p':
+			operation = 1;
+			convertbase(optarg, true);
+			printf("\n");
 			break;
 		case 'h':
 			usage();
@@ -2089,11 +3287,25 @@ int main(int argc, char **argv)
 		char *ptr = NULL, *tmp = NULL;
 		cfg.repl = 1;
 		int enters = 0;
+		int is_tty = isatty(STDIN_FILENO);
 
 		read_history(NULL);
 
-		printf("q/double Enter -> quit, ? -> help\n");
-		while ((tmp = readline(prompt)) != NULL) {
+		while (1) {
+			/* Manually print prompt for non-TTY mode (e.g., tests with pipes) */
+			if (!is_tty) {
+				printf("%s", prompt);
+				fflush(stdout);
+			}
+			tmp = readline(prompt);
+			if (!tmp)
+				break;
+
+			if (program_exit(tmp)) {
+				free(tmp);
+				exit(0);
+			}
+
 			/* Quit on double Enter */
 			if (tmp[0] == '\0') {
 				if (enters == 1) {
@@ -2112,15 +3324,24 @@ int main(int argc, char **argv)
 			ptr = tmp;
 
 			strstrip(tmp);
+
 			if (tmp[0] == '\0') {
 				free(ptr);
 				continue;
 			}
 
+			add_history(tmp);
+
+			if (cfg.maths) {
+				if (has_function_call(tmp))
+					remove_thousands_commas(tmp);
+				else
+					remove_commas(tmp);
+			} else
+				remove_commas(tmp);
+
 			log(DEBUG, "ptr: [%s]\n", ptr);
 			log(DEBUG, "tmp: [%s]\n", ptr);
-
-			add_history(tmp);
 
 			if ((strlen(tmp) == 1) && tmp[1] == '\0') {
 				switch (tmp[0]) {
@@ -2138,22 +3359,8 @@ int main(int argc, char **argv)
 					free(ptr);
 					continue;
 				case 'b':
-					cfg.bcmode ^= 1;
-					if (cfg.bcmode) {
-#ifdef __GNU_LIBRARY__
-						printf("bc vars: scale = 10, ibase = 10, last = r\n");
-#else
-						printf("bc vars: scale = 10, ibase = 10, last = 0\n");
-#endif
-						strncpy(prompt, "bc> ", 5);
-					} else
-						strncpy(prompt, "bcal> ", 7);
-
-					free(ptr);
-					continue;
-				case '?':
-					prompt_help();
-
+					cfg.maths ^= 1;
+					strncpy(prompt, cfg.maths ? PROMPT_MATHS : PROMPT_BYTES, 8);
 					free(ptr);
 					continue;
 				case 'q':
@@ -2162,7 +3369,10 @@ int main(int argc, char **argv)
 					return 0;
 				case 's':
 					show_basic_sizes();
-
+					free(ptr);
+					continue;
+				case '?':
+					prompt_help();
 					free(ptr);
 					continue;
 				default:
@@ -2172,16 +3382,59 @@ int main(int argc, char **argv)
 				}
 			}
 
-			if (tmp[0] == 'c') {
-				convertbase(tmp + 1);
+			/* Handle 'c' and 'p' switches in both storage and expression modes */
+			if (tmp[0] == 'c' && !isalpha(tmp[1])) {
+				convertbase(tmp + 1, false);
 				free(ptr);
 				continue;
 			}
 
-			if (cfg.bcmode) {
-				try_bc(tmp);
+			if (tmp[0] == 'p' && !isalpha(tmp[1])) {
+				convertbase(tmp + 1, true);
 				free(ptr);
 				continue;
+			}
+
+			if (cfg.maths) {
+				if (has_bitwise_ops(tmp)) {
+					if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+
+						continue;
+					}
+					free(ptr);
+					continue;
+				}
+
+				if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
+					printf("%s\n", lastres.p);
+					lastres.unit = 0;
+					free(ptr);
+					continue;
+				}
+
+				maxfloat_t result;
+				if (eval_expr(tmp, &result) == 0) {
+					long long int_result;
+					if (is_integral_result(result, &int_result)) {
+						printf("%lld\n", int_result);
+						snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+					} else {
+						format_result(result, lastres.p, UINT_BUF_LEN);
+						printf("%s\n", lastres.p);
+					}
+					/* Store result for next use */
+					lastres.unit = 0;
+				}
+				free(ptr);
+				continue;
+			}
+
+			/* Check for bitwise operations first */
+			if (has_bitwise_ops(tmp)) {
+				if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
+					free(ptr);
+					continue;
+				}
 			}
 
 			curexpr = tmp;
@@ -2203,10 +3456,53 @@ int main(int argc, char **argv)
 
 	/*Arithmetic operation*/
 	if (argc - optind == 1) {
-		if (cfg.bcmode)
-			return try_bc(argv[optind]);
+		char *tmp = strdup(argv[optind]);
+		if (!tmp)
+			return -1;
+		strstrip(tmp);
+		if (cfg.maths) {
+			if (has_function_call(tmp))
+				remove_thousands_commas(tmp);
+			else
+				remove_commas(tmp);
+		}
+
+		/* Check for bitwise operations first, but only if no units are present */
+		if (has_bitwise_ops(tmp) && !has_units(tmp)) {
+			int bitwise_ret = eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN);
+			free(tmp);
+			return bitwise_ret;
+		}
+
+		if (cfg.maths) {
+			if (eval_decimal_multiply(tmp, lastres.p, UINT_BUF_LEN)) {
+				printf("%s\n", lastres.p);
+				lastres.unit = 0;
+				free(tmp);
+				return 0;
+			}
+
+			maxfloat_t result;
+			if (eval_expr(tmp, &result) == 0) {
+				long long int_result;
+				if (is_integral_result(result, &int_result)) {
+					printf("%lld\n", int_result);
+					snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+				} else {
+					format_result(result, lastres.p, UINT_BUF_LEN);
+					printf("%s\n", lastres.p);
+				}
+				/* Store result for next use */
+				lastres.unit = 0;
+				free(tmp);
+				return 0;
+			}
+			free(tmp);
+			return -1;
+		}
 
 		curexpr = argv[optind];
+		free(tmp);
 		return evaluate(argv[optind], sectorsz);
 	}
 

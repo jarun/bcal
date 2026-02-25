@@ -1,0 +1,46 @@
+name: GitHubCI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  macOS-gcc:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile with gcc
+        env:
+          CC: gcc
+        run: |
+          brew upgrade python
+          brew install pipx
+          pipx install logilab-common
+          pipx install pytest
+          make clean
+          make
+          pytest ./test.py
+          make clean
+  macOS-clang:
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Compile with clang
+        env:
+          CC: clang
+        run: |
+          brew update || true
+          brew install llvm || true
+          brew install pipx
+          pipx install logilab-common
+          pipx install pytest
+          brew unlink python@3.11 && brew link python@3.11
+          export PATH="/usr/local/opt/llvm/bin:$PATH"
+          export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
+          make clean
+          make
+          pytest ./test.py
+          make clean
+          clang-tidy **/*.h **/*.c -- -Iinc

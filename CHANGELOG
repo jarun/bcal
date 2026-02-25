@@ -1,3 +1,59 @@
+bcal v2.5
+2026-02-20
+
+- remove dependency on external tools (`bc`, `calc`)
+- support general purpose calculations (program option/prompt switch `b`)
+  - arithmetic: addition, subtraction, multiplication, division, modulo
+  - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
+  - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+- add program option/prompt switch `p` to show bit positions with bit value of a number
+- remove commas from input for general purpose calculations
+
+-------------------------------------------------------------------------------
+
+bcal v2.4
+2022-01-24
+
+- support "exit" and "quit" at prompt
+- fix lint report
+
+-------------------------------------------------------------------------------
+
+bcal v2.3
+2021-10-09
+
+- show binary conversion output in octets for readability
+- handle `^D`
+- quit program or 'exit' or 'quit'
+- fix broken terminal with calc as backend on "undefined input" (#36)
+
+-------------------------------------------------------------------------------
+
+bcal v2.2
+2020-01-07
+
+What's in?
+- Support [`calc`](http://www.isthe.com/chongo/tech/comp/calc/) for multi-base expressions
+- To use `calc`, `export BCAL_USE_CALC=1`
+- Fix lint issues
+- Fix issue #30
+- Updated auto-generated packages
+- More portable Makefile
+
+-------------------------------------------------------------------------------
+
+bcal v2.1
+2018-12-11
+
+What's in?
+- Support for C bitwise operators (`|`, `^`, `&`)
+- Support floating point in unit conversion
+- Support hex in expressions
+- Persistent readline history
+- Static-analysis (clang-tidy and coverity) integration
+
+-------------------------------------------------------------------------------
+
 bcal v2.0
 2018-10-02
 

@@ -1,37 +1,23 @@
 <h1 align="center">bcal</h1>
 
 <p align="center">
-<a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg?maxAge=600" alt="Latest release" /></a>
-<a href="https://aur.archlinux.org/packages/bcal"><img src="https://img.shields.io/aur/version/bcal.svg?maxAge=600" alt="AUR" /></a>
-<a href="http://formulae.brew.sh/formula/bcal"><img src="https://img.shields.io/homebrew/v/bcal.svg?maxAge=600" alt="Homebrew" /></a>
-<a href="https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/debian-9+-blue.svg?maxAge=2592000" alt="Debian Stretch+" /></a>
-<a href="https://apps.fedoraproject.org/packages/bcal"><img src="https://img.shields.io/badge/fedora-27+-blue.svg?maxAge=2592000" alt="Fedora 27+" /></a>
-<a href="https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1"><img src="https://img.shields.io/badge/ubuntu-17.04+-blue.svg?maxAge=2592000" alt="Ubuntu Zesty+" /></a>
-<a href="https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/"><img src="https://img.shields.io/badge/ubuntu-PPA-blue.svg?maxAge=2592000" alt="Ubuntu PPA" /></a>
-<p>
-
-<p align="center">
-<a href="https://travis-ci.org/jarun/bcal"><img src="https://img.shields.io/travis/jarun/bcal/master.svg" alt="Build Status" /></a>
+<a href="https://github.com/jarun/bcal/releases/latest"><img src="https://img.shields.io/github/release/jarun/bcal.svg?maxAge=600&label=rel" alt="Latest release" /></a>
+<a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/tiny-repos/bcal.svg?header=repos" alt="Availability"></a>
+<a href="https://circleci.com/gh/jarun/workflows/bcal"><img src="https://img.shields.io/circleci/project/github/jarun/bcal.svg?label=CircleCI" alt="Circle CI Status" /></a>
+<a href="https://github.com/jarun/bcal/actions"><img src="https://github.com/jarun/bcal/actions/workflows/ci.yml/badge.svg?branch=master" alt="GitHub CI Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
-<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellow.svg?maxAge=2592000" alt="License" /></a>
+<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellowgreen.svg?maxAge=2592000" alt="License" /></a>
 </p>
 
 <p align="center">
-<a href="https://asciinema.org/a/168719"><img src="https://asciinema.org/a/168719.png" alt="bcal_asciicast" width="600"/></a>
+<a href="https://github.com/user-attachments/assets/e501edaa-d856-4c84-86fe-cfb56a7aefc9"><img src="https://github.com/user-attachments/assets/0c4f9c7c-7791-4610-9a2a-988add949a6a" alt="bcal_asciicast" width="600"/></a>
 </p>
 
-`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expressions, unit conversions or address calculations. If you can't calculate the hex address offset for (512 - 16) MiB, or the value when the 43<sup>rd</sup> bit of a 64-bit address is set mentally, `bcal` is for you.
+`bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
 
-It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode for general-purpose numerical calculations.
+It also supports general-purpose operations (program option `-b`, prompt key `b`).
 
-`bcal` follows Ubuntu's standard unit conversion and notation [policy](https://wiki.ubuntu.com/UnitsPolicy). Only 64-bit operating systems are supported.
-
-*Love smart and efficient utilities? Explore [my repositories](https://github.com/jarun?tab=repositories). Buy me a cup of coffee if they help you.*
-
-<p align="center">
-<a href="https://saythanks.io/to/jarun"><img src="https://img.shields.io/badge/say-thanks!-ff69b4.svg" /></a>
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=RMLTQ76JSXJ4Q"><img src="https://img.shields.io/badge/PayPal-donate-green.svg" alt="Donate via PayPal!" /></a>
-</p>
+`bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 
 ### Table of Contents
 
@@ -39,26 +25,33 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 - [Installation](#installation)
   - [Dependencies](#dependencies)
   - [From a package manager](#from-a-package-manager)
-  - [Release packages](#release-packages)
   - [From source](#from-source)
+  - [make options](#make-options)
   - [Termux](#termux)
 - [Usage](#usage)
   - [cmdline options](#cmdline-options)
   - [Operational notes](#operational-notes)
+  - [Environment variables](#environment-variables)
 - [Examples](#examples)
 - [Testing](#testing)
 - [Copyright](#copyright)
 
 ### Features
 
+- REPL and single execution modes
 - evaluate arithmetic expressions involving storage units
-- perform general purpose calculations (using bc)
+- general-purpose operations
+  - arithmetic: addition, subtraction, multiplication, division, modulo
+  - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
+  - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+- works with piped input or file redirection
 - convert to IEC/SI standard data storage units
-- interactive mode with the last valid result stored for reuse
+- REPL mode with the last valid result stored for reuse
 - show the address in bytes
 - show address as LBA:OFFSET
 - convert CHS to LBA and *vice versa*
 - base conversion to binary, decimal and hex
+- show bit positions with bit value of a number
 - custom sector size, max heads/cylinder and max sectors/track
 - minimal dependencies
 
@@ -66,22 +59,18 @@ It has a [`bc`](https://www.gnu.org/software/bc/manual/html_mono/bc.html) mode f
 
 #### Dependencies
 
-`bcal` is written in C and depends on standard libc and libreadline. It invokes GNU `bc` for non-storage expressions.
+`bcal` is written in C and depends on standard libc and GNU Readline (or [BSD Editline](https://www.thrysoee.dk/editline/)). However, readline can be excluded by building with `O_NORL=1`, which uses a native input prompt with history file support instead.
 
 #### From a package manager
 
-- [AUR](https://aur.archlinux.org/packages/bcal/) (`yay -S bcal`)
-- [Debian](https://packages.debian.org/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
-- [Fedora](https://apps.fedoraproject.org/packages/bcal) (`dnf install bcal`)
-- [Homebrew](http://formulae.brew.sh/formula/bcal) (`brew install bcal`)
-- [NixOS](https://github.com/NixOS/nixpkgs/tree/master/pkgs/applications/science/math/bcal) (`nix-env -i bcal`)
-- [Ubuntu](https://packages.ubuntu.com/search?keywords=bcal&searchon=names&exact=1) (`apt-get install bcal`)
-- [Ubuntu PPA](https://launchpad.net/~twodopeshaggy/+archive/ubuntu/jarun/) (`apt-get install bcal`)
-- [Void Linux](https://github.com/void-linux/void-packages/tree/master/srcpkgs/bcal) (`xbps-install -S bcal`)
+Install `bcal` from your package manager. If the version available is dated try an alternative installation method.
 
-#### Release packages
-
-Packages for Arch Linux, CentOS, Debian, Fedora, OpenSUSE Leap and Ubuntu are available with the [latest stable release](https://github.com/jarun/bcal/releases/latest).
+<details><summary>Packaging status (expand)</summary>
+<p>
+<br>
+<a href="https://repology.org/project/bcal/versions"><img src="https://repology.org/badge/vertical-allrepos/bcal.svg" alt="Packaging status"></a>
+</p>
+</details>
 
 #### From source
 
@@ -89,20 +78,38 @@ If you have git installed, clone this repository. Otherwise, download the [lates
 
 Install to default location (`/usr/local`):
 
-    $ make
-    $ sudo make install
+    $ sudo make strip install
+To link to libedit:
+
+    $ sudo make O_EL=1 strip install
+To build without readline dependency (uses native input with history file support):
+
+    $ sudo make O_NORL=1 strip install
 To uninstall, run:
 
     $ sudo make uninstall
 
 `PREFIX` is supported, in case you want to install to a different location.
 
+##### make options
+
+- `O_NORL=1`: build without GNU Readline (native prompt with history file support).
+- `O_EL=1`: link against BSD Editline instead of Readline.
+- `O_STATIC=1`: build a static binary (forces `O_NORL=1`).
+- `strip`: target to strip the resulting binary after build.
+- `static`: target to build a static binary via `O_STATIC=1`.
+
+To build with musl libc, use `musl-gcc` as the compiler, for example:
+
+       $ CC=musl-gcc make
+       $ CC=musl-gcc make O_STATIC=1
+
 #### Termux
 
 `bcal` can be compiled and installed from source in the Termux environment on `aarch64` Android devices. Instructions:
 
 ```
-$ aria2c https://github.com/jarun/bcal/archive/master.zip
+$ wget https://github.com/jarun/bcal/archive/master.zip
 $ unzip bcal-master.zip
 $ cd bcal-master/
 $ pkg install make clang readline-dev
@@ -114,44 +121,49 @@ $ make strip install
 #### cmdline options
 
 ```
-usage: bcal [-c N] [-f loc] [-s bytes] [expr]
-            [N [unit]] [-b [expr]] [-m] [-d] [-h]
+usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]
+            [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 
-Storage expression calculator.
+Bits, bytes and general-purpose calculator.
 
 positional arguments:
  expr       expression in decimal/hex operands
  N [unit]   capacity in B/KiB/MiB/GiB/TiB/kB/MB/GB/TB
-            see https://wiki.ubuntu.com/UnitsPolicy
+            https://en.wikipedia.org/wiki/Binary_prefix
             default unit is B (byte), case is ignored
             N can be decimal or '0x' prefixed hex value
 
 optional arguments:
+ -b [expr]  start in general-purpose REPL mode
+            or, evaluate expression and quit
  -c N       show +ve integer N in binary, decimal, hex
+ -p N       show bit position with bit value for N
  -f loc     convert CHS to LBA or LBA to CHS
             refer to the operational notes in man page
  -s bytes   sector size [default 512]
- -b [expr]  enter bc mode or evaluate expression in bc
  -m         show minimal output (e.g. decimal bytes)
  -d         enable debug information and logs
  -h         show this help
 
 prompt keys:
- b          toggle bc mode
+ b          toggle general-purpose mode
+ c N        show +ve integer N in binary, decimal, hex
+ p N        show bit position with bit value for N
  r          show result from last operation
  s          show sizes of storage types
  ?          show prompt help
  q/double ↵ quit program
+ prompt: bytes> for storage mode, maths> for general-purpose mode
 ```
 
 #### Operational notes
 
-- **Interactive mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
-- **Expression**: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: +, -, *, /, % and C bitwise operators (except ~ due to storage width dependency).
-- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, `unit` is case-insensitive.
+- **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
+- **Expression**: Expression passed as argument in single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: `+`, `-`, `*`, `/`, `%`.
+- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, `unit` is case-insensitive.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
-- **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numerical conversions. Floating point operations use `long double`. Negative arguments are unsupported.
+- **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numeric conversions. Floating point operations use `long double`. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
 - **Fractional bytes do not exist** because they can't be addressed. `bcal` shows the floor value of non-integer _bytes_.
 - **CHS and LBA syntax**:
   - LBA: `lLBA-MAX_HEAD-MAX_SECTOR`   [NOTE: LBA starts with `l` (case ignored)]
@@ -165,7 +177,18 @@ prompt keys:
   - sector size: 0x200 (512)
   - max heads per cylinder: 0x10 (16)
   - max sectors per track: 0x3f (63)
-- **bc variables**: `scale` = 10, `ibase` = 10. `last` and `r` are synced when toggling `bc` mode. `bc` is not called in minimal output mode.
+- **REPL mode**: `r` is synced and can be used in expressions. The built-in evaluator uses `long double` arithmetic.
+- **History file**: Stored at `$XDG_CONFIG_HOME/bcal/history`, or `$HOME/.config/bcal/history` if `XDG_CONFIG_HOME` is unset.
+
+#### Environment variables
+
+- `BCAL_BIT_ANSI_COLOR_CODE`: ANSI escape code to colorize bit value `1` in `-p` output. Set to empty to disable coloring. Examples:
+
+    ```sh
+    export BCAL_BIT_ANSI_COLOR_CODE=$'\033[1;92m'         // ANSI 8-bit color code
+    export BCAL_BIT_ANSI_COLOR_CODE=$'\u001b[1;38;5;51m'  // ANSI 256-bit color code
+    export BCAL_BIT_ANSI_COLOR_CODE=''                    // Disable coloring
+    ```
 
 ### Examples
 
@@ -202,17 +225,43 @@ prompt keys:
        $ bcal -c 20140115
        $ bcal -c 0b1001100110101000001010011
        $ bcal -c 0x1335053
-       bcal> c 20140115  // Interactive mode
-7. Invoke `bc`.
+       bytes> c 20140115  // REPL mode
+       maths> c 20140115  // REPL mode
+7. Perform bitwise operations.
 
-       $ bcal -b '3.5 * 2.1 + 5.7'
-       bcal> b  // Interactive mode
-       bc vars: scale = 10, ibase = 10, last = r
-       bc> 3.5 * 2.1 + 5.7
-8. Help and additional information.
+       $ bcal -b '0xFF & 0x0F'
+       $ bcal -b '0x0F | 0xF0'
+       $ bcal -b '0xFF ^ 0xF0'
+       $ bcal -b '0xF0'
+       $ bcal -b '0x01 << 3'
+       $ bcal -b '0x10 >> 2'
+       $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'
+8. Use as a general-purpose calculator.
 
-       $ man bcal
-       $ bcal -h
+       $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
+       $ bcal -b // Start in geenral-purpose REPL mode
+       $ bcal
+       bcal> b   // Switch to general-purpose mode
+       expr> 3.5 * 2.1 + 5.7
+9. Pipe input.
+
+       $ printf '15 kib + 15 gib \n r / 5' | bcal -m
+       $ printf '15 + 15 + 2' | bcal -bm
+10. Redirect from file.
+
+        $ cat expr
+        15 gib + 15 kib
+        r / 5
+        $ bcal -m < expr
+11. Use mathematical functions.
+
+        $ bcal -b 'root(2, 17.3)'  // square root of 17.3
+        $ bcal -b 'exp(5.2)'
+        $ bcal -b 'pow(2, 8)'
+        $ bcal -b 'pow(10, 3) + root(2, 9)'
+12. Show bit positions with values.
+
+<img width="1030" height="152" alt="bcal bit position" src="https://github.com/user-attachments/assets/0cf972ff-9f28-40a8-a879-7c73702d818a" />
 
 ### Testing
 
@@ -223,4 +272,4 @@ Due to the nature of the project, it's extremely important to test existing func
 
 ### Copyright
 
-Copyright © 2016-2018 [Arun Prakash Jana](https://github.com/jarun)
+Copyright © 2016 [Arun Prakash Jana](https://github.com/jarun)

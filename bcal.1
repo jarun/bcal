@@ -1,39 +1,44 @@
-.TH "BCAL" "1" "02 Oct 2018" "Version 2.0" "User Commands"
+.TH "BCAL" "1" "20 Feb 2026" "Version 2.5" "User Commands"
 .SH NAME
-bcal \- Storage expression calculator.
+bcal \- Bits, bytes and general-purpose calculator.
 .SH SYNOPSIS
-.B bcal [-c N] [-f loc] [-s bytes] [expr] [N [unit]] [-b [expr]] [-m] [-d] [-h]
+.B bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
-(Byte CALculator) is a command-line utility to help with numerical calculations and expressions involving data storage units, addressing, base conversion etc. It invokes GNU \fBbc\fR for non-storage expressions.
+(Byte CALculator) is a command-line utility to help with calculations and expressions involving binary prefixes, SI/IEC conversion, byte addressing, base conversion, LBA/CHS calculation etc.
 .PP
-.B Features
+It also supports general-purpose operations (program option \fB-b\fR, prompt key \fBb\fR).
+.PP
+\fBbcal\fR uses [SI and IEC binary prefixes]:
+.I https://en.wikipedia.org/wiki/Binary_prefix
+.PP
+.SH FEATURES
 .PP
   * evaluate arithmetic expressions involving storage units
-  * perform general purpose calculations (using bc)
+  * general-purpose operations
+    - arithmetic: addition, subtraction, multiplication, division, modulo
+    - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
+    - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+  * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
-  * interactive mode with the last valid result stored for reuse
+  * REPL mode with the last valid result stored for reuse
   * show the address in bytes
   * show address as LBA:OFFSET
   * convert CHS to LBA and vice versa
   * base conversion to binary, decimal and hex
+  * show bit positions with bit value of a number
   * custom sector size, max heads/cylinder and max sectors/track
   * minimal dependencies
-.PP
-\fBbcal\fR follows Ubuntu's standard unit conversion and notation policy. Only 64-bit operating systems are supported.
-
-Refer to:
-.I https://wiki.ubuntu.com/UnitsPolicy
 .SH OPERATIONAL NOTES
 .PP
 .IP 1. 4
-\fBInteractive mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
+\fBREPL mode\fR: \fBbcal\fR enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable \fBr\fR.
 .PP
 .IP 2. 4
-\fBExpression\fR: Expression passed as argument in one-shot mode must be within double quotes. Inner spaces are ignored. Supported operators: +, -, *, /, % and C bitwise operators (except ~ due to storage width dependency).
+\fBExpression\fR: Expression passed as argument single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: +, -, *, /, %.
 .PP
 .IP 3. 4
-\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB following Ubuntu policy. Default is byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
+\fBN [unit]\fR: \fIN\fR can be a decimal or '0x' prefixed hex value. \fIunit\fR can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, \fIunit\fR is case-insensitive.
 .PP
 .IP 4. 4
 \fBNumeric representation\fR: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
@@ -42,7 +47,7 @@ Refer to:
 \fBSyntax\fR: Prefix hex inputs with '0x', binary inputs with '0b'.
 .PP
 .IP 6. 4
-\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numerical conversions. Floating point operations use \fIlong double\fR. Negative arguments are unsupported.
+\fBPrecision\fR: 128 bits if \fI__uint128_t\fR is available or 64 bits for numeric conversions. Floating point operations use \fIlong double\fR. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
 .PP
 .IP 7. 4
 \fBFractional bytes do not exist\fR, because they can't be addressed. \fBbcal\fR shows the floor value of non-integer \fIbytes\fR.
@@ -64,20 +69,41 @@ Refer to:
   - max sectors per track: 0x3f (63)
 .PP
 .IP 10. 4
-\fBbc variables\fR: \fIscale\fR = 10, \fIibase\fR = 10. \fIlast\fR and \fIr\fR are synced when toggling \fIbc\fR mode. \fIbc\fR is not called in minimal output mode.
+\fBREPL mode\fR: \fBr\fR is synced and can be used in expressions. The built-in evaluator uses \fIlong double\fR arithmetic.
+.PP
+.IP 11. 4
+\fBHistory file\fR: Stored at \fI$XDG_CONFIG_HOME/bcal/history\fR, or \fI$HOME/.config/bcal/history\fR if \fIXDG_CONFIG_HOME\fR is unset.
+.SH ENVIRONMENT
+.TP
+.B BCAL_BIT_ANSI_COLOR_CODE
+.EX
+ANSI escape code to colorize bit value 1 in \fB-p\fR output. Set to empty to disable coloring. Examples:
+.IP
+// ANSI 8-bit color code
+.B export BCAL_BIT_ANSI_COLOR_CODE=$'\\\033[1;92m'
+// ANSI 256-bit color code
+.B export BCAL_BIT_ANSI_COLOR_CODE=$'\\\u001b[1;38;5;51m'
+// Disable coloring
+.B export BCAL_BIT_ANSI_COLOR_CODE=''
+.EE
 .SH OPTIONS
+.TP
+.BI "-b=" [expr]
+Start in general-purpose REPL mode. If expression is provided, evaluate and quit.
 .TP
 .BI "-c=" N
 Show decimal, binary and hex representation of positive integer \fIN\fR.
 .TP
+.BI "-p=" N
+Show bit position (reversed if set) and bit value of a number.
+.TP
 .BI "-f=" loc
-Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS. Please refer to the \fBOperational Notes\fR section for more details.
+Convert CHS to LBA or LBA to CHS. \fIloc\fR is hyphen-separated representation of LBA or CHS.
+.br
+Please refer to the \fBOperational Notes\fR section for more details.
 .TP
 .BI "-s=" bytes
 Sector size in bytes. Default value is 512.
-.TP
-.BI "-b=" [expr]
-Start in \fIbc\fR mode. If expression is provided, evaluate in \fIbc\fR and quit.
 .TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
@@ -90,7 +116,13 @@ Show program help, storage sizes on the system and exit.
 .SH PROMPT KEYS
 .TP
 .BI "b"
-Toggle \fIbc\fR mode.
+Toggle numeric expression mode.
+.TP
+.BI "c N"
+Show decimal, binary and hex representation of positive integer N.
+.TP
+.BI "p N"
+Show bit position (reversed if set) and bit value of a number.
 .TP
 .BI "r"
 Show result from last operation.
@@ -103,6 +135,9 @@ Show prompt help.
 .TP
 .BI "q, double Enter"
 Quit the program.
+.TP
+.BI "prompt"
+bytes> for storage mode, maths> for general-purpose mode.
 .SH EXAMPLES
 .PP
 .IP 1. 4
@@ -166,18 +201,65 @@ Show binary, decimal and hex representations of a number.
 .B $ bcal -c 20140115
 .B $ bcal -c 0b1001100110101000001010011
 .B $ bcal -c 0x1335053
-.B bcal> c 20140115  // Interactive mode
+.B bytes> c 20140115  // REPL mode
+.B maths> c 20140115  // REPL mode
 .EE
 .PP
 .IP 7. 4
-Invoke \fIbc\fR.
+Perform bitwise operations.
 .PP
 .EX
 .IP
-.B $ bcal -b '3.5 * 2.1 + 5.7'
-.B bcal> b  // Interactive mode
-.B bc vars: scale = 10, ibase = 10, last = r
-.B bc> 3.5 * 2.1 + 5.7
+.B $ bcal -b '0xFF & 0x0F'
+.B $ bcal -b '0x0F | 0xF0'
+.B $ bcal -b '0xFF ^ 0xF0'
+.B $ bcal -b '~0xF0'
+.B $ bcal -b '0x01 << 3'
+.B $ bcal -b '0x10 >> 2'
+.B $ bcal -b '(0xFF & 0x0F) | (0x0F << 4)'
+.EE
+.PP
+.IP 8. 4
+Use as a general-purpose calculator.
+.PP
+.EX
+.IP
+.B $ bcal -b '3.5 * 2.1 + 5.7' // Single execution mode
+.B $ bcal -b  // Start in general-purpose REPL mode
+.B $ bcal
+.B bytes> b   // Switch to general-purpose mode
+.B maths> 3.5 * 2.1 + 5.7
+.EE
+.PP
+.IP 9. 4
+Pipe input.
+.PP
+.EX
+.IP
+.B $ printf '15 kib + 15 gib \en r / 5' | bcal -m
+.B $ printf '15 + 15 + 2' | bcal -bm
+.EE
+.PP
+.IP 10. 4
+Redirect from file.
+.PP
+.EX
+.IP
+.B $ cat expr
+.B 15 gib + 15 kib
+.B r / 5
+.B $ bcal -m < expr
+.EE
+.PP
+.IP 11. 4
+Use mathematical functions.
+.PP
+.EX
+.IP
+.B $ bcal -b 'root(2, 17.3)'  // square root on 17.3
+.B $ bcal -b 'exp(5.2)'
+.B $ bcal -b 'pow(2, 8)'
+.B $ bcal -b 'pow(10, 3) + root(2, 9)'
 .EE
 .SH AUTHORS
 Arun Prakash Jana <engineerarun@gmail.com>
@@ -186,7 +268,7 @@ Arun Prakash Jana <engineerarun@gmail.com>
 .SH REPORTING BUGS
 .I https://github.com/jarun/bcal/issues
 .SH LICENSE
-Copyright \(co 2016-2018 Arun Prakash Jana <engineerarun@gmail.com>
+Copyright \(co 2016 Arun Prakash Jana <engineerarun@gmail.com>
 .PP
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 .br
