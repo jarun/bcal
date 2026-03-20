@@ -18,7 +18,7 @@ It also supports general-purpose operations (program option \fB-b\fR, prompt key
   * general-purpose operations
     - arithmetic: addition, subtraction, multiplication, division, modulo
     - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
-    - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+    - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n), sum(n1 n2 ...)
   * works with piped input or file redirection
   * convert to IEC/SI standard data storage units
   * REPL mode with the last valid result stored for reuse
@@ -259,6 +259,7 @@ Use mathematical functions.
 .B $ bcal -b 'root(2, 17.3)'  // square root on 17.3
 .B $ bcal -b 'exp(5.2)'
 .B $ bcal -b 'pow(2, 8)'
+.B $ bcal -b 'sum(1 2 3 4)'
 .B $ bcal -b 'pow(10, 3) + root(2, 9)'
 .EE
 .SH AUTHORS

@@ -43,7 +43,7 @@ It also supports general-purpose operations (program option `-b`, prompt key `b`
 - general-purpose operations
   - arithmetic: addition, subtraction, multiplication, division, modulo
   - bitwise: AND (&), OR (|), XOR (^), complement (~), lshift (<<), rshift (>>)
-  - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n)
+  - functions: exp(n), log(base, n), ln(n) [natural log], pow(n, exponent), root(radical, n), sum(n1 n2 ...)
 - works with piped input or file redirection
 - convert to IEC/SI standard data storage units
 - REPL mode with the last valid result stored for reuse
@@ -258,6 +258,7 @@ prompt keys:
         $ bcal -b 'root(2, 17.3)'  // square root of 17.3
         $ bcal -b 'exp(5.2)'
         $ bcal -b 'pow(2, 8)'
+       $ bcal -b 'sum(1 2 3 4)'
         $ bcal -b 'pow(10, 3) + root(2, 9)'
 12. Show bit positions with values.
 
