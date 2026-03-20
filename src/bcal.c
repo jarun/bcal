@@ -989,6 +989,54 @@ static int parse_factor(const char *expr, int *pos, maxfloat_t *result)
 		return 0;
 	}
 
+	/* sum over whitespace/comma separated arguments */
+	if (strncmp(&expr[*pos], "sum", 3) == 0 && !isalnum(expr[*pos + 3])) {
+		maxfloat_t total = 0.0L;
+		maxfloat_t arg;
+		int args = 0;
+
+		*pos += 3;
+		skip_space(expr, pos);
+		if (expr[*pos] != '(') {
+			log(ERROR, "sum requires parenthesis\n");
+			return -1;
+		}
+
+		(*pos)++;
+		skip_space(expr, pos);
+		if (expr[*pos] == ')') {
+			log(ERROR, "sum requires at least one argument\n");
+			return -1;
+		}
+
+		while (expr[*pos] && expr[*pos] != ')') {
+			if (parse_expr(expr, pos, &arg) == -1)
+				return -1;
+			total += arg;
+			++args;
+
+			skip_space(expr, pos);
+			if (expr[*pos] == ',') {
+				(*pos)++;
+				skip_space(expr, pos);
+			}
+		}
+
+		if (args == 0) {
+			log(ERROR, "sum requires at least one argument\n");
+			return -1;
+		}
+
+		if (expr[*pos] != ')') {
+			log(ERROR, "missing closing parenthesis\n");
+			return -1;
+		}
+
+		(*pos)++;
+		*result = total;
+		return 0;
+	}
+
 
 	/* root */
 	if (strncmp(&expr[*pos], "root", 4) == 0 && !isalnum(expr[*pos + 4])) {
