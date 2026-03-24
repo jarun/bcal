@@ -3213,7 +3213,7 @@ static int evaluate(char *exp, ulong sectorsz)
 	return 0;
 }
 
-int convertbase(char *arg, bool bitposition)
+static int convertbase(char *arg, bool bitposition)
 {
 	char *pch;
 
