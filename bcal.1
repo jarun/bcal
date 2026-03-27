@@ -2,7 +2,7 @@
 .SH NAME
 bcal \- Bits, bytes and general-purpose calculator.
 .SH SYNOPSIS
-.B bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
+.B bcal [-b [expr]] [-c N] [-p N] [-f loc] [-s bytes] [expr] [N [unit]] [-m] [-H] [-d] [-h]
 .SH DESCRIPTION
 .B bcal
 (Byte CALculator) is a command-line utility to help with calculations and expressions involving binary prefixes, SI/IEC conversion, byte addressing, base conversion, LBA/CHS calculation etc.
@@ -107,6 +107,9 @@ Sector size in bytes. Default value is 512.
 .TP
 .BI "-m"
 Show minimal output (e.g. decimal bytes).
+.TP
+.BI "-H"
+Show integral maths results in hex.
 .TP
 .BI "-d"
 Enable debug information and logs.

@@ -77,7 +77,8 @@ typedef struct {
 	uchar maths   : 1;
 	uchar minimal : 1;
 	uchar repl    : 1;
-	uchar rsvd    : 3; /* Reserved for future usage */
+	uchar hexout  : 1;
+	uchar rsvd    : 2; /* Reserved for future usage */
 	uchar loglvl  : 2;
 } settings;
 
@@ -98,7 +99,7 @@ static char uint_buf[UINT_BUF_LEN];
 static char float_buf[FLOAT_BUF_LEN];
 
 static Data lastres = {"\0", 0};
-static settings cfg = {0, 0, 0, 0, INFO};
+static settings cfg = {0, 0, 0, 0, 0, INFO};
 
 static void get_bit_value_1_code(void)
 {
@@ -1244,6 +1245,17 @@ static int is_integral_result(maxfloat_t value, long long *out)
 	return 1;
 }
 
+static void print_and_store_int_result(long long int_result)
+{
+	if (cfg.hexout) {
+		printf("0x%llx\n", (unsigned long long)int_result);
+		snprintf(lastres.p, UINT_BUF_LEN, "0x%llx", (unsigned long long)int_result);
+	} else {
+		printf("%lld\n", int_result);
+		snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+	}
+}
+
 /* Evaluate expression and print result */
 static int evaluate_expr(char *expr)
 {
@@ -2228,7 +2240,7 @@ static void prompt_help()
 static void usage()
 {
 	printf("usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]\n\
-	    [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]\n\n\
+	    [-s bytes] [expr] [N [unit]] [-m] [-H] [-d] [-h]\n\n\
 Bits, bytes and general-purpose calculator.\n\n\
 positional arguments:\n\
  expr       expression in decimal/hex operands\n\
@@ -2245,6 +2257,7 @@ optional arguments:\n\
             refer to the operational notes in man page\n\
  -s bytes   sector size [default 512]\n\
  -m         minimal output (e.g. decimal bytes)\n\
+ -H         show integral maths results in hex\n\
  -d         enable debug information and logs\n\
  -h         show this help\n\n");
 
@@ -3264,8 +3277,11 @@ int main(int argc, char **argv)
 	rl_bind_key('\t', rl_insert);
 #endif
 
-	while ((opt = getopt(argc, argv, "bc:df:hmp:s:")) != -1) {
+	while ((opt = getopt(argc, argv, "Hbc:df:hmp:s:")) != -1) {
 		switch (opt) {
+		case 'H':
+			cfg.hexout = 1;
+			break;
 		case 'c':
 			operation = 1;
 			convertbase(optarg, false);
@@ -3464,8 +3480,7 @@ int main(int argc, char **argv)
 				if (eval_expr(tmp, &result) == 0) {
 					long long int_result;
 					if (is_integral_result(result, &int_result)) {
-						printf("%lld\n", int_result);
-						snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+						print_and_store_int_result(int_result);
 					} else {
 						format_result(result, lastres.p, UINT_BUF_LEN);
 						printf("%s\n", lastres.p);
@@ -3502,7 +3517,7 @@ int main(int argc, char **argv)
 		if (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1)
 			return -1;
 
-	/*Arithmetic operation*/
+	/* Arithmetic operation */
 	if (argc - optind == 1) {
 		char *tmp = strdup(argv[optind]);
 		if (!tmp)
@@ -3534,8 +3549,7 @@ int main(int argc, char **argv)
 			if (eval_expr(tmp, &result) == 0) {
 				long long int_result;
 				if (is_integral_result(result, &int_result)) {
-					printf("%lld\n", int_result);
-					snprintf(lastres.p, UINT_BUF_LEN, "%lld", int_result);
+					print_and_store_int_result(int_result);
 				} else {
 					format_result(result, lastres.p, UINT_BUF_LEN);
 					printf("%s\n", lastres.p);

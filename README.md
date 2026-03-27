@@ -122,7 +122,7 @@ $ make strip install
 
 ```
 usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]
-            [-s bytes] [expr] [N [unit]] [-m] [-d] [-h]
+            [-s bytes] [expr] [N [unit]] [-m] [-H] [-d] [-h]
 
 Bits, bytes and general-purpose calculator.
 
@@ -142,6 +142,7 @@ optional arguments:
             refer to the operational notes in man page
  -s bytes   sector size [default 512]
  -m         show minimal output (e.g. decimal bytes)
+ -H         show integral maths results in hex
  -d         enable debug information and logs
  -h         show this help
 
