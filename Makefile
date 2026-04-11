@@ -42,6 +42,9 @@ bcal: $(SRC)
 
 all: bcal
 
+test: bcal
+	python3 -m pytest test.py
+
 static:
 	$(MAKE) O_STATIC=1
 
@@ -75,5 +78,5 @@ clean:
 
 skip: ;
 
-.PHONY: all x86 distclean install uninstall strip clean
+.PHONY: all test x86 distclean install uninstall strip clean
 .PHONY: static
