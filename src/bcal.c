@@ -2477,11 +2477,36 @@ static int infix2postfix(char *exp, queue **resf, queue **resr)
 			 * This also guards against a case of 0xn b
 			 */
 			token = strtok(NULL, " ");
-			if (token && token[0] == 'b' && token[1] == '\0') {
-				tokenData.unit = 1;
-				log(DEBUG, "unit found\n");
-			} else
-				tokenize = false; /* We already toknized here */
+			if (token) {
+				int unit_idx = ARRAY_SIZE(units);
+
+				while (--unit_idx >= 0)
+					if (!bstricmp(units[unit_idx], token))
+						break;
+
+				if (unit_idx == 0) {
+					/*
+					 * Single byte unit 'b'/'B' after a number:
+					 * mark as unit without appending the letter,
+					 * to avoid ambiguity with hex digits (0xDb).
+					 */
+					tokenData.unit = 1;
+					log(DEBUG, "unit found\n");
+				} else if (unit_idx > 0) {
+					/*
+					 * Multi-char unit (e.g. KiB, MiB): append to
+					 * the number string so unitconv can parse it.
+					 */
+					size_t len = strlen(tokenData.p);
+
+					bstrlcpy(tokenData.p + len, token, NUM_LEN - len);
+					log(DEBUG, "unit found\n");
+				} else {
+					tokenize = false; /* We already tokenized here */
+				}
+			} else {
+				tokenize = false;
+			}
 
 			/* Enqueue operands */
 			log(DEBUG, "tokenData: %s %d\n", tokenData.p, tokenData.unit);
@@ -2928,8 +2953,8 @@ static void removeinnerspaces(char *s)
 	char *p = s;
 
 	while (*s != '\0') {
-		/* We should not combine 0xn b*/
-		if (!isspace((int)*s) || (*(s + 1) == 'b')) {
+		/* We should not combine 0xn b/B (B is a valid hex digit) */
+		if (!isspace((int)*s) || (*(s + 1) == 'b') || (*(s + 1) == 'B')) {
 			*p = *s;
 			++p;
 		}
