@@ -1,3 +1,16 @@
+bcal v2.6
+2026-09-05
+
+- support native prompt and history without readline (`make O_NORL=1`)
+- add `strip` and static build (`make O_STATIC=1`) options
+- show prompt help and allow `c` and `p` commands in either REPL mode
+- add `BCAL_BIT_ANSI_COLOR_CODE` to customize set bit color
+- add sum() function for whitespace-separated numbers
+- add `-H` option to show integral maths results in hexadecimal
+- recognize space-separated `b` or `B` as byte unit
+
+-------------------------------------------------------------------------------
+
 bcal v2.5
 2026-02-20
 

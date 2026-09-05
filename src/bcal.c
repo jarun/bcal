@@ -82,7 +82,7 @@ typedef struct {
 	uchar loglvl  : 2;
 } settings;
 
-static char *VERSION = "2.5";
+static char *VERSION = "2.6";
 static char *units[] = {"b", "kib", "mib", "gib", "tib", "kb", "mb", "gb", "tb"};
 static char *logarr[] = {"ERROR", "WARNING", "INFO", "DEBUG"};
 static const char *PROMPT_BYTES = "bytes> ";
