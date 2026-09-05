@@ -24,6 +24,8 @@ import os
 # Disable color codes in bit position output
 os.environ['BCAL_BIT_ANSI_COLOR_CODE'] = ''
 
+assert os.path.isfile('./bcal'), "bcal binary not found; run 'make' before testing"
+
 test = [
     ('./bcal', '-m', '10', 'mb'),                                      # 0
     ('./bcal', '-m', '10', 'TiB'),                                     # 1

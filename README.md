@@ -15,7 +15,7 @@
 
 `bcal` (*Byte CALculator*) is a REPL CLI utility for storage expression (e.g. `"(2GiB * 2) / (2KiB >> 2)"`) evaluation, SI/IEC conversion, byte address calculation, base conversion and LBA/CHS calculation. It's very useful for those who deal with bits, bytes, addresses and binary prefixes frequently.
 
-It also supports general-purpose operations (program option `-b`, prompt key `b`).
+To evaluate general-purpose operations, use `bcal -b` or prompt key `b`.
 
 `bcal` uses [SI and IEC binary prefixes](https://en.wikipedia.org/wiki/Binary_prefix) and supports 64-bit Operating Systems only.
 

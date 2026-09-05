@@ -457,8 +457,12 @@ static size_t bstrlcpy(char *dest, const char *src, size_t n)
 		dest = (char *)d;
 	}
 
-	while (--n && (*dest = *src))
+	while (--n) {
+		*dest = *src;
+		if (!*dest)
+			break;
 		++dest, ++src;
+	}
 
 	if (!n)
 		*dest = '\0';
@@ -1468,11 +1472,9 @@ static bool ischarvalid(char ch, uint base, uint *val)
 			*val = (ch - 'A') + 10;
 			return true;
 		}
-	} else if (base == 10) {
-		if (ch >= '0' && ch <= '9') {
-			*val = ch - '0';
-			return true;
-		}
+	} else if (base == 10 && ch >= '0' && ch <= '9') {
+		*val = ch - '0';
+		return true;
 	}
 
 	return false;
@@ -3518,11 +3520,9 @@ int main(int argc, char **argv)
 			}
 
 			/* Check for bitwise operations first */
-			if (has_bitwise_ops(tmp)) {
-				if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
-					free(ptr);
-					continue;
-				}
+			if (has_bitwise_ops(tmp) && (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0)) {
+				free(ptr);
+				continue;
 			}
 
 			curexpr = tmp;
@@ -3538,9 +3538,8 @@ int main(int argc, char **argv)
 	}
 
 	/* Unit conversion */
-	if (argc - optind == 2)
-		if (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1)
-			return -1;
+	if ((argc - optind == 2) && (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1))
+		return -1;
 
 	/* Arithmetic operation */
 	if (argc - optind == 1) {
