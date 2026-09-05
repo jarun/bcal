@@ -161,7 +161,7 @@ prompt keys:
 
 - **REPL mode**: `bcal` enters the REPL mode if no arguments are provided. Storage unit conversion, base conversion and expression evaluation are supported in this mode. The last valid result is stored in the variable **r**.
 - **Expression**: Expression passed as argument in single execution mode must be quoted. Inner spaces are ignored. Operators supported in storage expressions: `+`, `-`, `*`, `/`, `%`.
-- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, `unit` is case-insensitive.
+- **N [unit]**: `N` can be a decimal or '0x' prefixed hex value. `unit` can be B/KiB/MiB/GiB/TiB/kB/MB/GB/TB. Default is Byte. As all of these tokens are unique, `unit` is case-insensitive. Note that `bcal` doesn't support bit as a unit.
 - **Numeric representation**: Decimal and hex are recognized in expressions and unit conversions. Binary is also recognized in other operations.
 - **Syntax**: Prefix hex inputs with `0x`, binary inputs with `0b`.
 - **Precision**: 128 bits if `__uint128_t` is available or 64 bits for numeric conversions. Floating point operations use `long double`. Negative values in storage expressions are unsupported. Only 64-bit operating systems are supported.
