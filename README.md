@@ -6,7 +6,8 @@
 <a href="https://circleci.com/gh/jarun/workflows/bcal"><img src="https://img.shields.io/circleci/project/github/jarun/bcal.svg?label=CircleCI" alt="Circle CI Status" /></a>
 <a href="https://github.com/jarun/bcal/actions"><img src="https://github.com/jarun/bcal/actions/workflows/ci.yml/badge.svg?branch=master" alt="GitHub CI Status" /></a>
 <a href="https://scan.coverity.com/projects/jarun-bcal"><img src="https://img.shields.io/coverity/scan/17148.svg" alt="Coverity Scan Build Status" /></a>
-<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPLv3-yellowgreen.svg?maxAge=2592000" alt="License" /></a>
+<a href="https://github.com/jarun/bcal/blob/master/LICENSE"><img src="https://img.shields.io/badge/⚖-GPLv3-yellowgreen.svg?maxAge=2592000" alt="License" /></a>
+<a href="https://github.com/sponsors/jarun" target="_blank"><img src="https://img.shields.io/badge/sponsor-bcal-deeppink.svg" alt="GitHub Sponsors"></a>
 </p>
 
 <p align="center">
