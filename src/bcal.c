@@ -3488,10 +3488,7 @@ int main(int argc, char **argv)
 
 			if (cfg.maths) {
 				if (has_bitwise_ops(tmp)) {
-					if (eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN) == 0) {
-
-						continue;
-					}
+					eval_bitwise_expr(tmp, lastres.p, UINT_BUF_LEN);
 					free(ptr);
 					continue;
 				}
