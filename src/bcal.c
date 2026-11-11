@@ -3538,8 +3538,8 @@ int main(int argc, char **argv)
 	}
 
 	/* Unit conversion */
-	if ((argc - optind == 2) && (convertunit(argv[optind], argv[optind + 1], sectorsz) == -1))
-		return -1;
+	if (argc - optind == 2)
+		return convertunit(argv[optind], argv[optind + 1], sectorsz);
 
 	/* Arithmetic operation */
 	if (argc - optind == 1) {
