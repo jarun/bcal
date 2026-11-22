@@ -124,7 +124,7 @@ $ make strip install
 usage: bcal [-b [expr]] [-c N] [-p N] [-f loc]
             [-s bytes] [expr] [N [unit]] [-m] [-H] [-d] [-h]
 
-Bits, bytes and general-purpose calculator.
+Storage and general-purpose calculator.
 
 positional arguments:
  expr       expression in decimal/hex operands
