@@ -2,15 +2,68 @@ name: GitHubCI
 
 on:
   push:
-    branches: [master]
+    branches: ['**']
+    tags: ['v*']
   pull_request:
     branches: [master]
+  schedule:
+    - cron: '0 0 * * 6'
 
 jobs:
+  linux-compile:
+    if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+    runs-on: ubuntu-latest
+    container: ubuntu:24.04
+    env:
+      CI_FORCE_TEST: '1'
+    steps:
+      - name: Install build dependencies
+        run: |
+          apt-get update -qq
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git make libreadline-dev gcc-9 gcc-10 gcc-11 gcc-12 gcc-13 gcc-14 clang-14 clang-15 clang-16 clang-17 clang-18 clang-tidy-18
+      - uses: actions/checkout@v4
+      - name: Compile with GCC and Clang
+        run: |
+          export CFLAGS=-Werror
+          for compiler in gcc-9 gcc-10 gcc-11 gcc-12 gcc-13 gcc-14 clang-14 clang-15 clang-16 clang-17 clang-18; do
+            make clean
+            CC="$compiler" make strip
+            ls -l bcal
+          done
+          make clean
+      - name: Run clang-tidy
+        run: clang-tidy-18 inc/*.h src/*.c -- -Iinc
+
+  package-and-publish:
+    if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create source archive
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          mkdir -p dist
+          project="${GITHUB_REPOSITORY##*/}"
+          git archive --format=tar.gz --prefix="${project}-${TAG#v}/" -o "dist/${project}-${TAG}.tar.gz" "$TAG"
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" dist/* --verify-tag --title "$TAG" --notes ''
+          fi
+
   macOS-gcc:
+    if: ${{ github.event_name != 'schedule' && !startsWith(github.ref, 'refs/tags/') }}
     runs-on: macOS-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Compile with gcc
         env:
           CC: gcc
@@ -24,9 +77,10 @@ jobs:
           pytest ./test.py
           make clean
   macOS-clang:
+    if: ${{ github.event_name != 'schedule' && !startsWith(github.ref, 'refs/tags/') }}
     runs-on: macOS-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Compile with clang
         env:
           CC: clang
@@ -43,4 +97,4 @@ jobs:
           make
           pytest ./test.py
           make clean
-          clang-tidy **/*.h **/*.c -- -Iinc
+          clang-tidy inc/*.h src/*.c -- -Iinc
